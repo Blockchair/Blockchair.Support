@@ -1,5 +1,7 @@
 # [Blockchair.com](https://blockchair.com/)
 
+![Blockchair](https://raw.githubusercontent.com/Blockchair/Blockchair.Support/master/hello.jpg "Hello there!")
+
 This is our public repository for issues and feature requests. Please feel free to submit any ideas as well as bugs!
 
 Note that some of our features are in alpha or beta stage. Such features are marked on the website with α or β respectively:
@@ -7,7 +9,7 @@ Note that some of our features are in alpha or beta stage. Such features are mar
 * Mempool processing is in alpha
 * Ethereum support is in private pre-alpha
 
-As our team currently lacks a native English speaker, we'll also be grateful for pointing out spelling mistakes on the website.
+As our team currently lacks a native English speaker, we'll also be grateful for pointing out spelling mistakes on the website :)
 
 Thanks!
 
