@@ -6,7 +6,7 @@ This is our public repository for issues and feature requests. Please feel free 
 
 Note that some of our features are in alpha or beta stage. Such features are marked on the website with α or β respectively:
 * Data export is in alpha
-* Mempool processing is in alpha
+* Mempool processing is in beta
 * Ethereum support is in private pre-alpha
 
 As our team currently lacks a native English speaker, we'll also be grateful for pointing out spelling mistakes on the website :)
