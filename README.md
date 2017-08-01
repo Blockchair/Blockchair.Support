@@ -8,8 +8,7 @@ Note that some of our features are in alpha or beta stage. Such features are mar
 * Data export is in alpha
 * Mempool processing is in beta
 * Ethereum support is in private pre-alpha
-
-As our team currently lacks a native English speaker, we'll also be grateful for pointing out spelling mistakes on the website :)
+* Bitcoin Cash support is in beta
 
 Thanks!
 
