@@ -4,10 +4,9 @@
 
 This is our public repository for issues and feature requests. Please feel free to submit any ideas as well as bugs using [the "New Issue" button](https://github.com/Blockchair/Blockchair.Support/issues/new)!
 
-Note that some of our features are in alpha or beta stage. Such features are marked on the website with α or β respectively:
+Note that some of our features are in alpha or beta stage. Such features may be marked on the website with α or β respectively:
 * Data export is in alpha
 * Ethereum support is in private pre-alpha
-* Whitepaper search is in public pre-alpha
 
 Thanks!
 
@@ -41,4 +40,4 @@ A: The answer depends on who is the recipient of the transaction:
 
 Q: The payment isn't getting confirmed for 3 hours, what can I do to accelerate the process?
 
-A: Bitcoin Cash has a special difficulty readjustment algorithm which sometimes results in blocks arriving in 2-3 hours in average instead of 10 minutes default. This will be fixed in the future updates to Bitcoin Cash. Right now the only thing you can do is wait.
+A: Bitcoin Cash has a special difficulty readjustment algorithm which sometimes results in blocks arriving in 2-3 hours in average instead of 10 minutes default. This will be fixed via the coming hard fork on November 13th. Right now the only thing you can do is wait.
