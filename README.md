@@ -38,6 +38,6 @@ A: The answer depends on who is the recipient of the transaction:
 * An exchange (Bittrex, Poloniex, ShapeShift, etc.): in that case you should contact the exchange support
 * Your friend or colleague: you could ask the recipient to install the second wallet and explain how to return the funds to you
 
-Q: The payment isn't getting confirmed for 3 hours, what can I do to accelerate the process?
+Q: The payment isn't getting confirmed for *x* hours, what can I do to accelerate the process?
 
-A: Bitcoin Cash has a special difficulty readjustment algorithm which sometimes results in blocks arriving in 2-3 hours in average instead of 10 minutes default. This will be fixed via the coming hard fork on November 13th. Right now the only thing you can do is wait.
+A: The only thing you can do is wait. In contrast to Bitcoin, it's very likely that your transaction will get into the next block, but there's no way to accelerate the process of finding new blocks. The average time between blocks should be approximately 10 minutes (but sometimes it's 2 minutes, sometimes it's 50 minutes), so if the recipient requres 6 confirmations, it would take approximately an hour for your transaction to get through.
