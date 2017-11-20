@@ -5,8 +5,9 @@
 This is our public repository for issues and feature requests. Please feel free to submit any ideas as well as bugs using [the "New Issue" button](https://github.com/Blockchair/Blockchair.Support/issues/new)!
 
 Note that some of our features are in alpha or beta stage. Such features may be marked on the website with α or β respectively:
-* Data export is in alpha
+* Data export is in public alpha
 * Ethereum support is in private pre-alpha
+* SegWit support is in public beta (report issues here: https://github.com/Blockchair/Blockchair.Support/issues/27)
 
 Thanks!
 
