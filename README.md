@@ -7,6 +7,7 @@ This is our public repository for issues and feature requests. Please feel free 
 Note that some of our features are in alpha or beta stage. Such features may be marked on the website with α or β respectively:
 * Data export is in beta
 * Ethereum support is in private pre-alpha
+* API is in beta. Documentation: https://github.com/Blockchair/Blockchair.Support/blob/master/API.md
 
 Thanks!
 
