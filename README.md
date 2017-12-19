@@ -17,7 +17,25 @@ Additional contacts:
 
 ## Questions regarding Bitcoin or Bitcoin Cash payments? Please refer to our **FAQ** first!
 
-Please be advised that Blockchair provides blockchain search and analytics services only. We are neither a "blockchain wallet" nor "the official Bitcoin Cash support", so there's very little we can help you with payments. But we've decided to put this small, but useful FAQ to common issues. Thank you!
+Please be advised that Blockchair provides blockchain search and analytics services only. We are neither a "blockchain wallet" nor "the official Bitcoin Cash support", so there's very little we can help you with payments. But we've decided to put this small, but useful 
+FAQ to common issues. Thank you!
+Question:i have made one transection from my BTC wallet To BTC cash wallet 27 days not payee did not gat fund to his walle  details
+
+General Info
+Id	244975042
+Hash (txid)	0bb6c477f33ec0833f78db5403b52a11b821d91c5e953167577962fce1bfedcd
+Included in block	505595	3547 confirmations
+Time (UTC)	2017-11-24 15:54 (25 days ago)
+Coindays destroyed	1.02
+Input count	5
+Output count	1
+Input total	22.72824969 BCH*	37,508.43 USD
+Output total	22.72823803 BCH*	37,508.41 USD
+Fee	0.00001166 BCH*	0.02 USD
+Fee per kB	0.00001491 BCH*	0.02 USD
+
+Please lookin to this issue 
+
 
 ### General
 
