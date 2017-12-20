@@ -9,11 +9,11 @@
     
     So, please, use our API only for sandbox purposes. If you require an API for commercial use, please, reach us at [info@blockchair.com](mailto:info@blockchair.com) so we could provide you with a suitable solution. 
     
-2. Currently we allow only 15 requests per minute to our API. If your application abuses the rate limits, it will be automatically temporary blocked. If you need a higher request rate, please contact us.
+2. Currently we allow only 15 requests per minute to our API. If your application abuses the rate limits, it will be automatically temporary blocked. If you need a higher request rate, please contact us. We also use cache, so there's no point in making the same query more often than once per minute. 
 
 3. If you use data obtained using our API and show it on a website, please mention Blockchair as your data source.
 
-4. If you want to be notified about changes in our API, drop us a line or two about how you use Blockchair. You’ll get included in the subscription list.
+4. If you want to be notified about changes in our API, drop us a line or two about how you use Blockchair — you’ll get included in the subscription list. If your bot has a static IP, we can also include it to our whitelist.
 
 5. If you have any suggestions regarding our API, open an issue here: https://github.com/Blockchair/Blockchair.Support/issues
 
