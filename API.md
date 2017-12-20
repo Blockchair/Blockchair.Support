@@ -27,7 +27,7 @@
 * https://api.blockchair.com/bitcoin/outputs?{query}
 * https://api.blockchair.com/bitcoin/mempool/transactions?{query}
 * https://api.blockchair.com/bitcoin/mempool/outputs?{query}
-* https://api.blockchair.com/bitcoin/address/{address}
+* https://api.blockchair.com/bitcoin/dashboards/address/{address}
 
 (replace `bitcoin` with `bitcoin-cash` in URLs for the Bitcoin Cash blockchain)
 
@@ -44,6 +44,8 @@ You can use our front-end to build queries. Here's an example:
 Basically, using a web inspector you can analyze what queries our front-end sends to the API server.
 
 You can also include `export=csv` or `export=tsv` to get the data in csv or tsv format instead of paginated JSON (max. 1 million cells).
+
+Note that `mempool/transactions` and `mempool/outputs` calls return mempool transactions AND transactions from the latest block (there's also `https://api.blockchair.com/bitcoin/mempool/blocks` call showing the latest block alone).
 
 #### We'll be expanding the documentation in the future. As of now, if you have any questions, please contact us using
 * E-mail: [info@blockchair.com](mailto:info@blockchair.com)
