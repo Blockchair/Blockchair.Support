@@ -39,6 +39,8 @@ A: The answer depends on who is the recipient of the transaction:
 * An exchange (Bittrex, Poloniex, ShapeShift, etc.): in that case you should contact the exchange support
 * Your friend or colleague: you could ask the recipient to install the second wallet and explain how to return the funds to you
 
+Also note that if you sent bitcoin cash to a bitcoin segwit-address (an address starting with a 3), it's not possible to recover the funds.
+
 Q: The payment isn't getting confirmed for *x* hours, what can I do to accelerate the process?
 
 A: The only thing you can do is wait. In contrast to Bitcoin, it's very likely that your transaction will get into the next block, but there's no way to accelerate the process of finding new blocks. The average time between blocks should be approximately 10 minutes (but sometimes it's 2 minutes, sometimes it's 50 minutes), so if the recipient requres 6 confirmations, it would take approximately an hour for your transaction to get through.
