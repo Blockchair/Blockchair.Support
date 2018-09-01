@@ -516,10 +516,10 @@ API поддерживает ряд коллов, которые выдают к
     * `address.spent_usd` - сколько всего потратил адрес в USD
     * `address.output_count` - количество выходов в пользу этого адреса
     * `address.unspent_output_count` - количество непотраченных выходов для этого адреса (т.е. количество входов с этим адресом можно посчитать как `output_count`-`unspent_output_count`)
-    * `address.first_seen_receiving` - timestamp когда первый раз этот адрес получал биткоины
-    * `address.last_seen_receiving` - timestamp когда последний раз этот адрес получал биткоины
-    * `address.first_seen_spending` - timestamp когда первый раз этот адрес отправлял биткоины
-    * `address.last_seen_spending` - timestamp когда последний раз этот адрес отправлял биткоины
+    * `address.first_seen_receiving` - timestamp (UTC) когда первый раз этот адрес получал коины
+    * `address.last_seen_receiving` - timestamp (UTC) когда последний раз этот адрес получал коины
+    * `address.first_seen_spending` - timestamp (UTC) когда первый раз этот адрес отправлял коины
+    * `address.last_seen_spending` - timestamp (UTC) когда последний раз этот адрес отправлял коины
     * `address.transaction_count` - количество уникальных транзакций, в которых участвовал адрес 
 * `transactions` - массив последних 100 хешей транзакций, в которых участвовал адрес    
 
@@ -546,10 +546,10 @@ API поддерживает ряд коллов, которые выдают к
     * `address.spending_call_count` - количество коллов, которые сделал этот адрес, в которых произошла передача value (\*\*)
     * `address.call_count` - суммарное количество всех коллов, в которых участвовал этот адрес (может быть больше `receiving_call_count` + `spending_call_count`, т.к. учитывает и зафейленные коллы)
     * `address.transaction_count` - количество транзакций, в которых участвовал адрес
-    * `address.first_seen_receiving` - timestamp когда первый раз этот адрес получал успешный входящий колл
-    * `address.last_seen_receiving` - timestamp когда последний раз этот адрес получал успешный входящий колл
-    * `address.first_seen_spending` - timestamp когда первый раз этот адрес отправлял успешный колл
-    * `address.last_seen_spending` - timestamp когда последний раз этот адрес отправлял успешный колл
+    * `address.first_seen_receiving` - timestamp (UTC) когда первый раз этот адрес получал успешный входящий колл
+    * `address.last_seen_receiving` - timestamp (UTC) когда последний раз этот адрес получал успешный входящий колл
+    * `address.first_seen_spending` - timestamp (UTC) когда первый раз этот адрес отправлял успешный колл
+    * `address.last_seen_spending` - timestamp (UTC) когда последний раз этот адрес отправлял успешный колл
 * `calls` - массив последних 100 коллов с участием адреса, каждый элемент - массив, содержащий следующие колонки из `ethereum/calls`: `block_id`, `transaction_hash`, `index`, `time`, `sender`, `recipient`, `value` , `value_usd` , `transferred` 
 
 `context.results` содержит количество найденных адресов (0 или 1, пока не реализован колл `addresses`).
@@ -600,15 +600,15 @@ API поддерживает ряд коллов, которые выдают к
 #### Пример работы с API
 
 Допустим, нам требуется получать все последние транзакции из блокчейна Эфириума на сумму более 1 млн. долларов. Для этого необходимо составить следующий запрос:
-* `https://api.blockchair.com/ethereum/transactions?q=internal_value_usd(10000000..)&s=transaction_id(desc)`
+* `https://api.blockchair.com/ethereum/transactions?q=internal_value_usd(10000000..)&s=id(desc)`
 
-В этом запросе мы обращаемся к блокчейну (`ethereum`), таблице (`transactions`), устанасливаем условие суммы (`q=internal_value_usd(10000000..)`), и сортировку по убыванию (`&s=transaction_id(desc)`).
+В этом запросе мы обращаемся к блокчейну (`ethereum`), таблице (`transactions`), устанасливаем условие суммы (`q=internal_value_usd(10000000..)`), и сортировку по убыванию (`&s=id(desc)`).
 
 Допустим, скрипт, который обращался к API с этим запросом по какой-то причине не работал некоторое время. Или в блокчейне появилось очень много транзакций на сумму более 1 млн. долларов, и со стандартным лимитом в 10 результатов, скрипт пропустил какие-то транзакции. Тогда сначала мы делаем тот же запрос:
-* `https://api.blockchair.com/ethereum/transactions?q=internal_value_usd(10000000..)&s=transaction_id(desc)`
+* `https://api.blockchair.com/ethereum/transactions?q=internal_value_usd(10000000..)&s=id(desc)`
 
 Из его результата запоминаем `context.state`, кладём его в некую переменную `_S_`, и далее для получения следующих результатов применяем `offset`:
-* `https://api.blockchair.com/ethereum/transactions?q=internal_value_usd(10000000..),block_id(.._S_)&s=transaction_id(desc)&offset=10`
+* `https://api.blockchair.com/ethereum/transactions?q=internal_value_usd(10000000..),block_id(.._S_)&s=id(desc)&offset=10`
 
 Увеличиваем значение offset пока не получим выборку с транзакцией, о которой мы уже знали.
 
