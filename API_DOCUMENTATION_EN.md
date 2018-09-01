@@ -515,10 +515,10 @@ Uses address as the input data. `data` returns an array with one element (if the
     * `address.spent_usd` - total spent in USD
     * `address.output_count` - the number of outputs this address received
     * `address.unspent_output_count` - number of unspent outputs for this address (i.e. the number of inputs for an address can be calculated as `output_count`-`unspent_output_count`)
-    * `address.first_seen_receiving` - timestamp when the first time this address received bitcoins
-    * `address.last_seen_receiving` - timestamp when the last time this address received bitcoins
-    * `address.first_seen_spending` - timestamp when the first time this address sent bitcoins
-    * `address.last_seen_spending` - timestamp when the last time this address sent bitcoins
+    * `address.first_seen_receiving` - timestamp (UTC) when the first time this address received coins
+    * `address.last_seen_receiving` - timestamp (UTC) when the last time this address received coins
+    * `address.first_seen_spending` - timestamp (UTC) when the first time this address sent coins
+    * `address.last_seen_spending` - timestamp (UTC) when the last time this address sent coins
     * `address.transaction_count` - number of unique transactions this address participating in
 * `transactions` - an array of the last 100 hashes the address is participating in
 
@@ -545,10 +545,10 @@ Uses address as the input data. `data` returns an array with one element (if the
     * `address.spending_call_count` -  number of calls that was made by this address, where  value transfer has occured (\*\*)
     * `address.call_count` - total number of calls this address participating in (may be greater than` receiving_call_count` + `spending_call_count`, because it also takes into account failed calls)
     * `address.transaction_count` - number of transactions this address participating in
-    * `address.first_seen_receiving` - timestamp when this address received a successful incoming call for the first time 
-    * `address.last_seen_receiving` - timestamp when this address received a successful incoming call for the last time
-    * `address.first_seen_spending` - timestamp when this address sent a successful call for the first time
-    * `address.last_seen_spending` - timestamp when this address sent a successful call for the last time
+    * `address.first_seen_receiving` - timestamp (UTC) when this address received a successful incoming call for the first time 
+    * `address.last_seen_receiving` - timestamp (UTC) when this address received a successful incoming call for the last time
+    * `address.first_seen_spending` - timestamp (UTC) when this address sent a successful call for the first time
+    * `address.last_seen_spending` - timestamp (UTC) when this address sent a successful call for the last time
 * `calls` - an array of the last 100 calls with the address, each element of an array containing the following columns of `ethereum/calls`: `block_id`, `transaction_hash`,` index`, `time`,` sender`, `recipient`, `value`,` value_usd`, `transferred`
 
 `context.results` contains the number of found addresses  (0 or 1, until the `addresses` call is implemented).
@@ -599,15 +599,15 @@ Returns data on three calls:
 #### API request examples
 
 Suppose we would like to receive all the latest transactions from the Ethereum blockchain which amount to more than $1M USD. The following request should be done for this:
-* `https://api.blockchair.com/ethereum/transactions?q=internal_value_usd(10000000..)&s=transaction_id(desc)`
+* `https://api.blockchair.com/ethereum/transactions?q=internal_value_usd(10000000..)&s=id(desc)`
 
-In this request we refer to the blockhain (`ethereum`), a table (`transactions`), set up the amount condition (`q=internal_value_usd(10000000..)`), and sort in descending order (`&s=transaction_id(desc)`).
+In this request we refer to the blockhain (`ethereum`), a table (`transactions`), set up the amount condition (`q=internal_value_usd(10000000..)`), and sort in descending order (`&s=id(desc)`).
 
 Suppose, a script with this request to the API for some reason did not work for a while, or a huge amount of transactions worth more than $1 million appeared. With the standard limit of 10 results, the script skipped some transactions. Then firstly we should do the following:
-* `https://api.blockchair.com/ethereum/transactions?q=internal_value_usd(10000000..)&s=transaction_id(desc)`
+* `https://api.blockchair.com/ethereum/transactions?q=internal_value_usd(10000000..)&s=id(desc)`
 
 From its result we save `context.state`, put it in a variable `_S_`, and further to obtain the following results we apply `offset`:
-* `https://api.blockchair.com/ethereum/transactions?q=internal_value_usd(10000000..),block_id(.._S_)&s=transaction_id(desc)&offset=10`
+* `https://api.blockchair.com/ethereum/transactions?q=internal_value_usd(10000000..),block_id(.._S_)&s=id(desc)&offset=10`
 
 Increase offset value until getting a data set with the transaction that we already knew about.
 
