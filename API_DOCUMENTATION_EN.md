@@ -1,4 +1,9 @@
-### [Blockchair.com](https://blockchair.com/) API v.2.0.0 Documentation
+### [Blockchair.com](https://blockchair.com/) API v.2.0.2 Documentation
+
+#### Changelog
+
+* v.2.0.2 - Sep 9th - Added `address.contract_created` for the `ethereum/dashboards/address/{A}` call
+* v.2.0.1 - Sep 1st - Added Litecoin support
 
 #### Migrating from API v.1 to v.2
 
@@ -77,13 +82,7 @@ A request should be construced like this: `https://api.blockchair.com/{blockchai
     * `bitcoin/mempool/blocks` - contains only the latest Bitcoin block
     * `bitcoin/mempool/transactions` - contains Bitcoin mempool transactions as well as transactions from the latest block
 	* `bitcoin/mempool/outputs` - contains Bitcoin outputs included in mempool transactions as well as in transactions from the latest block
-* Bitcoin Cash:
-    * `bitcoin-cash/blocks` - contains all Bitcoin Cash blocks, including the latest one
-	* `bitcoin-cash/transactions` - contains all Bitcoin Cash transactions, excluding mempool transactions as well as transactions from the latest block
-	* `bitcoin-cash/outputs` - contains all Bitcoin Cash outlets, excluding the outputs contained in mempool transactions, and also transactions from the latest block
-	* `bitcoin-cash/mempool/blocks` - contains only the latest block 
-	* `bitcoin-cash/mempool/transactions` - contains Bitcoin Cash mempool transactions as well as transactions from the latest block
-	* `bitcoin-cash/mempool/outputs` - contains Bitcoin outputs included in mempool transactions as well as in transactions from the latest block
+* Bitcoin Cash, Litecoin - the same as for Bitcoin
 * Ethereum:
 	* `ethereum/blocks` - contains all Ethereum blocks, except the last 6
 	* `ethereum/uncles` - contains all Ethereum uncles, except those that belong to the last 6 blocks
@@ -92,7 +91,7 @@ A request should be construced like this: `https://api.blockchair.com/{blockchai
 	* `ethereum/mempool/blocks` - contains the last 6 Ethereum blocks, some columns contain null
 	* `ethereum/mempool/transactions` - contains all Ethereum transactions from the last 6 blocks as well as mempool transactions 
 
-Notes: to speed up the process, our architecture contains separate tables (`mempool*`) for unconfirmed transactions, as well as for blocks that with a certain probability can be forked off from the main chain. For Bitcoin and Bitcoin Cash, `mempool*` contains the latest block transactions in addition to mempool transactions, and for Ethereum, that's the latest 6 blocks plus the mempool. Exception: for Bitcoin and Bitcoin Cash, the `blocks` table also contains information about the latest block (this may change in the future). For Ethereum, we do not "replay" transactions entirely (i.e. not looking for internal calls) for the last 6 blocks, so there is no `mempool/calls` table.
+Notes: to speed up the process, our architecture contains separate tables (`mempool*`) for unconfirmed transactions, as well as for blocks that with a certain probability can be forked off from the main chain. For Bitcoin, Bitcoin Cash, and Litecoin, `mempool*` contains the latest block transactions in addition to mempool transactions, and for Ethereum, that's the latest 6 blocks plus the mempool. Exception: for Bitcoin, Bitcoin Cash, and Litecoin, the `blocks` table also contains information about the latest block (this may change in the future). For Ethereum, we do not "replay" transactions entirely (i.e. not looking for internal calls) for the last 6 blocks, so there is no `mempool/calls` table.
 
 **You can use filters** as follows: `?q=field(value)[,field(value)...]`, where `field` is the column by which a filter is needed, and `value` is a value, special value, or a range of values. The possible columns are listed in the tables below. Possible expressions for values:
 * `value` - e.g., ` bitcoin/blocks?q=id(0)` finds information about block 0
@@ -130,7 +129,7 @@ If you need to apply several sorts, you can list them by commas, similar to filt
 
 **Offset** can be used as a paginator, e.g., `?offset=10` returns the next 10 results. `context.offset` takes the value of the set `OFFSET`. The maximum value is 10000. If you need just the last page, it's easier and quicker to change the direction of the sorting to the opposite. Important: when iterating through the results, it is extremely likely that the number of rows in the database will increase because new blocks were found. To avoid that, you may add an additional condition that limits the block id to the value obtained in `context.state` in the first query.
 
-##### bitcoin[-cash]/[mempool/]blocks
+##### (bitcoin[-cash]|litecoin)/[mempool/]blocks
 
 Returns data about blocks
 
@@ -187,7 +186,7 @@ Notes:
 - (\*) - only for Bitcoin
 - the default sorting - id DESC
 
-##### bitcoin[-cash]/[mempool/]transactions
+##### (bitcoin[-cash]|litecoin)/[mempool/]transactions
 
 Returns transaction data
 
@@ -224,7 +223,7 @@ Notes:
 - (\*) - only for Bitcoin
 - the default sort is id DESC
 
-##### bitcoin[-cash]/[mempool/]outputs
+##### (bitcoin[-cash]|litecoin)/[mempool/]outputs
 
 Returns information about the outputs (that become inputs when they are spent, and then `spending*` information appears)
 
@@ -470,7 +469,7 @@ Notes:
 
 The API supports a number of calls that produce some aggregated data, or data in a more convenient form for certain entities.
 
-##### (bitcoin[-cash]|ethereum)/dashboards/block/{A} and (bitcoin[-cash]|ethereum)/dashboards/blocks/{A[,B,...]}
+##### (bitcoin[-cash]|litecoin|ethereum)/dashboards/block/{A} and (bitcoin[-cash]|litecoin|ethereum)/dashboards/blocks/{A[,B,...]}
 
 As the input data, it takes the height or hash of the block(s). `data` returns an array with block heights or block hashes used as keys, and arrays of elements as values:
 * `block` - information about the block in infinitable-format `(bitcoin[-cash]|ethereum)/blocks`
@@ -487,21 +486,21 @@ As the input data, it takes an uncle hash(es). `data` returns an array with uncl
 
 `context.results` contains the number of found uncles.
 
-##### (bitcoin[-cash]|ethereum)/dashboards/transaction/{A} and (bitcoin[-cash]|ethereum)/dashboards/transactions/{A[,B,...]}
+##### (bitcoin[-cash]|litecoin|ethereum)/dashboards/transaction/{A} and (bitcoin[-cash]|litecoin|ethereum)/dashboards/transactions/{A[,B,...]}
 
 At the input data, it takes an internal blockchair-id or a hash of a transaction (transactions). `data` returns an array with identifiers or hashes of transactions used as keys, and arrays of elements as keys:
 * `transaction` - transaction information in infinitable-format `bitcoin[-cash]/transactions`
-* (only bitcoin[-cash]) `inputs` - array of all transaction inputs, sorted by `spending_index` in infinitable-format `bitcoin[-cash]/outputs`
-* (only bitcoin[-cash]) `outputs` - array of all transaction outputs, sorted by `index` in infinitable-format `bitcoin[-cash]/outputs`
+* (only bitcoin[-cash]|litecoin) `inputs` - array of all transaction inputs, sorted by `spending_index` in infinitable-format `bitcoin[-cash]/outputs`
+* (only bitcoin[-cash]|litecoin) `outputs` - array of all transaction outputs, sorted by `index` in infinitable-format `bitcoin[-cash]/outputs`
 * (only ethereum) `calls` - the array of all calls made during the execution of the transaction (always `null` for mempool transactions and the last 6 blocks)
 
 `context.results` contains the number of found transactions.
 
-##### (bitcoin[-cash]|ethereum)/dashboards/transaction/{hash}/priority
+##### (bitcoin[-cash]|litecoin|ethereum)/dashboards/transaction/{hash}/priority
 
 For mempool transactions shows priority (`position`) (for Bitcoin - by `fee_per_kwu`, for Bitcoin Cash - by `fee_per_kb`, for Ethereum - by `gas_price`) over other transactions (`out_of` mempool transactions). It has the same structure as the `(bitcoin[-cash]|ethereum)/dashboards/transaction/{A}` call
 
-##### bitcoin[-cash]/dashboards/address/{A}
+##### (bitcoin[-cash]|litecoin)/dashboards/address/{A}
 
 Uses address as the input data. `data` returns an array with one element (if the address is found), in that case the address is the key, and the value is an array consisting of the following elements:
 * `address`
@@ -532,7 +531,8 @@ Uses address as the input data. `data` returns an array with one element (if the
 * `address`
     * `address.type` - address type (`account` - for an address, `contract` - for a contract)
     * `address.contract_code_hex` -  hex code of the contract at the momemt of creation (for a contract), or null (for an address)
-    * `address.contract_destroyed` - for a contract - if the contact was destroyed (SELFDESCTRUCT) then true, if not - false, or null (for an address)
+    * `address.contract_created` - for a contract - if the contact was indeed created then true, if not (i.e. with a failed `create` call) - false, or null (for an address)
+    * `address.contract_destroyed` - for a contract - if the contact was successfully destroyed (SELFDESCTRUCT) then true, if not - false, or null (for an address)
     * `address.balance` - exact address balance in wei (here and below for values in wei - numeric string)
     * `address.balance_usd` - address balance in USD - float
     * `address.received_approximate` - total received in wei (approximately) (\*)
@@ -559,7 +559,7 @@ Notes:
 - (\*) - in these columns, the value in wei can be rounded. For a million of calls, the error can be more than 1 ether.
 - (\*\*) - counted only those calls that fit the following condition: ethereum/calls.transferred = true (see the `ethereum/calls` documentation), i.e. those calls as well as failed calls that do not change state (staticcall, etc.) are not considered
 
-##### (bitcoin[-cash]|ethereum)/stats
+##### (bitcoin[-cash]|litecoin|ethereum)/stats
 
 Returns an array with blockchain statistics:
 * `blocks` - total number of blocks
@@ -567,21 +567,21 @@ Returns an array with blockchain statistics:
 * `transactions` - total number of transactions
 * (only ethereum) `calls` - total number of internal calls
 * `blocks_24h` - blocks for the last 24 hours
-* `circulation` for bitcoin[-cash], `circulation_approximate` for ethereum - number of coins in circulation (in Satoshi, or in wei for Ethereum - an approximate value)
+* `circulation` for bitcoin[-cash]|litecoin, `circulation_approximate` for ethereum - number of coins in circulation (in Satoshi, or in wei for Ethereum - an approximate value)
 * `transactions_24h` - transactions for the last 24 hours
 * `difficulty` - current difficulty
-* `volume_24h` for bitcoin[-cash], `volume_24h_approximate` for ethereum - monetary volume of transactions for the last 24 hours (for ethereum - an approximate value)
+* `volume_24h` for bitcoin[-cash]|litecoin, `volume_24h_approximate` for ethereum - monetary volume of transactions for the last 24 hours (for ethereum - an approximate value)
 * `mempool_transactions` - number of transactions in the mempool
 * (only ethereum) `mempool_median_gas_price` - median gas price in the mempool
-* (only bitcoin[-cash]) `mempool_size` - the mempool size in bytes
+* (only bitcoin[-cash]|litecoin) `mempool_size` - the mempool size in bytes
 * `mempool_tps` - number of transactions per second added to the mempool
 * (only ethereum) `mempool_total_value_approximate` - mempool monetary value
-* (only bitcoin[-cash]) `mempool_total_fee_usd` - total mempool fee, in USD
+* (only bitcoin[-cash]|litecoin) `mempool_total_fee_usd` - total mempool fee, in USD
 * `best_block_height` - the latest block height
 * `best_block_hash` - the latest block hash
 * `best_block_time` - the latest block time
 * (only ethereum) `uncles_24h` - number of uncles for the last 24 hours
-* (only bitcoin[-cash]) `nodes` - number of complete nodes 
+* (only bitcoin[-cash]|litecoin) `nodes` - number of complete nodes 
 * `hashrate_24h` - hashrate (hashes per second) in average for the last 24 hours
 * `market_price_usd` - average market price of 1 coin in USD (market data source: CoinGecko)
 * `market_price_btc` - average market price of 1 coin in BTC (for Bitcoin always returns 1)
@@ -591,10 +591,11 @@ Returns an array with blockchain statistics:
 
 ##### stats
 
-Returns data on three calls:
+Returns data on four calls:
 * `bitcoin/stats`
 * `bitcoin-cash/stats`
 * `ethereum/stats`
+* `litecoin/stats`
 
 #### API request examples
 
