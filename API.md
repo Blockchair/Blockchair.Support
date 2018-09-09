@@ -6,8 +6,9 @@
 
 ### Changelog
 
-2018-09-01
-* Migrating from API v.1 to API v.2 (see the docs)
+* v.2.0.2 - Sep 9th, 2018 - Added `address.contract_created` for the `ethereum/dashboards/address/{A}` call
+* v.2.0.1 - Sep 1st, 2018 - Added Litecoin support
+* v.2.0.0 - Migrating from API v.1 to API v.2 (see the docs)
 
 ### Support
 
