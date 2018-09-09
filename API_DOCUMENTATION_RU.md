@@ -1,4 +1,9 @@
-### [Blockchair.com](https://blockchair.com/) API v.2.0.0 - документация
+### [Blockchair.com](https://blockchair.com/) API v.2.0.2 - документация
+
+#### Changelog
+
+* v.2.0.2 - 9 сентября - Добавлено поле `address.contract_created` для колла `ethereum/dashboards/address/{A}`
+* v.2.0.1 - 1 сентября - Добавлена поддержка Litecoin
 
 #### Переход с API v.1 на v.2
 
@@ -77,13 +82,7 @@
     * `bitcoin/mempool/blocks` - содержит в себе только последний блок Bitcoin
     * `bitcoin/mempool/transactions` - содержит в себе транзакции Bitcoin, находящиеся в мемпуле, а также транзакции последнего блока
     * `bitcoin/mempool/outputs` - содержит выходы Bitcoin, содержащиеся в транзакциях в мемпуле, а также в транзакциях в последнем блоке
-* Bitcoin Cash:
-    * `bitcoin-cash/blocks` - содержит все блоки Bitcoin Cash, включая последний
-    * `bitcoin-cash/transactions` - содержит все транзакции Bitcoin Cash, исключая транзакции, находящиеся в мемпуле, а также в последнем блоке
-    * `bitcoin-cash/outputs` - содержит все выходы Bitcoin Cash, исключая выходы, содержащиеся в транзакциях в мемпуле, а также в транзакциях в последнем блоке
-    * `bitcoin-cash/mempool/blocks` - содержит в себе только последний блок Bitcoin Cash
-    * `bitcoin-cash/mempool/transactions` - содержит в себе транзакции Bitcoin Cash, находящиеся в мемпуле, а также транзакции последнего блока
-    * `bitcoin-cash/mempool/outputs` - содержит выходы Bitcoin Cash, содержащиеся в транзакциях в мемпуле, а также в транзакциях в последнем блоке
+* Litecoin, Bitcoin Cash - аналогично Bitcoin
 * Ethereum:
     * `ethereum/blocks` - содержит все блоки Ethereum, кроме последних 6
     * `ethereum/uncles` - содержит все анклы Ethereum, кроме тех, которые принадлежат последним 6 блокам
@@ -92,7 +91,7 @@
     * `ethereum/mempool/blocks` - содержит последние 6 блоков Ethereum, некоторые колонки содержат null 
     * `ethereum/mempool/transactions` - содержит все транзакции Ethereum из последних 6 блоков, а также находящиеся в мемпуле
     
-Примечание: для быстроты работы наша архитектура содержит отдельные таблицы (`mempool*`) для неподтверждённых транзакций, а также для блоков, которые с определённой вероятностью могут форкнуться от основной цепи. Для Bitcoin и Bitcoin Cash в `mempool*` содержится помимо мемпула последний блок, а для Ethereum - последние 6 блоков. Исключение: для Bitcoin и Bitcoin Cash в таблице `blocks` также содержится информация о последнем блоке (это поведение может измениться в будущем). Для Ethereum мы не "проигрываем" транзакции целиком для последних 6 блоков, поэтому таблицы `mempool/calls` нет.
+Примечание: для быстроты работы наша архитектура содержит отдельные таблицы (`mempool*`) для неподтверждённых транзакций, а также для блоков, которые с определённой вероятностью могут форкнуться от основной цепи. Для Bitcoin, Bitcoin Cash, и Litecoin в `mempool*` содержится помимо мемпула последний блок, а для Ethereum - последние 6 блоков. Исключение: для Bitcoin, Bitcoin Cash, и Litecoin в таблице `blocks` также содержится информация о последнем блоке (это поведение может измениться в будущем). Для Ethereum мы не "проигрываем" транзакции целиком для последних 6 блоков, поэтому таблицы `mempool/calls` нет.
 
 **Фильтром** можно пользоваться следующим образом: `?q=field(value)[,field(value)...]`, где `field` - это колонка, по которой необходим фильтр, а `value` - значение, специальное значение или диапазон значений. Возможные колонки приведены в табличках ниже. Возможные выражения для значений:
 * `value` - например, `bitcoin/blocks?q=id(0)` найдёт информацию о блоке 0
@@ -130,7 +129,7 @@
 
 **Оффсет** используется в качестве пагинатора, например `?offset=10` вернёт следующие 10 результатов. `context.offset` принимает значение установленного `OFFSET`. Максимальное значение - 10000. Если нужна последняя страница, то проще и быстрее изменить направление сотировки на противоположное. Важно: при итерировании результатов крайне вероятна ситуация, что пул результатов увеличится, т.к. были найдены новые блоки. Для избежания увеличения пула надо добавлять дополнительное условие, ограничивающее сверху id блока значением, полученным в `context.state` в первом запросе.
 
-##### bitcoin[-cash]/[mempool/]blocks
+##### (bitcoin[-cash]|litecoin)/[mempool/]blocks
 
 Возвращает информацию о блоках
 
@@ -187,7 +186,7 @@
 - (\*) - только для Bitcoin
 - сортировка по умолчанию - id DESC
 
-##### bitcoin[-cash]/[mempool/]transactions
+##### (bitcoin[-cash]|litecoin)/[mempool/]transactions
 
 Возвращает информацию о транзакциях
 
@@ -224,7 +223,7 @@
 - (\*) - только для Bitcoin
 - сортировка по умолчанию - id DESC
 
-##### bitcoin[-cash]/[mempool/]outputs
+##### (bitcoin[-cash]|litecoin)/[mempool/]outputs
 
 Возвращает информацию о выходах (которые становятся входами, когда тратятся, и тогда о них появляется `spending*`-информация)
 
@@ -471,7 +470,7 @@
 
 API поддерживает ряд коллов, которые выдают какую-либо агрегированную информацию, или просто информацию в более удобном виде по определённым сущностям.
 
-##### (bitcoin[-cash]|ethereum)/dashboards/block/{A} и (bitcoin[-cash]|ethereum)/dashboards/blocks/{A[,B,...]}
+##### (bitcoin[-cash]|litecoin|ethereum)/dashboards/block/{A} и (bitcoin[-cash]|ethereum)/dashboards/blocks/{A[,B,...]}
 
 На входе принимает высоту или хеш блока (блоков). `data` вовзращает массив, ключами которого являются высоты блоков или хеши блоков, а значениями массив из элементов:
 * `block` - информация о блоке в infinitable-формате `(bitcoin[-cash]|ethereum)/blocks`
@@ -488,7 +487,7 @@ API поддерживает ряд коллов, которые выдают к
 
 `context.results` содержит количество найденных анклов.
 
-##### (bitcoin[-cash]|ethereum)/dashboards/transaction/{A} и (bitcoin[-cash]|ethereum)/dashboards/transactions/{A[,B,...]}
+##### (bitcoin[-cash]|litecoin|ethereum)/dashboards/transaction/{A} и (bitcoin[-cash]|litecoin|ethereum)/dashboards/transactions/{A[,B,...]}
 
 На входе принимает внутренний blockchair-id или хеш транзакции (транзакций). `data` вовзращает массив, ключами которого являются идентификаторы или хеши транзакций, а значениями массив из элементов:
 * `transaction` - информация о транзакции в infinitable-формате `bitcoin[-cash]/transactions`
@@ -498,11 +497,11 @@ API поддерживает ряд коллов, которые выдают к
 
 `context.results` содержит количество найденных транзакций.
 
-##### (bitcoin[-cash]|ethereum)/dashboards/transaction/{hash}/priority
+##### (bitcoin[-cash]|litecoin|ethereum)/dashboards/transaction/{hash}/priority
 
 Для транзакций в мемпуле показывает приоритет (`position`) (для Bitcoin - по `fee_per_kwu`, для Bitcoin Cash - по `fee_per_kb`, для Ethereum - по `gas_price`) перед остальным транзакциями (всего `out_of` транзакций в мемпуле). В остальном имеет такую же структуру, как и колл `(bitcoin[-cash]|ethereum)/dashboards/transaction/{A}`
 
-##### bitcoin[-cash]/dashboards/address/{A}
+##### (bitcoin[-cash]|litecoin)/dashboards/address/{A}
 
 На входе принимает адрес. `data` вовзращает массив из одного элемента (если адрес найден), ключом которого является сам адрес, а значениями массив из элементов:
 * `address`
@@ -533,6 +532,7 @@ API поддерживает ряд коллов, которые выдают к
 * `address`
     * `address.type` - тип адреса (`account` - для обычного адреса, `contract` - для контракта)
     * `address.contract_code_hex` - если контракт, то hex кода контракта при создании, для обычного адреса - null
+    * `address.contract_created` - если контракт, если контракт был действительно создан - true, если нет (т.е. `create`-колл зафейленный) - false, для обычного адреса - null
     * `address.contract_destroyed` - если контракт, если контакт был уничтожен (SELFDESCTRUCT), то true, если действующий - false, для обычного адреса - null
     * `address.balance` - точный баланс адреса в wei (здесь и далее для значений в wei - numeric string)
     * `address.balance_usd` - баланс адреса в USD - float
@@ -560,7 +560,7 @@ API поддерживает ряд коллов, которые выдают к
 - (\*) - в этих колонках значение в wei может быть округлено. Для миллионов коллов погрешность может составлять более 1 эфира
 - (\*\*) - учитываются коллы, для которых ethereum/calls.transferred = true (см. докуменацию `ethereum/calls`), т.е. здесь не учитываются коллы, которые не меняют state (staticcall и т.д.), а также коллы, которые зафейлились
 
-##### (bitcoin[-cash]|ethereum)/stats
+##### (bitcoin[-cash]|litecoin|ethereum)/stats
 
 Возвращает статистику по блокчейну массивом:
 * `blocks` - общее количество блоков
@@ -568,21 +568,21 @@ API поддерживает ряд коллов, которые выдают к
 * `transactions` - общее количество транзакций
 * (только ethereum) `calls` - общее количество внутренних коллов
 * `blocks_24h` - блоков за последние 24 часа
-* `circulation` для bitcoin[-cash], `circulation_approximate` для ethereum - количество монет в обращении (в сатоши или в wei соответственно, для ethereum - приблизительное значение)
+* `circulation` для bitcoin[-cash]|litecoin, `circulation_approximate` для ethereum - количество монет в обращении (в сатоши или в wei соответственно, для ethereum - приблизительное значение)
 * `transactions_24h` - транзакций за последние 24 часа
 * `difficulty` - текущая сложность
-* `volume_24h` для bitcoin[-cash], `volume_24h_approximate` для ethereum - монетарный объём транзакций за последние 24 часа (для ethereum - приблизительное значение)
+* `volume_24h` для bitcoin[-cash]|litecoin, `volume_24h_approximate` для ethereum - монетарный объём транзакций за последние 24 часа (для ethereum - приблизительное значение)
 * `mempool_transactions` - количество транзакций в мемпуле
 * (только ethereum) `mempool_median_gas_price` - медианная цена газа в мемпуле
-* (только bitcoin[-cash]) `mempool_size` - размер мемпула в байтах
+* (только bitcoin[-cash]|litecoin) `mempool_size` - размер мемпула в байтах
 * `mempool_tps` - количество транзакций в секунду, поступающих в мемпул
 * (только ethereum) `mempool_total_value_approximate` - монетарный объём мемпула
-* (только bitcoin[-cash]) `mempool_total_fee_usd` - суммарная комиссия в USD в мемпуле
+* (только bitcoin[-cash]|litecoin) `mempool_total_fee_usd` - суммарная комиссия в USD в мемпуле
 * `best_block_height` - высота последнего блока
 * `best_block_hash` - хеш последнего блока
 * `best_block_time` - время последнего блока
 * (только ethereum) `uncles_24h` - количество анклов за последние 24 часа
-* (только bitcoin[-cash]) `nodes` - количество полных нод в сети
+* (только bitcoin[-cash]|litecoin) `nodes` - количество полных нод в сети
 * `hashrate_24h` - хешрейт (хешей в секунду) майнеров в среднем за последние 24 часа
 * `market_price_usd` - среднерыночная цена 1 монеты в USD (провайдер информации о рынках: CoinGecko)
 * `market_price_btc` - среднерыночная цена 1 монеты в биткоинах (для Биткоина всегда 1)
@@ -592,10 +592,11 @@ API поддерживает ряд коллов, которые выдают к
 
 ##### stats
 
-Возвращает инфорамацию сразу по трём коллам:
+Возвращает инфорамацию сразу по четырём коллам:
 * `bitcoin/stats`
 * `bitcoin-cash/stats`
 * `ethereum/stats`
+* `litecoin/stats`
 
 #### Пример работы с API
 
