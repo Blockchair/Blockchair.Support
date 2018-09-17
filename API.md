@@ -6,6 +6,7 @@
 
 ### Changelog
 
+* v.2.0.3 - Sep 18th - Added `context.api.tested_features` with the list of features our API supports, but with no guarantee for backward compatibility if updated. Added Omni Layer and Wormhole support in testing mode (see "Tested features changelog")
 * v.2.0.2 - Sep 9th, 2018 - Added `address.contract_created` for the `ethereum/dashboards/address/{A}` call
 * v.2.0.1 - Sep 1st, 2018 - Added Litecoin support
 * v.2.0.0 - Migrating from API v.1 to API v.2 (see the docs)
