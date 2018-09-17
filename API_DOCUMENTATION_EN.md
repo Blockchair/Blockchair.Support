@@ -1,38 +1,16 @@
-### [Blockchair.com](https://blockchair.com/) API v.2.0.2 Documentation
+### [Blockchair.com](https://blockchair.com/) API v.2.0.3 Documentation
 
 #### Changelog
 
-* v.2.0.2 - Sep 9th - Added `address.contract_created` for the `ethereum/dashboards/address/{A}` call
+* v.2.0.3 - Sep 18th - Added `context.api.tested_features` with the list of features our API supports, but with no guarantee for backward compatibility if updated. Added Omni Layer and Wormhole support in testing mode (see the "Tested features changelog" below)
+* v.2.0.2 - Sep 9th - Added `address.contract_created` to the `ethereum/dashboards/address/{A}` call
 * v.2.0.1 - Sep 1st - Added Litecoin support
 
-#### Migrating from API v.1 to v.2
+#### Tested features changelog
 
-There are many breaking changes, please read through the documentation.
+##### Omni Layer and Wormhole support (since Sep 18th)
 
-* Until September 1st, 2018, `api.blockchair.com` will serve API v.1
-* Until September 1st, 2018, `alpha-2.blockchair.com` will serve API v.2 in beta test mode
-* Beginning September 1st, 2018, `api.blockchair.com` will serve API v.2 in production mode
-* Beginning September 1st, 2018, `api-v1.blockchair.com` will serve API v.1 (we guarantee support for that for at least a month)
-
-Please test your application and make needed changes. If you have any questions, please don't hesitate to contact us.
-
-##### Global Changes
-
-* Unified output for all requests (a server response always returns a JSON array consisting of two sub-arrays: `data` with requested data, and `context` with metadata)
-* Corrected types of output values (e.g. integers are always integers, and not strings)
-* Query execution speed is increased by 3-10 times
-* There are lots of new dashboard calls!
-
-##### API updates for working with blockchains (`bitcoin[-cash]/[mempool/](blocks|transactions|outputs)`, `ethereum/[mempool/](blocks|uncles|transactions|calls)`)
-
-* Available up to 2 simultaneous sortings, which can be enumerated by commas (example: `?s=field1(asc|desc),field2(asc|desc)`)
-* Available up to 5 simultaneous filters 
-* The `?limit=N` section now allows you to specify `N` from 1 to 100. The default is 10. Note: The `LIMIT` section is ignored in some cases, in such cases `context.limit` will yeild `null`
-* Added operator `...` for a strict comparison, e.g. `?q=id(1...3)` returns only 2, `?q=id(1...)` returns all matches starting with 2
-* Added `OR` and `NOT` operators
-* Cancelled `?next=N` and `?next_sort=M` sections, now the `OFFSET` section is used, e.g.: use `?offset =10` to get the next 10 records after the standard limit of 10. The maximum value of `OFFSET` is 100,000.
-* Context information moved to a special `context` subarray
-* Many other new features
+* v.a.1 - Sep 18th - Added alpha support for Omni Layer in Bitcoin (`bitcoin/omni/properties`, `bitcoin/omni/dashboards/property/{id}` calls, plus `_omni` key in the `bitcoin/dashboards/transaction` call and `_omni` key in the `bitcoin/dashboards/address` call), and support for Wormhole in Bitcoin Cash (`bitcoin-cash/wormhole/properties`, `bitcoin-cash/wormhole/dashboards/property/{id}` calls, plus `_wormhole` key in the `bitcoin-cash/dashboards/transaction` call and `_wormhole` key in the `bitcoin-cash/dashboards/address` call). Please don't use this in production yet, there will be massive changes!
 
 #### General Provisions
 
@@ -61,6 +39,8 @@ Please test your application and make needed changes. If you have any questions,
 		* `context.api.version` - version of API
 		* `context.api.last_major_update` - time of the last update, that somehow broke backward compatibility
 		* `context.api.next_major_update` - time of the next scheduled update, that can break compatibility, or` null`, if no updates are scheduled
+		* `context.api.tested_features` - the list (comma-separated) of features with version numbers our API supports, but with no guarantee for backward compatibility if updated (in this case there will be no changes to `context.api.next_major_update` as well)
+		* `context.api.documentation` - an URL to the latest version of documentation
 
 Note: it makes sense to check `context.api.version` and, if `context.api.next_major_update` is not `null`, notify yourself and review the changelog. If there are no changes in the changelog that violate the compatibility of your application, make sure that the value of `context.api.next_major_update` won't exceed the current one. If there are changes, adjust the application logic so, that after the specified time a new logic is applied. Additional note: in case the backward compatibility is violated only for one API call, then `context.api.next_major_update` won't be `null` just for this call.
 
