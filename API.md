@@ -22,7 +22,7 @@ See the examples:
 * https://api.blockchair.com/bitcoin/blocks?a=year,count()# - get the total number of Bitcoin blocks by year
 * https://api.blockchair.com/bitcoin/transactions?a=month,median(fee_usd)# - get the median Bitcoin transaction fee by month
 * https://api.blockchair.com/ethereum/blocks?a=miner,sum(generation)&s=sum(generation)(desc)# - get the list of Ethereum miners (except uncle miners) and sort it by the total amount minted
-* https://api.blockchair.com/bitcoin-cash/blocks?a=sum(fee_usd)&q=id(478559..)# - calculate how much the miners have collected in fees since the fork
+* https://api.blockchair.com/bitcoin-cash/blocks?a=sum(fee_total_usd)&q=id(478559..)# - calculate how much the miners have collected in fees since the fork
     
 To use aggregation, put the fields by which you'd like to group by (zero, one, or several), and fields which you'd like to calculate using some aggregate function (at least one) under the `?a=` section. You can also sort the results by one of the fields included in the `?a=` section (`asc` or `desc`) using the `?s=` section, and apply additional filters (see the documentation for the `?q=` section).
 
