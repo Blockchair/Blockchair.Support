@@ -1,7 +1,8 @@
-### [Blockchair.com](https://blockchair.com/) API v.2.0.4 - документация
+### [Blockchair.com](https://blockchair.com/) API v.2.0.5 - документация
 
 #### Changelog
 
+* v.2.0.5 - 8 октября - Исправлен баг с подсчётом `balance` и `received` у bitcoin[-cash]|litecoin-адресов в колле `{chain}/dashboards/address/{address}`, когда имелись специфические неподтверждённые транзакции
 * v.2.0.4 - 3 октября - Добавлены некоторые полезные поля к коллам `{chain}/stats`
 * v.2.0.3 - 18 сентября - Добавлен ключ `context.api.tested_features` со списком тестируемых фич, поддерживаемых нашим API (у тестируемых фич нет гарантий поддержки в будущем, гарантий, что в какой-то момент не потеряется совместимость при обновлении). Добавлена поддержка Omni Layer и Wormhole в режиме тестирования (см. ниже)
 * v.2.0.2 - 9 сентября - Добавлено поле `address.contract_created` для колла `ethereum/dashboards/address/{A}`
