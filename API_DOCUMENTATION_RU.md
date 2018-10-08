@@ -1,7 +1,8 @@
-### [Blockchair.com](https://blockchair.com/) API v.2.0.5 - документация
+### [Blockchair.com](https://blockchair.com/) API v.2.0.6 - документация
 
 #### Changelog
 
+* v.2.0.6 - 8 октября - В бета-режиме добавлена возможность агрегировать информацию из блокчейнов, см. `Поддержка агрегирования данных` ниже
 * v.2.0.5 - 8 октября - Исправлен баг с подсчётом `balance` и `received` у bitcoin[-cash]|litecoin-адресов в колле `{chain}/dashboards/address/{address}`, когда имелись специфические неподтверждённые транзакции
 * v.2.0.4 - 3 октября - Добавлены некоторые полезные поля к коллам `{chain}/stats`
 * v.2.0.3 - 18 сентября - Добавлен ключ `context.api.tested_features` со списком тестируемых фич, поддерживаемых нашим API (у тестируемых фич нет гарантий поддержки в будущем, гарантий, что в какой-то момент не потеряется совместимость при обновлении). Добавлена поддержка Omni Layer и Wormhole в режиме тестирования (см. ниже)
@@ -10,9 +11,46 @@
 
 #### Changelog тестируемых фич
 
+##### Поддержка агрегирования данных (с 8 октября)
+
+* v.b1 - 8 октября - Внедрение возможности получать агрегированную информацию. Теперь вы можете использовать Blockchair не только для фильтрации и сортировки информации из блокчейнов, но и для агрегации данных.
+
+См. примеры:
+* https://api.blockchair.com/bitcoin/blocks?a=year,count()# - выдаёт количество блоков в Bitcoin по годам
+* https://api.blockchair.com/bitcoin/transactions?a=month,median(fee_usd)# - медианные комиссии за транзакции в Bitcoin по месяцам
+* https://api.blockchair.com/ethereum/blocks?a=miner,sum(generation)&s=sum(generation)(desc)# - список майнеров (кроме майнеров анклов) Ethereum (отсортированный по количеству созданных монет)
+* https://api.blockchair.com/bitcoin-cash/blocks?a=sum(fee_usd)&q=id(478559..)# - сколько майнеры собрали на комиссиях в Bitcoin Cash с момента форка
+    
+Чтобы использовать агрегирование, укажите поля по которым вы хотите группировать (ни одного, одно, или несколько), и поля, которые вы хотите посчитать с помощью функций агрегирования (как минимум одно) в секции `?a=`. Вы также можете отсортировать результаты по одной из колонок (`asc` или `desc`), указанных в секции `?a=` используя секцию `?s=`, а также применить дополнительные фильтры (см. докуметацию для секции `?q=`)
+
+Возможные поля:
+* Bitcoin, Bitcoin Cash, Litecoin:
+    * Blocks
+        * Группировка по: date (или week, month, year), version, guessed_miner
+        * Подсчёт: size, stripped_size (кроме BCH), weight (кроме BCH), transaction_count, witness_count, input_count, output_count, input_total, input_total_usd, output_total, output_total_usd, fee_total, fee_total_usd, fee_per_kb, fee_per_kb_usd, fee_per_kwu (кроме BCH), fee_per_kwu_usd (кроме BCH), cdd_total, generation, generation_usd, reward, reward_usd -- возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()
+    * Transactions
+        * Группировка по: block_id, date (или week, month, year), version, is_coinbase, has_witness (кроме BCH), input_count, output_count
+        * Подсчёт: size, weight (кроме BCH), input_count, output_count, input_total, input_total_usd, output_total, output_total_usd, fee, fee_usd, fee_per_kb, fee_per_kb_usd, fee_per_kwu (кроме BCH), fee_per_kwu_usd (кроме BCH), cdd_total -- возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()
+    * Outputs
+        * Группировка по: block_id, date (или week, month, year), type, is_from_coinbase, is_spendable, is_spent, spending_block_id, spending_date (no support for spending_week, spending_month, spending_year yet)
+        * Подсчёт: value, value_usd, spending_value_usd, lifespan, cdd -- возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()
+* Ethereum:
+    * Blocks
+        * Группировка по: date (или week, month, year), miner
+        * Подсчёт: size, difficulty, gas_used, gas_limit, uncle_count, transaction_count, synthetic_transaction_count, call_count, synthetic_call_count, value_total, value_total_usd, internal_value_total, internal_value_total_usd, generation, generation_usd, uncle_generation, uncle_generation_usd, fee_total, fee_total_usd, reward, reward_usd -- возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()
+    * Uncles
+        * Группировка по: parent_block_id, date (или week, month, year), miner
+        * Подсчёт: size, difficulty, gas_used, gas_limit, generation, generation_usd -- возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()
+    * Transactions
+        * Группировка по: block_id, date (или week, month, year), failed, type
+        * Подсчёт: call_count, value, value_usd, internal_value, internal_value_usd, fee, fee_usd, gas_used, gas_limit, gas_price -- возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()
+    * Calls
+        * Группировка по: block_id, date (или week, month, year), failed, fail_reason, type, transferred
+        * Подсчёт: child_call_count, value, value_usd -- возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()  
+
 ##### Поддержка Omni Layer и Wormhole (с 18 сентября)
 
-* v.a.1 - 18 сентября - В режиме альфа-версии добавлена поддержка Omni Layer в Bitcoin (`bitcoin/omni/properties`, `bitcoin/omni/dashboards/property/{id}` коллы, плюс ключ `_omni` в `bitcoin/dashboards/transaction` и ключ `_omni` в `bitcoin/dashboards/address`), а также поддержка Wormhole в Bitcoin Cash (`bitcoin-cash/wormhole/properties`, `bitcoin-cash/wormhole/dashboards/property/{id}` коллы, плюс ключ `_wormhole` в `bitcoin-cash/dashboards/transaction` и ключ `_wormhole` в `bitcoin-cash/dashboards/address`). Пожалуйста, не используйте тестируемые фичи в продакшене, будут изменения.
+* v.a1 - 18 сентября - В режиме альфа-версии добавлена поддержка Omni Layer в Bitcoin (`bitcoin/omni/properties`, `bitcoin/omni/dashboards/property/{id}` коллы, плюс ключ `_omni` в `bitcoin/dashboards/transaction` и ключ `_omni` в `bitcoin/dashboards/address`), а также поддержка Wormhole в Bitcoin Cash (`bitcoin-cash/wormhole/properties`, `bitcoin-cash/wormhole/dashboards/property/{id}` коллы, плюс ключ `_wormhole` в `bitcoin-cash/dashboards/transaction` и ключ `_wormhole` в `bitcoin-cash/dashboards/address`). Пожалуйста, не используйте тестируемые фичи в продакшене, будут изменения.
 
 #### Общие положения
 
