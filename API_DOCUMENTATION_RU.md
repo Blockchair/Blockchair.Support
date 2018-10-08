@@ -19,7 +19,7 @@
 * https://api.blockchair.com/bitcoin/blocks?a=year,count()# - выдаёт количество блоков в Bitcoin по годам
 * https://api.blockchair.com/bitcoin/transactions?a=month,median(fee_usd)# - медианные комиссии за транзакции в Bitcoin по месяцам
 * https://api.blockchair.com/ethereum/blocks?a=miner,sum(generation)&s=sum(generation)(desc)# - список майнеров (кроме майнеров анклов) Ethereum (отсортированный по количеству созданных монет)
-* https://api.blockchair.com/bitcoin-cash/blocks?a=sum(fee_usd)&q=id(478559..)# - сколько майнеры собрали на комиссиях в Bitcoin Cash с момента форка
+* https://api.blockchair.com/bitcoin-cash/blocks?a=sum(fee_total_usd)&q=id(478559..)# - сколько майнеры собрали на комиссиях в Bitcoin Cash с момента форка
     
 Чтобы использовать агрегирование, укажите поля по которым вы хотите группировать (ни одного, одно, или несколько), и поля, которые вы хотите посчитать с помощью функций агрегирования (как минимум одно) в секции `?a=`. Вы также можете отсортировать результаты по одной из колонок (`asc` или `desc`), указанных в секции `?a=` используя секцию `?s=`, а также применить дополнительные фильтры (см. докуметацию для секции `?q=`)
 
