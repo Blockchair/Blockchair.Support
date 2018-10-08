@@ -1,7 +1,8 @@
-### [Blockchair.com](https://blockchair.com/) API v.2.0.4 Documentation
+### [Blockchair.com](https://blockchair.com/) API v.2.0.5 Documentation
 
 #### Changelog
 
+* v.2.0.5 - Oct 8th - Fixed bug where `balance` and `received` for bitcoin[-cash]|litecoin addresses in the `{chain}/dashboards/address/{address}` call were calculated wrong if there were specific unconfirmed transactions
 * v.2.0.4 - Oct 3rd - Added some new useful fields to `{chain}/stats` calls
 * v.2.0.3 - Sep 18th - Added `context.api.tested_features` with the list of features our API supports, but with no guarantee for backward compatibility if updated. Added Omni Layer and Wormhole support in testing mode (see the "Tested features changelog" below)
 * v.2.0.2 - Sep 9th - Added `address.contract_created` to the `ethereum/dashboards/address/{A}` call
