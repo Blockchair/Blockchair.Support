@@ -27,7 +27,6 @@
   + [Адрес Ethereum](#ethereumdashboardsaddressa)
   + [Статистика](#bitcoin-cashlitecoinethereumstats)
   + [Статистика по всем блокчейнам](#stats)
-  + [Статистика сети](#bitcoin-cashlitecoinnodes)
 + [Пример](#пример-работы-с-api)
 + [Поддержка](#поддержка)
 
@@ -649,19 +648,6 @@ API поддерживает ряд коллов, которые выдают к
 * `bitcoin-cash/stats`
 * `ethereum/stats`
 * `litecoin/stats`
-
-#### (bitcoin[-cash]|litecoin)/nodes
-
-Возвращает информацию о доступных нодах.
-
-* `nodes` - ноды
-  * `version` - User Agent клиента
-  * `country` - страна (определяется по GeoIP)
-  * `height` - последний блок в цепочке ноды
-  * `flags` - флаги [сервисов](https://en.bitcoin.it/wiki/Protocol_documentation#version)
-* `count` - количество
-* `countries` - количество нод по странам
-* `versions` - количество нод по User Agent
 
 ### Пример работы с API
 
