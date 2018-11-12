@@ -1,6 +1,36 @@
-### [Blockchair.com](https://blockchair.com/) API v.2.0.6 - документация
+## [Blockchair.com](https://blockchair.com/) API v.2.0.6 - документация
 
-#### Changelog
+![alt text](https://blockchair.com/images/logo_full.png "Blockchair logo")
+
+### Содержание
+
++ [Changelog](#changelog)
+  + [Тестируемые фичи](#changelog-тестируемых-фич)
++ [Общие положения](#общие-положения)
++ [Вызовы для работы с infinitables](#вызовы-для-работы-с-infinitables-таблицы-блокчейнов)
++ Bitcoin, Bitcoin Cash, Litecoin
+  + [Блоки](#bitcoin-cashlitecoinmempoolblocks)
+  + [Транзакции](#bitcoin-cashlitecoinmempooltransactions)
+  + [Выходы](#bitcoin-cashlitecoinmempooloutputs)
++ Ethereum
+  + [Блоки](#ethereummempoolblocks)
+  + [Анклы](#ethereumuncles)
+  + [Транзакции](#ethereummempooltransactions)
+  + [Коллы](#ethereumcalls)
++ [Примечания](#примечания)
++ [Dashboard-вызовы](#dashboard-вызовы)
+  + [Блоки](#bitcoin-cashlitecoinethereumdashboardsblocka-и-bitcoin-cashethereumdashboardsblocksab)
+  + [Анклы (Ethereum)](#ethereumdashboardsunclea-и-ethereumdashboardsunclesab)
+  + [Транзакции](#bitcoin-cashlitecoinethereumdashboardstransactiona-и-bitcoin-cashlitecoinethereumdashboardstransactionsab)
+  + [Приоритет неподтверждённых транзакций (в мемпуле)](#bitcoin-cashlitecoinethereumdashboardstransactionhashpriority)
+  + [Адрес Bitcoin, Bitcoin Cash, Litecoin](#bitcoin-cashlitecoindashboardsaddressa)
+  + [Адрес Ethereum](#ethereumdashboardsaddressa)
+  + [Статистика](#bitcoin-cashlitecoinethereumstats)
+  + [Статистика по всем блокчейнам](#stats)
++ [Пример](#пример-работы-с-api)
++ [Поддержка](#поддержка)
+
+### Changelog
 
 * v.2.0.6 - 8 октября - В бета-режиме добавлена возможность агрегировать информацию из блокчейнов, см. `Поддержка агрегирования данных` ниже
 * v.2.0.5 - 8 октября - Исправлен баг с подсчётом `balance` и `received` у bitcoin[-cash]|litecoin-адресов в колле `{chain}/dashboards/address/{address}`, когда имелись специфические неподтверждённые транзакции
@@ -9,7 +39,7 @@
 * v.2.0.2 - 9 сентября - Добавлено поле `address.contract_created` для колла `ethereum/dashboards/address/{A}`
 * v.2.0.1 - 1 сентября - Добавлена поддержка Litecoin
 
-#### Changelog тестируемых фич
+### Changelog тестируемых фич
 
 ##### Поддержка агрегирования данных (с 8 октября)
 
@@ -20,46 +50,46 @@
 * https://api.blockchair.com/bitcoin/transactions?a=month,median(fee_usd)# - медианные комиссии за транзакции в Bitcoin по месяцам
 * https://api.blockchair.com/ethereum/blocks?a=miner,sum(generation)&s=sum(generation)(desc)# - список майнеров (кроме майнеров анклов) Ethereum (отсортированный по количеству созданных монет)
 * https://api.blockchair.com/bitcoin-cash/blocks?a=sum(fee_total_usd)&q=id(478559..)# - сколько майнеры собрали на комиссиях в Bitcoin Cash с момента форка
-    
+
 Чтобы использовать агрегирование, укажите поля по которым вы хотите группировать (ни одного, одно, или несколько), и поля, которые вы хотите посчитать с помощью функций агрегирования (как минимум одно) в секции `?a=`. Вы также можете отсортировать результаты по одной из колонок (`asc` или `desc`), указанных в секции `?a=` используя секцию `?s=`, а также применить дополнительные фильтры (см. докуметацию для секции `?q=`)
 
 Возможные поля:
 * Bitcoin, Bitcoin Cash, Litecoin:
-    * Blocks
+    * [Blocks](#bitcoin-cashlitecoinmempoolblocks)
         * Группировка по: date (или week, month, year), version, guessed_miner
-        * Подсчёт: size, stripped_size (кроме BCH), weight (кроме BCH), transaction_count, witness_count, input_count, output_count, input_total, input_total_usd, output_total, output_total_usd, fee_total, fee_total_usd, fee_per_kb, fee_per_kb_usd, fee_per_kwu (кроме BCH), fee_per_kwu_usd (кроме BCH), cdd_total, generation, generation_usd, reward, reward_usd -- возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()
-    * Transactions
+        * Подсчёт: size, stripped_size (кроме BCH), weight (кроме BCH), transaction_count, witness_count, input_count, output_count, input_total, input_total_usd, output_total, output_total_usd, fee_total, fee_total_usd, fee_per_kb, fee_per_kb_usd, fee_per_kwu (кроме BCH), fee_per_kwu_usd (кроме BCH), cdd_total, generation, generation_usd, reward, reward_usd — возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()
+    * [Transactions](#bitcoin-cashlitecoinmempooltransactions)
         * Группировка по: block_id, date (или week, month, year), version, is_coinbase, has_witness (кроме BCH), input_count, output_count
-        * Подсчёт: size, weight (кроме BCH), input_count, output_count, input_total, input_total_usd, output_total, output_total_usd, fee, fee_usd, fee_per_kb, fee_per_kb_usd, fee_per_kwu (кроме BCH), fee_per_kwu_usd (кроме BCH), cdd_total -- возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()
-    * Outputs
+        * Подсчёт: size, weight (кроме BCH), input_count, output_count, input_total, input_total_usd, output_total, output_total_usd, fee, fee_usd, fee_per_kb, fee_per_kb_usd, fee_per_kwu (кроме BCH), fee_per_kwu_usd (кроме BCH), cdd_total — возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()
+    * [Outputs](#bitcoin-cashlitecoinmempooloutputs)
         * Группировка по: block_id, date (или week, month, year), type, is_from_coinbase, is_spendable, is_spent, spending_block_id, spending_date (no support for spending_week, spending_month, spending_year yet)
-        * Подсчёт: value, value_usd, spending_value_usd, lifespan, cdd -- возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()
+        * Подсчёт: value, value_usd, spending_value_usd, lifespan, cdd — возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()
 * Ethereum:
-    * Blocks
+    * [Blocks](#ethereummempoolblocks)
         * Группировка по: date (или week, month, year), miner
-        * Подсчёт: size, difficulty, gas_used, gas_limit, uncle_count, transaction_count, synthetic_transaction_count, call_count, synthetic_call_count, value_total, value_total_usd, internal_value_total, internal_value_total_usd, generation, generation_usd, uncle_generation, uncle_generation_usd, fee_total, fee_total_usd, reward, reward_usd -- возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()
-    * Uncles
+        * Подсчёт: size, difficulty, gas_used, gas_limit, uncle_count, transaction_count, synthetic_transaction_count, call_count, synthetic_call_count, value_total, value_total_usd, internal_value_total, internal_value_total_usd, generation, generation_usd, uncle_generation, uncle_generation_usd, fee_total, fee_total_usd, reward, reward_usd — возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()
+    * [Uncles](#ethereumuncles)
         * Группировка по: parent_block_id, date (или week, month, year), miner
-        * Подсчёт: size, difficulty, gas_used, gas_limit, generation, generation_usd -- возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()
-    * Transactions
+        * Подсчёт: size, difficulty, gas_used, gas_limit, generation, generation_usd — возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()
+    * [Transactions](#ethereummempooltransactions)
         * Группировка по: block_id, date (или week, month, year), failed, type
-        * Подсчёт: call_count, value, value_usd, internal_value, internal_value_usd, fee, fee_usd, gas_used, gas_limit, gas_price -- возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()
-    * Calls
+        * Подсчёт: call_count, value, value_usd, internal_value, internal_value_usd, fee, fee_usd, gas_used, gas_limit, gas_price — возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()
+    * [Calls](#ethereumcalls)
         * Группировка по: block_id, date (или week, month, year), failed, fail_reason, type, transferred
-        * Подсчёт: child_call_count, value, value_usd -- возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()  
+        * Подсчёт: child_call_count, value, value_usd — возможные функции: avg(field), median(field), min(field), max(field), sum(field), count()
 
 ##### Поддержка Omni Layer и Wormhole (с 18 сентября)
 
 * v.a1 - 18 сентября - В режиме альфа-версии добавлена поддержка Omni Layer в Bitcoin (`bitcoin/omni/properties`, `bitcoin/omni/dashboards/property/{id}` коллы, плюс ключ `_omni` в `bitcoin/dashboards/transaction` и ключ `_omni` в `bitcoin/dashboards/address`), а также поддержка Wormhole в Bitcoin Cash (`bitcoin-cash/wormhole/properties`, `bitcoin-cash/wormhole/dashboards/property/{id}` коллы, плюс ключ `_wormhole` в `bitcoin-cash/dashboards/transaction` и ключ `_wormhole` в `bitcoin-cash/dashboards/address`). Пожалуйста, не используйте тестируемые фичи в продакшене, будут изменения.
 
-#### Общие положения
+### Общие положения
 
 * Запрос к серверу идёт через протокол https GET-запросами к домену `api.blockchair.com`
-    
+
 * Ответ от сервера возвращает JSON-массив всегда состоящий из двух подмассивов:
     * `data` - содержит непосредственно отдаваемые данные
     * `context` - содержит мета-данные, например, возвращаемый код, время выполнения запроса и т.д.
-    
+
 * `data` может содержать либо ассоциативный массив (например, для `bitcoin/stats`), либо для infinitable-запросов ненумерованный (например, `bitcoin/blocks`), либо для dashboard-запросов ассоциативный, для которого ключами являются части запроса (например, для `bitcoin/dashboards/transactions/A,B` ключами будут `A` и `B`), а значениями - массивы информации.
 * `context` в зависимости от коллов может содержать в себе следующие полезные значения:
     * `context.code` - код ответа сервера, может вернуть:
@@ -73,22 +103,22 @@
     * `context.limit` - применённый лимит количества результатов
     * `context.offset` - применённый сдвиг нумерации результатов
     * `context.rows` - для infinitable-коллов содержит в себе количество возвращаемых строк
-    * `context.pre_rows` - для некоторых infinitable-коллов содержит в себе количество строк, которые должны были бы вернуться до склеивания одинаковых (примечание: подобная архитектура использутся только для таблиц `bitcoin[-cash].outputs`) 
-    * `context.total_rows` - сколько всего строк возвращает запрос 
+    * `context.pre_rows` - для некоторых infinitable-коллов содержит в себе количество строк, которые должны были бы вернуться до склеивания одинаковых (примечание: подобная архитектура использутся только для таблиц `bitcoin[-cash].outputs`)
+    * `context.total_rows` - сколько всего строк возвращает запрос
     * `context.api` - массив информации о состоянии API:
         * `context.api.version` - версия API
         * `context.api.last_major_update` - время последнего обновления, которое каким-либо образом утрачивает обратную совместимость
         * `context.api.next_major_update` - время следующего запланированного обновления, которое может изменить выдаваемые результаты, или `null`, если обновлений не запланировано
 		* `context.api.tested_features` - the list (comma-separated) of features with version numbers our API supports, but with no guarantee for backward compatibility if updated (in this case there will be no changes to `context.api.next_major_update` as well)
 		* `context.api.documentation` - an URL to the latest version of documentation
-        
+
 Примечание: разумно следить за `context.api.version` и, если `context.api.next_major_update` не `null`, уведомить себя и изучить changelog. В случае, если в changelog нет изменений, которые нарушат совместимость вашего приложения, следить за тем, чтобы значение `context.api.next_major_update` не стало больше текущего. В случае, если изменения есть, настроить логику приложения так, чтобы после указанного времени применялась новая логика. Дополнительное примечание: в случае, если обратная совместимость нарушается только для какого-то одного API-колла, то возможна ситуация, когда `context.api.next_major_update` будет не `null` только для этого колла.
 
 * Ограничение на количество запросов: на текущий момент мы допускаем не более 30 запросов в минуту к нашему API от одного пользователя. В случае превышения этого лимита будет выдаваться ошибка `402`. В случае злоупотребления, может быть заблокирован IP-адрес. Если вашему приложению необходимо большее количество запросов, пожалуйста, свяжитесь с нами по адресу <info@blockchair.com>. Если вам необходимо разово выгрузить большой объём информации, свяжитесь с нами по адресу <export@blockchair.com> и, в случае, если цель выгрузки академическая или исследовательская - вы получите данные бесплатно в удобном формате.
 
 * Отказ от ответственности: мы не гарантируем ни достоверность, ни целостность отдаваемой информации. Информация, выдаваемая нашим API не должна использоваться при принятии критически важных решений. Мы не гарантируем аптайм для нашего бесплатного API.
 
-#### Коллы для работы с infinitables (таблицы блокчейнов)
+#### Вызовы для работы с infinitables (таблицы блокчейнов)
 
 Возвращают информацию из таблиц в соответствии с фильтрами (`q`), сортировкой (`s`), лимитом (`limit`), и оффсетом (`offset`).
 
@@ -108,9 +138,9 @@
     * `ethereum/uncles` - содержит все анклы Ethereum, кроме тех, которые принадлежат последним 6 блокам
     * `ethereum/transactions` - содержит все транзакции Ethereum, кроме входящих в последние 6 блоков
     * `ethereum/calls` - содержит все коллы транзакций Ethereum, кроме входящих в последние 6 блоков
-    * `ethereum/mempool/blocks` - содержит последние 6 блоков Ethereum, некоторые колонки содержат null 
+    * `ethereum/mempool/blocks` - содержит последние 6 блоков Ethereum, некоторые колонки содержат null
     * `ethereum/mempool/transactions` - содержит все транзакции Ethereum из последних 6 блоков, а также находящиеся в мемпуле
-    
+
 Примечание: для быстроты работы наша архитектура содержит отдельные таблицы (`mempool*`) для неподтверждённых транзакций, а также для блоков, которые с определённой вероятностью могут форкнуться от основной цепи. Для Bitcoin, Bitcoin Cash, и Litecoin в `mempool*` содержится помимо мемпула последний блок, а для Ethereum - последние 6 блоков. Исключение: для Bitcoin, Bitcoin Cash, и Litecoin в таблице `blocks` также содержится информация о последнем блоке (это поведение может измениться в будущем). Для Ethereum мы не "проигрываем" транзакции целиком для последних 6 блоков, поэтому таблицы `mempool/calls` нет.
 
 **Фильтром** можно пользоваться следующим образом: `?q=field(value)[,field(value)...]`, где `field` - это колонка, по которой необходим фильтр, а `value` - значение, специальное значение или диапазон значений. Возможные колонки приведены в табличках ниже. Возможные выражения для значений:
@@ -149,7 +179,7 @@
 
 **Оффсет** используется в качестве пагинатора, например `?offset=10` вернёт следующие 10 результатов. `context.offset` принимает значение установленного `OFFSET`. Максимальное значение - 10000. Если нужна последняя страница, то проще и быстрее изменить направление сотировки на противоположное. Важно: при итерировании результатов крайне вероятна ситуация, что пул результатов увеличится, т.к. были найдены новые блоки. Для избежания увеличения пула надо добавлять дополнительное условие, ограничивающее сверху id блока значением, полученным в `context.state` в первом запросе.
 
-##### (bitcoin[-cash]|litecoin)/[mempool/]blocks
+#### (bitcoin[-cash]|litecoin)/[mempool/]blocks
 
 Возвращает информацию о блоках
 
@@ -206,7 +236,7 @@
 - (\*) - только для Bitcoin
 - сортировка по умолчанию - id DESC
 
-##### (bitcoin[-cash]|litecoin)/[mempool/]transactions
+#### (bitcoin[-cash]|litecoin)/[mempool/]transactions
 
 Возвращает информацию о транзакциях
 
@@ -243,7 +273,7 @@
 - (\*) - только для Bitcoin
 - сортировка по умолчанию - id DESC
 
-##### (bitcoin[-cash]|litecoin)/[mempool/]outputs
+#### (bitcoin[-cash]|litecoin)/[mempool/]outputs
 
 Возвращает информацию о выходах (которые становятся входами, когда тратятся, и тогда о них появляется `spending*`-информация)
 
@@ -289,7 +319,7 @@
 - (\*) - только для Bitcoin
 - сортировка по умолчанию - transaction_id DESC
 
-##### ethereum/[mempool/]blocks
+#### ethereum/[mempool/]blocks
 
 Возвращает информацию о блоках
 
@@ -339,7 +369,7 @@
 
 Примечания:
 
-- (\*) - всегда равно `null` для `mempool/blocks` 
+- (\*) - всегда равно `null` для `mempool/blocks`
 - для столбцов `id` и `hash` повышенная эффективность при выгрузке одной записи
 - нет возможности поиска по столбцу `date` напрямую, есть возможность поиска `?q=time(YYYY-MM-DD)`
 - поиск по полям, в которых содержатся значения в wei (`value_total`, `internal_value_total`, `generation`, `uncle_generation`, `fee_total`, `reward`) может быть с погрешностями
@@ -347,7 +377,7 @@
 - разница между `value_total` и `internal_value_total` такова: к примеру, транзакция сама по себе передаёт 0 эфиров, но эта транзакция - вызов контракта, который кому-то передаёт, допустим, 10 эфиров. Тогда `value` будет 0 эфиров, а `internal_value` - 10 эфиров
 - сортировка по умолчанию - id DESC
 
-##### ethereum/uncles
+#### ethereum/uncles
 
 Возвращает информацию об анклах
 
@@ -389,7 +419,7 @@
 - поиск по столбцу `extra_data_hex` ведётся оператором `^`, также можно искать `~` по `extra_data_bin` (однако, поля `extra_data_bin` всё равно не будет в выдаче)
 - сортировка по умолчанию - parent_block_id DESC
 
-##### ethereum/[mempool/]transactions
+#### ethereum/[mempool/]transactions
 
 Возвращает информацию о транзакциях
 
@@ -430,7 +460,7 @@
 
 Примечания:
 
-- (\*) - всегда равно `null` для `mempool/transactions` 
+- (\*) - всегда равно `null` для `mempool/transactions`
 - (\*\*) - всегда равно `null` если `type` = `synthetic_coinbase`
 - для столбцов `id` и `hash` повышенная эффективность при выгрузке одной записи
 - нет возможности поиска по столбцу `date` напрямую, есть возможность поиска `?q=time(YYYY-MM-DD)`
@@ -445,7 +475,7 @@
     * create_tree - создание нового контракта, который начинает производить какие-либо коллы или создавать контракты сам
     * synthetic_coinbase - синтетическая транзакция начисления награды майнеру (блока или анкла)
 
-##### ethereum/calls
+#### ethereum/calls
 
 Возвращает информацию о коллах
 
@@ -479,18 +509,18 @@
 - сортировка по умолчанию - transaction_id DESC
 - сортировка по `index` - по алфавиту (т.е. "0.2" идет после "0.11"), в некоторых случаях используется переключение на натуральную сортировка (например, когда есть фильтр по `transaction_id`)
 
-##### Примечания
+### Примечания
 
 - для неподтверждённых транзакций (и выходов в случае bitcoin[-cash]) характерны следующие признаки:
     - их `block_id` равен `-1`
     - `date` и `time` указывают на время получения транзакции нашей нодой
 - при использовании `offset` разумно добавлять в фильтры максимальный номер блока (`?q=block_id(..N)`), т.к. очень вероятно, что за время итерирования добавятся новые записи в таблицу. Для удобства из первого результа любого запроса можно взять значение `context.state`, содержащее номер последнего блока на момент выполнения запроса и использовать далее именно его.
 
-#### Dashboard-коллы
+### Dashboard-вызовы
 
 API поддерживает ряд коллов, которые выдают какую-либо агрегированную информацию, или просто информацию в более удобном виде по определённым сущностям.
 
-##### (bitcoin[-cash]|litecoin|ethereum)/dashboards/block/{A} и (bitcoin[-cash]|ethereum)/dashboards/blocks/{A[,B,...]}
+#### (bitcoin[-cash]|litecoin|ethereum)/dashboards/block/{A} и (bitcoin[-cash]|ethereum)/dashboards/blocks/{A[,B,...]}
 
 На входе принимает высоту или хеш блока (блоков). `data` вовзращает массив, ключами которого являются высоты блоков или хеши блоков, а значениями массив из элементов:
 * `block` - информация о блоке в infinitable-формате `(bitcoin[-cash]|ethereum)/blocks`
@@ -500,14 +530,14 @@ API поддерживает ряд коллов, которые выдают к
 
 `context.results` содержит количество найденных блоков.
 
-##### ethereum/dashboards/uncle/{A} и ethereum/dashboards/uncles/{A[,B,...]}
+#### ethereum/dashboards/uncle/{A} и ethereum/dashboards/uncles/{A[,B,...]}
 
 На входе принимает хеш анкла (анклов). `data` вовзращает массив, ключами которого являются хеши анклов, а значениями массив из элементов:
 * `uncle` - информация о блоке в infinitable-формате `ethereum/uncles`
 
 `context.results` содержит количество найденных анклов.
 
-##### (bitcoin[-cash]|litecoin|ethereum)/dashboards/transaction/{A} и (bitcoin[-cash]|litecoin|ethereum)/dashboards/transactions/{A[,B,...]}
+#### (bitcoin[-cash]|litecoin|ethereum)/dashboards/transaction/{A} и (bitcoin[-cash]|litecoin|ethereum)/dashboards/transactions/{A[,B,...]}
 
 На входе принимает внутренний blockchair-id или хеш транзакции (транзакций). `data` вовзращает массив, ключами которого являются идентификаторы или хеши транзакций, а значениями массив из элементов:
 * `transaction` - информация о транзакции в infinitable-формате `bitcoin[-cash]/transactions`
@@ -517,11 +547,11 @@ API поддерживает ряд коллов, которые выдают к
 
 `context.results` содержит количество найденных транзакций.
 
-##### (bitcoin[-cash]|litecoin|ethereum)/dashboards/transaction/{hash}/priority
+#### (bitcoin[-cash]|litecoin|ethereum)/dashboards/transaction/{hash}/priority
 
 Для транзакций в мемпуле показывает приоритет (`position`) (для Bitcoin - по `fee_per_kwu`, для Bitcoin Cash - по `fee_per_kb`, для Ethereum - по `gas_price`) перед остальным транзакциями (всего `out_of` транзакций в мемпуле). В остальном имеет такую же структуру, как и колл `(bitcoin[-cash]|ethereum)/dashboards/transaction/{A}`
 
-##### (bitcoin[-cash]|litecoin)/dashboards/address/{A}
+#### (bitcoin[-cash]|litecoin)/dashboards/address/{A}
 
 На входе принимает адрес. `data` вовзращает массив из одного элемента (если адрес найден), ключом которого является сам адрес, а значениями массив из элементов:
 * `address`
@@ -539,14 +569,14 @@ API поддерживает ряд коллов, которые выдают к
     * `address.last_seen_receiving` - timestamp (UTC) когда последний раз этот адрес получал коины
     * `address.first_seen_spending` - timestamp (UTC) когда первый раз этот адрес отправлял коины
     * `address.last_seen_spending` - timestamp (UTC) когда последний раз этот адрес отправлял коины
-    * `address.transaction_count` - количество уникальных транзакций, в которых участвовал адрес 
-* `transactions` - массив последних 100 хешей транзакций, в которых участвовал адрес    
+    * `address.transaction_count` - количество уникальных транзакций, в которых участвовал адрес
+* `transactions` - массив последних 100 хешей транзакций, в которых участвовал адрес
 
 `context.results` содержит количество найденных адресов (0 или 1, пока не реализован колл `addresses`).
 
 Для итерирования `transactions` поддерживается `?offset=N`.
 
-##### ethereum/dashboards/address/{A}
+#### ethereum/dashboards/address/{A}
 
 На входе принимает адрес. `data` вовзращает массив из одного элемента (если адрес найден), ключом которого является сам адрес, а значениями массив из элементов:
 * `address`
@@ -570,7 +600,7 @@ API поддерживает ряд коллов, которые выдают к
     * `address.last_seen_receiving` - timestamp (UTC) когда последний раз этот адрес получал успешный входящий колл
     * `address.first_seen_spending` - timestamp (UTC) когда первый раз этот адрес отправлял успешный колл
     * `address.last_seen_spending` - timestamp (UTC) когда последний раз этот адрес отправлял успешный колл
-* `calls` - массив последних 100 коллов с участием адреса, каждый элемент - массив, содержащий следующие колонки из `ethereum/calls`: `block_id`, `transaction_hash`, `index`, `time`, `sender`, `recipient`, `value` , `value_usd` , `transferred` 
+* `calls` - массив последних 100 коллов с участием адреса, каждый элемент - массив, содержащий следующие колонки из `ethereum/calls`: `block_id`, `transaction_hash`, `index`, `time`, `sender`, `recipient`, `value` , `value_usd` , `transferred`
 
 `context.results` содержит количество найденных адресов (0 или 1, пока не реализован колл `addresses`).
 
@@ -580,7 +610,7 @@ API поддерживает ряд коллов, которые выдают к
 - (\*) - в этих колонках значение в wei может быть округлено. Для миллионов коллов погрешность может составлять более 1 эфира
 - (\*\*) - учитываются коллы, для которых ethereum/calls.transferred = true (см. докуменацию `ethereum/calls`), т.е. здесь не учитываются коллы, которые не меняют state (staticcall и т.д.), а также коллы, которые зафейлились
 
-##### (bitcoin[-cash]|litecoin|ethereum)/stats
+#### (bitcoin[-cash]|litecoin|ethereum)/stats
 
 Возвращает статистику по блокчейну массивом:
 * `blocks` - общее количество блоков
@@ -611,7 +641,7 @@ API поддерживает ряд коллов, которые выдают к
 * `market_dominance_percentage` - индекс доминации (сколько % от всего рынка криптовалют занимает рыночная капитализация монеты)
 ... и некоторые другие ключи с очевидными названиями
 
-##### stats
+#### stats
 
 Возвращает инфорамацию сразу по четырём коллам:
 * `bitcoin/stats`
@@ -619,7 +649,7 @@ API поддерживает ряд коллов, которые выдают к
 * `ethereum/stats`
 * `litecoin/stats`
 
-#### Пример работы с API
+### Пример работы с API
 
 Допустим, нам требуется получать все последние транзакции из блокчейна Эфириума на сумму более 1 млн. долларов. Для этого необходимо составить следующий запрос:
 * `https://api.blockchair.com/ethereum/transactions?q=internal_value_usd(10000000..)&s=id(desc)`
@@ -634,7 +664,7 @@ API поддерживает ряд коллов, которые выдают к
 
 Увеличиваем значение offset пока не получим выборку с транзакцией, о которой мы уже знали.
 
-#### Поддержка
+### Поддержка
 
 * E-mail: [info@blockchair.com](mailto:info@blockchair.com)
 * Telegram-чат: [@Blockchair](https://telegram.me/Blockchair)
