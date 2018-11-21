@@ -1,37 +1,6 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.6 Documentation
+### [Blockchair.com](https://blockchair.com/) API v.2.0.6 Documentation
 
-![alt text](https://blockchair.com/images/logo_full.png "Blockchair logo")
-
-### Table of contents
-
-+ [Changelog](#changelog)
-  + [Tested features changelog](#tested-features-changelog)
-+ [General Provisions](#general-provisions)
-+ [Infinitable Calls (blockhain tables)](#infinitable-calls-blockhain-tables)
-+ Bitcoin, Bitcoin Cash, Litecoin
-  + [Blocks](#bitcoin-cashlitecoinmempoolblocks)
-  + [Transaction](#bitcoin-cashlitecoinmempooltransactions)
-  + [Outputs](#bitcoin-cashlitecoinmempooloutputs)
-+ Ethereum
-  + [Blocks](#ethereummempoolblocks)
-  + [Uncles](#ethereumuncles)
-  + [Transactions](#ethereummempooltransactions)
-  + [Calls](#ethereumcalls)
-+ [Notes](#notes)
-+ [Dashboard calls](#dashboard-calls)
-  + [Blocks](#bitcoin-cashlitecoinethereumdashboardsblocka-and-bitcoin-cashlitecoinethereumdashboardsblocksab)
-  + [Uncles (Ethereum)](#ethereumdashboardsunclea-and-ethereumdashboardsunclesab)
-  + [Transactions](#bitcoin-cashlitecoinethereumdashboardstransactiona-and-bitcoin-cashlitecoinethereumdashboardstransactionsab)
-  + [Unconfirmed transactions priority (in mempool)](#bitcoin-cashlitecoinethereumdashboardstransactionhashpriority)
-  + [Address (Bitcoin, Bitcoin Cash, Litecoin)](#bitcoin-cashlitecoindashboardsaddressa)
-  + [Address (Ethereum)](#ethereumdashboardsaddressa)
-  + [Stats](#bitcoin-cashlitecoinethereumstats)
-  + [General stats](#stats)
-+ [API request example](#api-request-examples)
-+ [Support](#support)
-
-
-### Changelog
+#### Changelog
 
 * v.2.0.6 - Oct 8th - Added data aggregation of blockchain data in beta mode, see `Data aggregation support` below
 * v.2.0.5 - Oct 8th - Fixed bug where `balance` and `received` for bitcoin[-cash]|litecoin addresses in the `{chain}/dashboards/address/{address}` call were calculated wrong if there were specific unconfirmed transactions
@@ -40,7 +9,7 @@
 * v.2.0.2 - Sep 9th - Added `address.contract_created` to the `ethereum/dashboards/address/{A}` call
 * v.2.0.1 - Sep 1st - Added Litecoin support
 
-### Tested features changelog
+#### Tested features changelog
 
 ##### Data aggregation support (since Oct 8th)
 
@@ -58,32 +27,32 @@ Possible fields:
 * Bitcoin, Bitcoin Cash, Litecoin:
     * Blocks table
         * Group by: date (or week, month, year), version, guessed_miner
-        * To calculate: size, stripped_size (except BCH), weight (except BCH), transaction_count, witness_count, input_count, output_count, input_total, input_total_usd, output_total, output_total_usd, fee_total, fee_total_usd, fee_per_kb, fee_per_kb_usd, fee_per_kwu (except BCH), fee_per_kwu_usd (except BCH), cdd_total, generation, generation_usd, reward, reward_usd — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
+        * To calculate: size, stripped_size (except BCH), weight (except BCH), transaction_count, witness_count, input_count, output_count, input_total, input_total_usd, output_total, output_total_usd, fee_total, fee_total_usd, fee_per_kb, fee_per_kb_usd, fee_per_kwu (except BCH), fee_per_kwu_usd (except BCH), cdd_total, generation, generation_usd, reward, reward_usd -- possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
     * Transactions table
         * Group by: block_id, date (or week, month, year), version, is_coinbase, has_witness (except BCH), input_count, output_count
-        * To calculate: size, weight (except BCH), input_count, output_count, input_total, input_total_usd, output_total, output_total_usd, fee, fee_usd, fee_per_kb, fee_per_kb_usd, fee_per_kwu (except BCH), fee_per_kwu_usd (except BCH), cdd_total — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
+        * To calculate: size, weight (except BCH), input_count, output_count, input_total, input_total_usd, output_total, output_total_usd, fee, fee_usd, fee_per_kb, fee_per_kb_usd, fee_per_kwu (except BCH), fee_per_kwu_usd (except BCH), cdd_total -- possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
     * Outputs table
         * Group by: block_id, date (or week, month, year), type, is_from_coinbase, is_spendable, is_spent, spending_block_id, spending_date (no support for spending_week, spending_month, spending_year yet)
-        * To calculate: value, value_usd, spending_value_usd, lifespan, cdd — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
+        * To calculate: value, value_usd, spending_value_usd, lifespan, cdd -- possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
 * Ethereum:
     * Blocks table
         * Group by: date (or week, month, year), miner
-        * To calculate: size, difficulty, gas_used, gas_limit, uncle_count, transaction_count, synthetic_transaction_count, call_count, synthetic_call_count, value_total, value_total_usd, internal_value_total, internal_value_total_usd, generation, generation_usd, uncle_generation, uncle_generation_usd, fee_total, fee_total_usd, reward, reward_usd — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
+        * To calculate: size, difficulty, gas_used, gas_limit, uncle_count, transaction_count, synthetic_transaction_count, call_count, synthetic_call_count, value_total, value_total_usd, internal_value_total, internal_value_total_usd, generation, generation_usd, uncle_generation, uncle_generation_usd, fee_total, fee_total_usd, reward, reward_usd -- possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
     * Uncles table
         * Group by: parent_block_id, date (or week, month, year), miner
-        * To calculate: size, difficulty, gas_used, gas_limit, generation, generation_usd — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
+        * To calculate: size, difficulty, gas_used, gas_limit, generation, generation_usd -- possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
     * Transactions table
         * Group by: block_id, date (or week, month, year), failed, type
-        * To calculate: call_count, value, value_usd, internal_value, internal_value_usd, fee, fee_usd, gas_used, gas_limit, gas_price — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
+        * To calculate: call_count, value, value_usd, internal_value, internal_value_usd, fee, fee_usd, gas_used, gas_limit, gas_price -- possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
     * Calls table
         * Group by: block_id, date (or week, month, year), failed, fail_reason, type, transferred
-        * To calculate: child_call_count, value, value_usd — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()  
+        * To calculate: child_call_count, value, value_usd -- possible functions: avg(field), median(field), min(field), max(field), sum(field), count()  
 
 ##### Omni Layer and Wormhole support (since Sep 18th)
 
 * v.a1 - Sep 18th - Added alpha support for Omni Layer in Bitcoin (`bitcoin/omni/properties`, `bitcoin/omni/dashboards/property/{id}` calls, plus `_omni` key in the `bitcoin/dashboards/transaction` call and `_omni` key in the `bitcoin/dashboards/address` call), and support for Wormhole in Bitcoin Cash (`bitcoin-cash/wormhole/properties`, `bitcoin-cash/wormhole/dashboards/property/{id}` calls, plus `_wormhole` key in the `bitcoin-cash/dashboards/transaction` call and `_wormhole` key in the `bitcoin-cash/dashboards/address` call). Please don't use this in production yet, there will be massive changes!
 
-### General Provisions
+#### General Provisions
 
 * Requests to our server should be made through the HTTPS protocol by GET requests to the domain `api.blockchair.com`
 
@@ -180,7 +149,7 @@ If you need to apply several sorts, you can list them by commas, similar to filt
 
 **Offset** can be used as a paginator, e.g., `?offset=10` returns the next 10 results. `context.offset` takes the value of the set `OFFSET`. The maximum value is 10000. If you need just the last page, it's easier and quicker to change the direction of the sorting to the opposite. Important: when iterating through the results, it is extremely likely that the number of rows in the database will increase because new blocks were found. To avoid that, you may add an additional condition that limits the block id to the value obtained in `context.state` in the first query.
 
-#### (bitcoin[-cash]|litecoin)/[mempool/]blocks
+##### (bitcoin[-cash]|litecoin)/[mempool/]blocks
 
 Returns data about blocks
 
@@ -237,7 +206,7 @@ Notes:
 - (\*) - only for Bitcoin
 - the default sorting - id DESC
 
-#### (bitcoin[-cash]|litecoin)/[mempool/]transactions
+##### (bitcoin[-cash]|litecoin)/[mempool/]transactions
 
 Returns transaction data
 
@@ -274,7 +243,7 @@ Notes:
 - (\*) - only for Bitcoin
 - the default sort is id DESC
 
-#### (bitcoin[-cash]|litecoin)/[mempool/]outputs
+##### (bitcoin[-cash]|litecoin)/[mempool/]outputs
 
 Returns information about the outputs (that become inputs when they are spent, and then `spending*` information appears)
 
@@ -320,7 +289,7 @@ Notes:
 - (\*) - only for Bitcoin
 - the default sort is - transaction_id DESC
 
-#### ethereum/[mempool/]blocks
+##### ethereum/[mempool/]blocks
 
 Returns block data
 
@@ -377,7 +346,7 @@ Notes:
 - the difference between `value_total` and `internal_value_total`: e.g., a transaction itself sends 0 eth, but this transaction is a call of a contract that sends someone, let's say, 10 eth. Then `value` will be 0 eth, and `internal_value` - 10 eth
 - the default sort is id DESC
 
-#### ethereum/uncles
+##### ethereum/uncles
 
 Returns information about uncles
 
@@ -419,7 +388,7 @@ Notes:
 - the search over `extra_data_hex` column can be done by the operator `^`, you can also use `~` for `extra_data_bin` (however, the field `extra_data_bin` will still not be shown)
 - sort by default - parent_block_id DESC
 
-#### ethereum/[mempool/]transactions
+##### ethereum/[mempool/]transactions
 
 Returns transaction information
 
@@ -475,7 +444,7 @@ Notes:
     * create_tree - create a new contract that create contracts or starts making calls
     * synthetic_coinbase - a synthetic transaction for awarding a reward to the miner (block or uncle)
 
-#### ethereum/calls
+##### ethereum/calls
 
 Returns information about calls
 
@@ -509,18 +478,18 @@ Notes:
 - the default sort is transaction_id DESC
 - sorting by `index` is alphabetical (ie "0.2" goes after "0.11"), in some cases a switch to natural sorting is used (for example, when there is a filter for `transaction_id`)
 
-#### Notes
+##### Notes
 
 - for unconfirmed transactions (and outputs in the case of bitcoin[-cash]), the following rules are applied:
     - their `block_id` is equal to `-1`
     - `date` and` time` indicate the time when the transaction was received by our node
 - when using `offset`, it is reasonable to add to the filters the maximum block number (`?q=block_id(..N)`), since it is very likely that during the iteration new rows will be added to the table. For convenience, you can take the value of `context.state` from the first result of any query containing the number of the latest block at the query time and use this result later on.
 
-### Dashboard calls
+#### Dashboard calls
 
 The API supports a number of calls that produce some aggregated data, or data in a more convenient form for certain entities.
 
-#### (bitcoin[-cash]|litecoin|ethereum)/dashboards/block/{A} and (bitcoin[-cash]|litecoin|ethereum)/dashboards/blocks/{A[,B,...]}
+##### (bitcoin[-cash]|litecoin|ethereum)/dashboards/block/{A} and (bitcoin[-cash]|litecoin|ethereum)/dashboards/blocks/{A[,B,...]}
 
 As the input data, it takes the height or hash of the block(s). `data` returns an array with block heights or block hashes used as keys, and arrays of elements as values:
 * `block` - information about the block in infinitable-format `(bitcoin[-cash]|ethereum)/blocks`
@@ -530,14 +499,14 @@ As the input data, it takes the height or hash of the block(s). `data` returns a
 
 `context.results` contains the number of found blocks.
 
-#### ethereum/dashboards/uncle/{A} and ethereum/dashboards/uncles/{A[,B,...]}
+##### ethereum/dashboards/uncle/{A} and ethereum/dashboards/uncles/{A[,B,...]}
 
 As the input data, it takes an uncle hash(es). `data` returns an array with uncle hashes used as keys, and arrays of elements as values:
 * `uncle` - information about the block in infinitable-format `ethereum/uncles`
 
 `context.results` contains the number of found uncles.
 
-#### (bitcoin[-cash]|litecoin|ethereum)/dashboards/transaction/{A} and (bitcoin[-cash]|litecoin|ethereum)/dashboards/transactions/{A[,B,...]}
+##### (bitcoin[-cash]|litecoin|ethereum)/dashboards/transaction/{A} and (bitcoin[-cash]|litecoin|ethereum)/dashboards/transactions/{A[,B,...]}
 
 At the input data, it takes an internal blockchair-id or a hash of a transaction (transactions). `data` returns an array with identifiers or hashes of transactions used as keys, and arrays of elements as keys:
 * `transaction` - transaction information in infinitable-format `bitcoin[-cash]/transactions`
@@ -547,11 +516,11 @@ At the input data, it takes an internal blockchair-id or a hash of a transaction
 
 `context.results` contains the number of found transactions.
 
-#### (bitcoin[-cash]|litecoin|ethereum)/dashboards/transaction/{hash}/priority
+##### (bitcoin[-cash]|litecoin|ethereum)/dashboards/transaction/{hash}/priority
 
 For mempool transactions shows priority (`position`) (for Bitcoin - by `fee_per_kwu`, for Bitcoin Cash - by `fee_per_kb`, for Ethereum - by `gas_price`) over other transactions (`out_of` mempool transactions). It has the same structure as the `(bitcoin[-cash]|ethereum)/dashboards/transaction/{A}` call
 
-#### (bitcoin[-cash]|litecoin)/dashboards/address/{A}
+##### (bitcoin[-cash]|litecoin)/dashboards/address/{A}
 
 Uses address as the input data. `data` returns an array with one element (if the address is found), in that case the address is the key, and the value is an array consisting of the following elements:
 * `address`
@@ -576,7 +545,7 @@ Uses address as the input data. `data` returns an array with one element (if the
 
 To iterate `transactions`, `?offset=N` is supported.
 
-#### ethereum/dashboards/address/{A}
+##### ethereum/dashboards/address/{A}
 
 Uses address as the input data. `data` returns an array with one element (if the address is found), in that case the address is the key, and the value is an array consisting of the following elements:
 * `address`
@@ -610,7 +579,7 @@ Notes:
 - (\*) - in these columns, the value in wei can be rounded. For a million of calls, the error can be more than 1 ether.
 - (\*\*) - counted only those calls that fit the following condition: ethereum/calls.transferred = true (see the `ethereum/calls` documentation), i.e. those calls as well as failed calls that do not change state (staticcall, etc.) are not considered
 
-#### (bitcoin[-cash]|litecoin|ethereum)/stats
+##### (bitcoin[-cash]|litecoin|ethereum)/stats
 
 Returns an array with blockchain statistics:
 * `blocks` - total number of blocks
@@ -641,7 +610,7 @@ Returns an array with blockchain statistics:
 * `market_dominance_percentage` - dominance index (how much % of the total cryptocurrency market is the market capitalization of the coin)
 ... there's also some other self-explanatory keys
 
-#### stats
+##### stats
 
 Returns data on four calls:
 * `bitcoin/stats`
@@ -649,7 +618,7 @@ Returns data on four calls:
 * `ethereum/stats`
 * `litecoin/stats`
 
-### API request examples
+#### API request examples
 
 Suppose we would like to receive all the latest transactions from the Ethereum blockchain which amount to more than $1M USD. The following request should be done for this:
 * `https://api.blockchair.com/ethereum/transactions?q=internal_value_usd(10000000..)&s=id(desc)`
@@ -664,7 +633,7 @@ From its result we save `context.state`, put it in a variable `_S_`, and further
 
 Increase offset value until getting a data set with the transaction that we already knew about.
 
-### Support
+#### Support
 
 * E-mail: [info@blockchair.com](mailto:info@blockchair.com)
 * Telegram chat: [@Blockchair](https://telegram.me/Blockchair)
