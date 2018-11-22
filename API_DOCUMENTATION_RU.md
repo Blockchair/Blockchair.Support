@@ -1,6 +1,6 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.6 - документация
+## [Blockchair.com](https://blockchair.com/) API v.2.0.7 - документация
 
-![alt text](https://blockchair.com/images/logo_full.png "Blockchair logo")
+![Blockchair logo](https://blockchair.com/images/logo_full.png "Blockchair logo")
 
 ### Содержание
 
@@ -28,10 +28,12 @@
   + [Статистика](#bitcoin-cashlitecoinethereumstats)
   + [Статистика по всем блокчейнам](#stats)
 + [Пример](#пример-работы-с-api)
++ [Broadcasting transactions](#broadcasting-transactions)
 + [Поддержка](#поддержка)
 
 ### Changelog
 
+* v.2.0.7 - Nov 22th - Now it's possible to broadcast transactions using our API, see [Broadcasting transactions](#broadcasting-transactions)
 * v.2.0.6 - 8 октября - В бета-режиме добавлена возможность агрегировать информацию из блокчейнов, см. `Поддержка агрегирования данных` ниже
 * v.2.0.5 - 8 октября - Исправлен баг с подсчётом `balance` и `received` у bitcoin[-cash]|litecoin-адресов в колле `{chain}/dashboards/address/{address}`, когда имелись специфические неподтверждённые транзакции
 * v.2.0.4 - 3 октября - Добавлены некоторые полезные поля к коллам `{chain}/stats`
@@ -663,6 +665,22 @@ API поддерживает ряд коллов, которые выдают к
 * `https://api.blockchair.com/ethereum/transactions?q=internal_value_usd(10000000..),block_id(.._S_)&s=id(desc)&offset=10`
 
 Увеличиваем значение offset пока не получим выборку с транзакцией, о которой мы уже знали.
+
+### Broadcasting transactions
+
+In order to broadcast a transaction into the network, you should make a POST request to `https://api.blockchair.com/{chain}/push/transaction` (where `{chain}` can be one of those: `bitcoin`, `bitcoin-cash`, `ethereum`, and `litecoin`) with `data` holding hex represenatation of a transaction (for Ethereum it should start with `0x`). An example:
+
+```
+curl -v --data "data=01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0704ffff001d0104ffffffff0100f2052a0100000043410496b538e853519c726a2c91e61ec11600ae1390813a627c66fb8be7947be63c52da7589379515d4e0a604f8141781e62294721166bf621e73a82cbf2342c858eeac00000000" https://api.blockchair.com/bitcoin/push/transaction
+```
+
+If the transaction has been successfully broadcast to the network, API will return a JSON response (code 200) containing `data` array with `transaction_hash` key holding the hash of the received transaction. In case of any error (wrong transaction format, spending already spent outputs, etc.) API returns status code 400.
+
+Example of a successful response:
+
+```
+{"data":{"transaction_hash": "0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098…"},"context":{"code":200,…
+```
 
 ### Поддержка
 
