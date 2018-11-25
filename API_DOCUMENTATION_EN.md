@@ -1,4 +1,4 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.7 Documentation
+## [Blockchair.com](https://blockchair.com/) API v.2.0.8 Documentation
 
 ![Blockchair logo](https://blockchair.com/images/logo_full.png "Blockchair logo")
 
@@ -29,11 +29,13 @@
   + [General stats](#stats)
 + [API request example](#api-request-examples)
 + [Broadcasting transactions](#broadcasting-transactions)
++ [Retrieving raw transactions](#retrieving-raw-transactions)
 + [Support](#support)
 
 
 ### Changelog
 
+* v.2.0.8 - Nov 26th - Add the ability to retrieve raw transaction data in hex, see [Retrieving raw transactions](#retrieving-raw-transactions)
 * v.2.0.7 - Nov 22th - Now it's possible to broadcast transactions using our API, see [Broadcasting transactions](#broadcasting-transactions)
 * v.2.0.6 - Oct 8th - Added data aggregation of blockchain data in beta mode, see `Data aggregation support` below
 * v.2.0.5 - Oct 8th - Fixed bug where `balance` and `received` for bitcoin[-cash]|litecoin addresses in the `{chain}/dashboards/address/{address}` call were calculated wrong if there were specific unconfirmed transactions
@@ -93,7 +95,7 @@ Possible fields:
 	* `data` - contains some data
 	* `context` - contains metadata, e.g., a status code, a query execution time, and so on.
 	
-* `data` can contain either an associative array (e.g., for `bitcoin/stats`), or for infinitable-queries (see below) - an unnumbered array (for example, `bitcoin/blocks`), or for dashboard-queries (see below) - an associative array with keys which are parts of the query (e.g., for `bitcoin/dashboards/transactions/A,B`, the keys are `A` and `B`), and with values ​- arrays of data.
+* `data` can contain either an associative array (e.g., for `bitcoin/stats`), or for infinitable-queries (see below) - an unnumbered array (for example, `bitcoin/blocks`), or for dashboard-queries (see below) - an associative array with keys which are parts of the query (e.g., for `bitcoin/dashboards/transactions/A,B`, the keys are `A` and `B`), and with values - arrays of data.
 * `context`, depending on the call type, can contain the following useful values:
 	* `context.code` - server response code, can return:
 		* `200` if the request succeeds
@@ -105,9 +107,9 @@ Possible fields:
 	* `context.results` - contains the number of found results for dashboard-calls
 	* `context.limit` - applied limit to the number of results
 	* `context.offset` - applied offset
-	* `context.rows` - ​​contains the number of returned rows for infinitable-calls 
-	* `context.pre_rows` - ​​for some infinitable-calls contains the number of rows that should've been returned before duplicate removal (note: this architecture is used for the `bitcoin[-cash].outputs` tables only)
-	* `context.total_rows` - ​​number of rows that a query returns
+	* `context.rows` - contains the number of returned rows for infinitable-calls 
+	* `context.pre_rows` - for some infinitable-calls contains the number of rows that should've been returned before duplicate removal (note: this architecture is used for the `bitcoin[-cash].outputs` tables only)
+	* `context.total_rows` - number of rows that a query returns
 	* `context.api` - an array of data on the status of the API:
 		* `context.api.version` - version of API
 		* `context.api.last_major_update` - time of the last update, that somehow broke backward compatibility
@@ -162,7 +164,7 @@ For `time*`-fields, the value can be specified in the following formats:
 * `YYYY-MM-DD`
 * `YYYY-MM`
 
-Inequalities are also supported for such values, but the left and right values ​​must be in the same format, e.g.: `bitcoin/blocks?q=time(2009-01-03..2009-01-31)`.
+Inequalities are also supported for such values, but the left and right values must be in the same format, e.g.: `bitcoin/blocks?q=time(2009-01-03..2009-01-31)`.
 
 If you need to list several filters, you need to sepatate them by commas in the `?q=` section, e.g., `bitcoin/blocks?q=id(500000..),coinbase_data_bin(~hello)`
 
@@ -681,6 +683,14 @@ Example of a successful response:
 ```
 {"data":{"transaction_hash": "0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098…"},"context":{"code":200,…
 ```
+
+### Retrieving raw transactions
+
+It's possible to get raw transaction data directly from our nodes. In order to do this you should make the following API call: `https://api.blockchair.com/{chain}/raw/transaction/{txhash}` (where `{chain}` can be one of those: `bitcoin`, `bitcoin-cash`, `ethereum`, and `litecoin`)
+
+The response contains two keys which are:
+* `raw_transaction` - raw transaction represented as hex string
+* `decoded_raw_transaction` (not available for Ethereum) - raw transaction encoded in JSON by our nodes. Please not that the structure of this JSON array may change as we upgrade our nodes, and this won't be reflected in our change logs.
 
 ### Support
 
