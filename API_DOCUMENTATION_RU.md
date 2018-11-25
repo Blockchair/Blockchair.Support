@@ -1,4 +1,4 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.7 - документация
+## [Blockchair.com](https://blockchair.com/) API v.2.0.8 - документация
 
 ![Blockchair logo](https://blockchair.com/images/logo_full.png "Blockchair logo")
 
@@ -29,10 +29,12 @@
   + [Статистика по всем блокчейнам](#stats)
 + [Пример](#пример-работы-с-api)
 + [Broadcasting transactions](#broadcasting-transactions)
++ [Retrieving raw transactions](#retrieving-raw-transactions)
 + [Поддержка](#поддержка)
 
 ### Changelog
 
+* v.2.0.8 - Nov 26th - Add the ability to retrieve raw transaction data in hex, see [Retrieving raw transactions](#retrieving-raw-transactions)
 * v.2.0.7 - Nov 22th - Now it's possible to broadcast transactions using our API, see [Broadcasting transactions](#broadcasting-transactions)
 * v.2.0.6 - 8 октября - В бета-режиме добавлена возможность агрегировать информацию из блокчейнов, см. `Поддержка агрегирования данных` ниже
 * v.2.0.5 - 8 октября - Исправлен баг с подсчётом `balance` и `received` у bitcoin[-cash]|litecoin-адресов в колле `{chain}/dashboards/address/{address}`, когда имелись специфические неподтверждённые транзакции
@@ -681,6 +683,14 @@ Example of a successful response:
 ```
 {"data":{"transaction_hash": "0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098…"},"context":{"code":200,…
 ```
+
+### Retrieving raw transactions
+
+It's possible to get raw transaction data directly from our nodes. In order to do this you should make the following API call: `https://api.blockchair.com/{chain}/raw/transaction/{txhash}` (where `{chain}` can be one of those: `bitcoin`, `bitcoin-cash`, `ethereum`, and `litecoin`)
+
+The response contains two keys which are:
+* `raw_transaction` - raw transaction represented as hex string
+* `decoded_raw_transaction` (not available for Ethereum) - raw transaction encoded in JSON by our nodes. Please not that the structure of this JSON array may change as we upgrade our nodes, and this won't be reflected in our change logs.
 
 ### Поддержка
 
