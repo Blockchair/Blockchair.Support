@@ -27,9 +27,10 @@
   + [Адрес Ethereum](#ethereumdashboardsaddressa)
   + [Статистика](#bitcoin-cashlitecoinethereumstats)
   + [Статистика по всем блокчейнам](#stats)
+  + [Статистика сети](#bitcoin-cashlitecoinnodes) 
 + [Пример](#пример-работы-с-api)
-+ [Broadcasting transactions](#broadcasting-transactions)
-+ [Retrieving raw transactions](#retrieving-raw-transactions)
++ [Рассылка транзакций](#рассылка-транзакций)
++ [Получение транзакций в сыром виде](#получение-транзакций-в-сыром-виде)
 + [Поддержка](#поддержка)
 
 ### Changelog
@@ -653,6 +654,17 @@ API поддерживает ряд коллов, которые выдают к
 * `ethereum/stats`
 * `litecoin/stats`
 
+#### (bitcoin[-cash]|litecoin)/nodes
+Возвращает информацию о доступных нодах.
+* `nodes` - ноды
+  * `version` - User Agent клиента
+  * `country` - страна (определяется по GeoIP)
+  * `height` - последний блок в цепочке ноды
+  * `flags` - флаги [сервисов](https://en.bitcoin.it/wiki/Protocol_documentation#version)
+* `count` - количество
+* `countries` - количество нод по странам
+* `versions` - количество нод по User Agent
+
 ### Пример работы с API
 
 Допустим, нам требуется получать все последние транзакции из блокчейна Эфириума на сумму более 1 млн. долларов. Для этого необходимо составить следующий запрос:
@@ -668,29 +680,29 @@ API поддерживает ряд коллов, которые выдают к
 
 Увеличиваем значение offset пока не получим выборку с транзакцией, о которой мы уже знали.
 
-### Broadcasting transactions
+### Рассылка транзакций
 
-In order to broadcast a transaction into the network, you should make a POST request to `https://api.blockchair.com/{chain}/push/transaction` (where `{chain}` can be one of those: `bitcoin`, `bitcoin-cash`, `ethereum`, and `litecoin`) with `data` holding hex represenatation of a transaction (for Ethereum it should start with `0x`). An example:
+Для рассылки транзакции по сети, нужно выполнить POST-запрос к `https://api.blockchair.com/{chain}/push/transaction` (где `{chain}` может быть: `bitcoin`, `bitcoin-cash`, `ethereum`, или `litecoin`) с `data`, содержащим транзакцию в сыром шестнадцатеричном виде (в Ethereum начинается с `0x`). Пример:
 
 ```
 curl -v --data "data=01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0704ffff001d0104ffffffff0100f2052a0100000043410496b538e853519c726a2c91e61ec11600ae1390813a627c66fb8be7947be63c52da7589379515d4e0a604f8141781e62294721166bf621e73a82cbf2342c858eeac00000000" https://api.blockchair.com/bitcoin/push/transaction
 ```
 
-If the transaction has been successfully broadcast to the network, API will return a JSON response (code 200) containing `data` array with `transaction_hash` key holding the hash of the received transaction. In case of any error (wrong transaction format, spending already spent outputs, etc.) API returns status code 400.
+Если транзакция была успешно разослана по сети, API вернёт JSON-ответ (код 200), содержищий массив `data` с ключом `transaction_hash`, содержащим хеш самой транзакции. В случае ошибки (неправильный формат транзакции, трата уже потраченных выходов, и т.д.) API вернёт код 400.
 
-Example of a successful response:
+Пример успешного ответа:
 
 ```
 {"data":{"transaction_hash": "0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098…"},"context":{"code":200,…
 ```
 
-### Retrieving raw transactions
+### Получение транзакций в сыром виде
 
-It's possible to get raw transaction data directly from our nodes. In order to do this you should make the following API call: `https://api.blockchair.com/{chain}/raw/transaction/{txhash}` (where `{chain}` can be one of those: `bitcoin`, `bitcoin-cash`, `ethereum`, and `litecoin`)
+Можно получить транзакцию в сыром виде напрямую от наших нод. Для этого требуется выполнить следующий API-запрос: `https://api.blockchair.com/{chain}/raw/transaction/{txhash}` (где `{chain}` может быть: `bitcoin`, `bitcoin-cash`, `ethereum`, или `litecoin`)
 
-The response contains two keys which are:
-* `raw_transaction` - raw transaction represented as hex string
-* `decoded_raw_transaction` (not available for Ethereum) - raw transaction encoded in JSON by our nodes. Please not that the structure of this JSON array may change as we upgrade our nodes, and this won't be reflected in our change logs.
+Ответ содержит два ключа:
+* `raw_transaction` — транзакция в сыром виде в шестнадцатеричной с.и.;
+* `decoded_raw_transaction` (недоступно для Ethereum) — транзакция в сыром виде в JSON. Пожалуйста, имейте в виду, что структура JSON-массива может измениться с обновлением наших нод, и это не будет отмечено в журнале изменений.
 
 ### Поддержка
 
