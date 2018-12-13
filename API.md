@@ -6,6 +6,7 @@
 
 ### Changelog
 
+* v.2.0.9 - Dec 13th - Added Bitcoin SV support in test mode (see `Bitcoin SV support below` below); updated aggregation abilities (see `Data aggregation support` below)
 * v.2.0.8 - Nov 26th - Add the ability to retrieve raw transaction data in hex, see `Retrieving raw transactions` in the docs
 * v.2.0.7 - Nov 22th - Now it's possible to broadcast transactions using our API, see `Broadcasting transactions` in the docs
 * v.2.0.6 - Oct 8th - Added data aggregation of blockchain data in beta mode, see `Data aggregation support` in the docs
