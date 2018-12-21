@@ -35,7 +35,7 @@
 
 ### Changelog
 
-* v.2.0.9 - Dec 13th - Added Bitcoin SV support in test mode (see `Bitcoin SV support below` below); updated aggregation abilities (see `Data aggregation support` below)
+* v.2.0.9 - Dec 13th - Added [Bitcoin SV support](#bitcoin-sv-support-since-dec-12th) in test mode; updated [aggregation abilities](#data-aggregation-support-since-oct-8th)
 * v.2.0.8 - Nov 26th - Added the ability to retrieve raw transaction data in hex, see [Retrieving raw transactions](#retrieving-raw-transactions)
 * v.2.0.7 - Nov 22th - Now it's possible to broadcast transactions using our API, see [Broadcasting transactions](#broadcasting-transactions)
 * v.2.0.6 - Oct 8th - Added data aggregation of blockchain data in beta mode, see `Data aggregation support` below
@@ -51,7 +51,7 @@
 
 * v.b1 - Dec 12th - Hooray! We're now providing data for the Bitcoin SV chain (BSV ticker). All API calls are fully compatible with Bitcoin Cash, i.e. if you need to request the latest nulldata (OP_RETURN) outputs, just replace `bitcoin-cash` with `bitcoin-sv`: https://api.blockchair.com/bitcoin-sv/outputs?q=type(nulldata)#
 
-Please note that SV support is in test mode, and not intended for production use until Bitcoin SV has a more clear roadmap (e.g. we won't be able to offer some functionality if blocks suddenly become larger than 1 exabyte...)
+Please note that Bitcoin SV support is in test mode, and not intended for production use until Bitcoin SV has a more clear roadmap (e.g. we won't be able to offer some functionality if blocks suddenly become larger than 1 exabyte...)
 
 ##### Data aggregation support (since Oct 8th)
 
@@ -680,7 +680,7 @@ Increase offset value until getting a data set with the transaction that we alre
 
 ### Broadcasting transactions
 
-In order to broadcast a transaction into the network, you should make a POST request to `https://api.blockchair.com/{chain}/push/transaction` (where `{chain}` can be one of those: `bitcoin`, `bitcoin-cash`, `ethereum`, and `litecoin`) with `data` holding hex represenatation of a transaction (for Ethereum it should start with `0x`). An example:
+In order to broadcast a transaction into the network, you should make a POST request to `https://api.blockchair.com/{chain}/push/transaction` (where `{chain}` can be one of those: `bitcoin`, `bitcoin-cash`, `ethereum`, or `litecoin`) with `data` holding hex represenatation of a transaction (for Ethereum it should start with `0x`). An example:
 
 ```
 curl -v --data "data=01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0704ffff001d0104ffffffff0100f2052a0100000043410496b538e853519c726a2c91e61ec11600ae1390813a627c66fb8be7947be63c52da7589379515d4e0a604f8141781e62294721166bf621e73a82cbf2342c858eeac00000000" https://api.blockchair.com/bitcoin/push/transaction
@@ -696,11 +696,11 @@ Example of a successful response:
 
 ### Retrieving raw transactions
 
-It's possible to get raw transaction data directly from our nodes. In order to do this you should make the following API call: `https://api.blockchair.com/{chain}/raw/transaction/{txhash}` (where `{chain}` can be one of those: `bitcoin`, `bitcoin-cash`, `ethereum`, and `litecoin`)
+It's possible to get raw transaction data directly from our nodes. In order to do this you should make the following API call: `https://api.blockchair.com/{chain}/raw/transaction/{txhash}` (where `{chain}` can be one of those: `bitcoin`, `bitcoin-cash`, `ethereum`, or `litecoin`)
 
 The response contains two keys which are:
 * `raw_transaction` - raw transaction represented as hex string
-* `decoded_raw_transaction` (not available for Ethereum) - raw transaction encoded in JSON by our nodes. Please not that the structure of this JSON array may change as we upgrade our nodes, and this won't be reflected in our change logs.
+* `decoded_raw_transaction` (not available for Ethereum) - raw transaction encoded in JSON by our nodes. Please note that the structure of this JSON array may change as we upgrade our nodes, and this won't be reflected in our change logs.
 
 ### Support
 
