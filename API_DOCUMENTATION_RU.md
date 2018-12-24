@@ -35,9 +35,9 @@
 
 ### Changelog
 
-* v.2.0.9 - Dec 12th - Added Bitcoin SV support in test mode (see `Bitcoin SV support below` below); updated aggregation abilities (see `Data aggregation support` below)
-* v.2.0.8 - Nov 26th - Add the ability to retrieve raw transaction data in hex, see [Retrieving raw transactions](#retrieving-raw-transactions)
-* v.2.0.7 - Nov 22th - Now it's possible to broadcast transactions using our API, see [Broadcasting transactions](#broadcasting-transactions)
+* v.2.0.9 - 12 декабря - Добавлена [поддержка Bitcoin SV](#поддержка-bitcoin-sv-с-12-декабря) в тестовом режиме; обновлены возможности [агрегации данных](#поддержка-агрегирования-данных-с-8-октября)
+* v.2.0.8 - 26 ноября - Появилась возможность получать транзакции в сыром виде, см. [Получение транзакций в сыром виде](#получение-транзакций-в-сыром-виде)
+* v.2.0.7 - 22 ноября - Появилась возможность рассылать транзакции через API, см. [Рассылка транзакций](#рассылка-транзакций)
 * v.2.0.6 - 8 октября - В бета-режиме добавлена возможность агрегировать информацию из блокчейнов, см. `Поддержка агрегирования данных` ниже
 * v.2.0.5 - 8 октября - Исправлен баг с подсчётом `balance` и `received` у bitcoin[-cash]|litecoin-адресов в колле `{chain}/dashboards/address/{address}`, когда имелись специфические неподтверждённые транзакции
 * v.2.0.4 - 3 октября - Добавлены некоторые полезные поля к коллам `{chain}/stats`
@@ -49,15 +49,15 @@
 
 ##### Поддержка Bitcoin SV (с 12 декабря)
 
-* v.b1 - Dec 12th - Hooray! We're now providing data for the Bitcoin SV chain (BSV ticker). All API calls are fully compatible with Bitcoin Cash, i.e. if you need to request the latest nulldata (OP_RETURN) outputs, just replace `bitcoin-cash` with `bitcoin-sv`: https://api.blockchair.com/bitcoin-sv/outputs?q=type(nulldata)#
+* v.b1 - 12 декабря - Ура! Теперь мы предоставляем данные по Bitcoin SV (BSV). Все API-вызовы совместимы с таковыми для Bitcoin Cash, например, если вы хотите получить последние nulldata-выходы (OP_RETURN), то просто замените `bitcoin-cash` на `bitcoin-sv`: https://api.blockchair.com/bitcoin-sv/outputs?q=type(nulldata)#
 
-Please note that SV support is in test mode, and not intended for production use until Bitcoin SV has a more clear roadmap (e.g. we won't be able to offer some functionality if blocks suddenly become larger than 1 exabyte...)
+Пожалуйста, имейте в виду, что поддержка Bitcoin SV осуществляется в тестовом режиме и не предназначена для использования в рабочей среде, пока Bitcoin SV не продемонстрирует более конструктивную дорожную карту (например, мы не сможем предоставить некоторый функционал, если блоки внезапно увеличатся до 1 экзабайта...)
 
 ##### Поддержка агрегирования данных (с 8 октября)
 
 * v.b1 - 8 октября - Внедрение возможности получать агрегированную информацию. Теперь вы можете использовать Blockchair не только для фильтрации и сортировки информации из блокчейнов, но и для агрегации данных.
 
-Please don't use this in production yet, there could be massive changes!
+Пожалуйста, не используйте это в рабочей среде, могут быть фундаментальные изменения!
 
 См. примеры:
 * https://api.blockchair.com/bitcoin/blocks?a=year,count()# - выдаёт количество блоков в Bitcoin по годам
