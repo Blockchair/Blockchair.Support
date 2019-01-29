@@ -1,4 +1,4 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.9 Documentation
+## [Blockchair.com](https://blockchair.com/) API v.2.0.10 Documentation
 
 ![Blockchair logo](https://blockchair.com/images/logo_full.png "Blockchair logo")
 
@@ -35,6 +35,7 @@
 
 ### Changelog
 
+* v.2.0.10 - Jan 29th 2019 - Added [Dogecoin support](#dogecoin-support-since-jan-29th-2019) in test mode
 * v.2.0.9 - Dec 13th - Added [Bitcoin SV support](#bitcoin-sv-support-since-dec-12th) in test mode; updated [aggregation abilities](#data-aggregation-support-since-oct-8th)
 * v.2.0.8 - Nov 26th - Added the ability to retrieve raw transaction data in hex, see [Retrieving raw transactions](#retrieving-raw-transactions)
 * v.2.0.7 - Nov 22th - Now it's possible to broadcast transactions using our API, see [Broadcasting transactions](#broadcasting-transactions)
@@ -43,9 +44,17 @@
 * v.2.0.4 - Oct 3rd - Added some new useful fields to `{chain}/stats` calls
 * v.2.0.3 - Sep 18th - Added `context.api.tested_features` with the list of features our API supports, but with no guarantee for backward compatibility if updated. Added Omni Layer and Wormhole support in testing mode (see the "Tested features changelog" below)
 * v.2.0.2 - Sep 9th - Added `address.contract_created` to the `ethereum/dashboards/address/{A}` call
-* v.2.0.1 - Sep 1st - Added Litecoin support
+* v.2.0.1 - Sep 1st 2018 - Added Litecoin support
 
 ### Tested features changelog
+
+##### Dogecoin support (since Jan 29th 2019)
+
+* v.rc1 - Jan 29th - We're now processing the Dogecoin chain. All API calls are fully compatible with Bitcoin Cash (i.e. replace `bitcoin-cash` with `dogecoin` in URLs) with a few exceptions:
+    * There's no node list for Dogecoin yet;
+    * The `blocks` table has one additional field called `is_aux` - it is a boolean field showing whether a block was mined using AuxPoW.
+    
+It is expected that Dogecoin will be out of beta mode very soon. Wow.
 
 ##### Bitcoin SV support (since Dec 12th)
 
@@ -53,7 +62,7 @@
 
 Please note that Bitcoin SV support is in test mode, and not intended for production use until Bitcoin SV has a more clear roadmap (e.g. we won't be able to offer some functionality if blocks suddenly become larger than 1 exabyte...)
 
-##### Data aggregation support (since Oct 8th)
+##### Data aggregation support (since Oct 8th 2018)
 
 * v.b2 - Dec 12th - Now it's possible to apply `?limit=` and `?offset=` sections to aggregated queries. `context.total_rows` now shows how many aggregated results are there, and `context.rows` shows how many are shown.
 * v.b1 - Oct 8th - Bringing the ability to obtain aggregated data. Now you can use Blockchair not only to filter and sort blockchain data, but also to aggregate it.
