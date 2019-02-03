@@ -1,4 +1,4 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.9 - документация
+## [Blockchair.com](https://blockchair.com/) API v.2.0.10 - документация
 
 ![Blockchair logo](https://blockchair.com/images/logo_full.png "Blockchair logo")
 
@@ -50,6 +50,7 @@
 
 ##### Dogecoin support (since Jan 29th 2019)
 
+* v.rc2 - Feb 2nd - Groundhog Day! Unlike for other coins, the latest Dogecoin block along with its transactions isn't stored in `mempool` tables anymore. `dogecoin/mempool/blocks` is now deprecated, while `dogecoin/mempool/transactions` and `dogecoin/mempool/outputs` show only mempool data.
 * v.rc1 - Jan 29th - We're now processing the Dogecoin chain. All API calls are fully compatible with Bitcoin Cash (i.e. replace `bitcoin-cash` with `dogecoin` in URLs) with a few exceptions:
     * There's no node list for Dogecoin yet;
     * The `blocks` table has one additional field called `is_aux` - it is a boolean field showing whether a block was mined using AuxPoW.
