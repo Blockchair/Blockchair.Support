@@ -50,6 +50,7 @@
 
 ##### Dogecoin support (since Jan 29th 2019)
 
+* v.rc3 - Feb 5th - It's now possible to retrieve the list of Dogecoin nodes using the `dogecoin/nodes` call (the output format is compatible with other coins)
 * v.rc2 - Feb 2nd - Groundhog Day! Unlike for other coins, the latest Dogecoin block along with its transactions isn't stored in `mempool` tables anymore. `dogecoin/mempool/blocks` is now deprecated, while `dogecoin/mempool/transactions` and `dogecoin/mempool/outputs` show only mempool data.
 * v.rc1 - Jan 29th - We're now processing the Dogecoin chain. All API calls are fully compatible with Bitcoin Cash (i.e. replace `bitcoin-cash` with `dogecoin` in URLs) with a few exceptions:
     * There's no node list for Dogecoin yet;
