@@ -6,6 +6,14 @@
 
 ### Changelog
 
+* v.2.0.11 - Feb 5th
+    * We're changing behavior of our `mempool` tables (for all supported coins except for Ethereum): now they don't contain the contents of the latest block (it was quite a clumsy thing to have both mempool transactions and transactions from the latest block in this table, but we've rebuilt our engine, so now `mempool` tables contain mempool content only, and it finally makes sense!). That means:
+        * `{chain}/mempool/blocks` is deprecated
+        * `{chain}/mempool/transactions` and `{chain}/mempool/outputs` now don't contain info from the latest block, while `{chain}/transactions` and `{chain}/outputs` do
+        * Before this update when using (undocumented) `export` functionality there was no information about the latest block at all, now there is
+        * The same change to Ethereum will come in one of the next updates
+    * Dogecoin is out of beta.
+    * Bitcoin SV is out of beta. Please note there's still a possibility that we won't be able to offer some functionality in the long term if blocks suddenly become larger than 1 exabyte, we're still waiting for a more clear development roadmap.
 * v.2.0.10 - Jan 29th, 2019 - Added Dogecoin support in test mode (see `Dogecoin support` in the docs)
 * v.2.0.9 - Dec 13th - Added Bitcoin SV support in test mode (see `Bitcoin SV support` in the docs); updated aggregation abilities (see `Data aggregation support` in the docs)
 * v.2.0.8 - Nov 26th - Added the ability to retrieve raw transaction data in hex, see `Retrieving raw transactions` in the docs
