@@ -1,4 +1,4 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.11 Documentation
+## [Blockchair.com](https://blockchair.com/) API v.2.0.12 Documentation
 
 ![Blockchair logo](https://blockchair.com/images/logo_full.png "Blockchair logo")
 
@@ -35,6 +35,7 @@
 
 ### Changelog
 
+* v.2.0.12 - Feb 12th - Fixed a bug in Ethereum where some contract creations were erroneously shown as failed (thanks Daniel Luca for noticing)
 * v.2.0.11 - Feb 5th
     * We're changing behavior of our `mempool` tables (for all supported coins except for Ethereum): now they don't contain the contents of the latest block (it was quite a clumsy thing to have both mempool transactions and transactions from the latest block in this table, but we've rebuilt our engine, so now `mempool` tables contain mempool content only, and it finally makes sense!). That means:
         * `{chain}/mempool/blocks` is deprecated. Hint: if you used `mempool/blocks` to get info about the latest block you can simply switch to using `blocks?limit=1`, e.g. `https://api.blockchair.com/bitcoin/blocks?limit=1`
