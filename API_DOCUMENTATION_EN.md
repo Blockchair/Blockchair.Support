@@ -1,4 +1,4 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.13 Documentation
+## [Blockchair.com](https://blockchair.com/) API v.2.0.14 Documentation
 
 ![Blockchair logo](https://blockchair.com/images/logo_full.png "Blockchair logo")
 
@@ -35,8 +35,15 @@
 
 ### Changelog
 
+* v.2.0.14 - Mar 6th
+    * Added xpub support in test mode. There's now support for retrieving info about multiple addresses using xpub keys. Use `https://api.blockchair.com/{chain/dashboards/xpub/{xpub}`. See `xpub support` in the docs.
+    * Extended data aggregation abilities (still in test mode), see `Data aggregation support` in the docs. Now it's possbile to find correlations with price, and use special functions (e.g. to calculate SegWit adoption). 
+    * We're DEPRECATING API v.1 and will be shutting it down on April 1st, 2019.
+    * We're DEPRECATING undocumented `?export=` functionality when exporting large datasets without an API key. This feature will be documented in one of the next updates.
+    * Full support for `CREATE2` in Ethereum (see `https://blockchair.com/ethereum/calls?q=type(create2)#`)
+    * When using CSV/TSV API (undocumented `?export=` functionality) amounts in USD are now shown as in the JSON API version (previously you had to divide them by 10000). `bitcoin.outputs.type`, `ethereum.transaction.type`, and `ethereum.calls.type` now yield strings (e.g. `pubkeyhash` instead of `2`).
 * v.2.0.13 - Feb 13th - Added support for Cyrillic characters in fulltext search, e.g. `https://api.blockchair.com/bitcoin/outputs?q=script_bin(~привет)`
-* v.2.0.12 - Feb 12th - Fixed a bug in Ethereum where some contract creations were erroneously shown as failed (thanks Daniel Luca for noticing)
+* v.2.0.12 - Feb 12th - Fixed a bug in Ethereum where some contract creations were erroneously shown as failed (thanks Daniel Luca for noticing) 
 * v.2.0.11 - Feb 5th
     * We're changing behavior of our `mempool` tables (for all supported coins except for Ethereum): now they don't contain the contents of the latest block (it was quite a clumsy thing to have both mempool transactions and transactions from the latest block in this table, but we've rebuilt our engine, so now `mempool` tables contain mempool content only, and it finally makes sense!). That means:
         * `{chain}/mempool/blocks` is deprecated. Hint: if you used `mempool/blocks` to get info about the latest block you can simply switch to using `blocks?limit=1`, e.g. `https://api.blockchair.com/bitcoin/blocks?limit=1`
@@ -58,8 +65,21 @@
 
 ### Tested features changelog
 
+##### xpub support (since Mar 6th 2019)
+
+* v.b1 - Mar 6th - There's now support for retrieving info about multiple addresses using xpub keys. Use `https://api.blockchair.com/{chain}/dashboards/xpub/{xpub}` (where `{chain}` is one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, e.g. `https://api.blockchair.com/bitcoin/dashboards/xpub/xpub6CUGRUonZSQ4TWtTMmzXdrXDtypWKiKrhko4egpiMZbpiaQL2jkwSB1icqYh2cfDfVxdx4df189oLKnC5fSwqPfgyP3hooxujYzAu3fDVmz`). The response contains following keys:
+    * `xpub` - information about group of addresses, including its current balance (`xpub.balance`)
+    * `addresses` - array of addresses (returns the same schema as `https://api.blockchair.com/{chain}/dashboards/address/{addr}` with two exceptions: there's no `transaction_count` key, and there's `path key` showing xpub path)
+    * `transactions` - hashes of the latest transactions, iterable using `?offset=N` 
+
 ##### Data aggregation support (since Oct 8th 2018)
 
+* v.b3 - Mar 6th
+    * New function `price({ticker1}_{ticker2})` which shows the price if `date` (or one of: `week`, `month`, `year`) is also applied. E.g. it's now possible to build a chart showing correlation between price and transaction count: `https://api.blockchair.com/bitcoin/blocks?a=month,sum(transaction_count),price(btc_usd)`. Supported tickers: usd, btc, bch, bsv, eth, ltc, doge.
+    * Output values now have correct types (e.g. `sum(transaction_count)` is now integer instead of string).
+    * Now it's possible to use special functions and applying special filters to them. Two examples:
+        * `https://api.blockchair.com/bitcoin/blocks?a=date,f(sum(witness_count)/sum(transaction_count))&q=time(2017-08-24..)` - calculate SegWit adoption
+        * `https://api.blockchair.com/bitcoin/outputs?a=date,f(count()/count())&q=type(nulldata),time(2019-02)&aq=0:0` - calculate the percentage of nulldata outputs: the `?aq=0:0` section applies 0th condition to 0th function (NB: after that 0th condition isn't used in the `WHERE` clause)
 * v.b2 - Dec 12th - Now it's possible to apply `?limit=` and `?offset=` sections to aggregated queries. `context.total_rows` now shows how many aggregated results are there, and `context.rows` shows how many are shown.
 * v.b1 - Oct 8th - Bringing the ability to obtain aggregated data. Now you can use Blockchair not only to filter and sort blockchain data, but also to aggregate it.
 
