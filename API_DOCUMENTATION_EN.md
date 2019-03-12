@@ -1,4 +1,4 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.14 Documentation
+## [Blockchair.com](https://blockchair.com/) API v.2.0.15 Documentation
 
 ![Blockchair logo](https://blockchair.com/images/logo_full.png "Blockchair logo")
 
@@ -35,8 +35,9 @@
 
 ### Changelog
 
+* v.2.0.15 - Mar 12th - Added Dash support in test mode. We're supporting all the features for DASH as we support for other Satoshi-like coins. Additional columns: `blocks.cbtx`, `transactions.type` (possible types: `simple`, `proregtx`, `proupservtx`, `proupregtx`, `prouprevtx`, `cbtx`, `qctx`, `subtxregister`, `subtxtopup`, `subtxresetkey`, `subtxcloseaccount`), `transactions.is_instant_lock`, `transactions.is_special` (`true` for all transaction types except `simple`), `transactions.special_json` (contains special transaction data encoded in json). E.g.: `https://api.blockchair.com/dash/blocks`
 * v.2.0.14 - Mar 6th
-    * Added xpub support in test mode. There's now support for retrieving info about multiple addresses using xpub keys. Use `https://api.blockchair.com/{chain/dashboards/xpub/{xpub}`. See `xpub support` in the docs.
+    * Added xpub support in test mode. There's now support for retrieving info about multiple addresses using xpub keys. Use `https://api.blockchair.com/{chain}/dashboards/xpub/{xpub}`. See `xpub support` in the docs.
     * Extended data aggregation abilities (still in test mode), see `Data aggregation support` in the docs. Now it's possbile to find correlations with price, and use special functions (e.g. to calculate SegWit adoption). 
     * We're DEPRECATING API v.1 and will be shutting it down on April 1st, 2019.
     * We're DEPRECATING undocumented `?export=` functionality when exporting large datasets without an API key. This feature will be documented in one of the next updates.
@@ -64,6 +65,10 @@
 * v.2.0.1 - Sep 1st 2018 - Added Litecoin support
 
 ### Tested features changelog
+
+##### Dash support (since Mar 12th 2019)
+
+* v.rc1 - Mar 12th - We're supporting all the features for DASH as we support for other Satoshi-like coins. Additional columns: `blocks.cbtx`, `transactions.type` (possible types: `simple`, `proregtx`, `proupservtx`, `proupregtx`, `prouprevtx`, `cbtx`, `qctx`, `subtxregister`, `subtxtopup`, `subtxresetkey`, `subtxcloseaccount`), `transactions.is_instant_lock`, `transactions.is_special` (`true` for all transaction types except `simple`), `transactions.special_json` (contains special transaction data encoded in json).
 
 ##### xpub support (since Mar 6th 2019)
 
@@ -118,7 +123,7 @@ Possible fields:
         * Group by: block_id, date (or week, month, year), failed, fail_reason, type, transferred
         * To calculate: child_call_count, value, value_usd — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()  
 
-##### Omni Layer and Wormhole support (since Sep 18th)
+##### Omni Layer and Wormhole support (since Sep 18th 2018)
 
 * v.a1 - Sep 18th - Added alpha support for Omni Layer in Bitcoin (`bitcoin/omni/properties`, `bitcoin/omni/dashboards/property/{id}` calls, plus `_omni` key in the `bitcoin/dashboards/transaction` call and `_omni` key in the `bitcoin/dashboards/address` call), and support for Wormhole in Bitcoin Cash (`bitcoin-cash/wormhole/properties`, `bitcoin-cash/wormhole/dashboards/property/{id}` calls, plus `_wormhole` key in the `bitcoin-cash/dashboards/transaction` call and `_wormhole` key in the `bitcoin-cash/dashboards/address` call). Please don't use this in production yet, there will be massive changes!
 
