@@ -1,4 +1,4 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.15 Documentation
+## [Blockchair.com](https://blockchair.com/) API v.2.0.16 Documentation
 
 ![Blockchair logo](https://blockchair.com/images/logo_full.png "Blockchair logo")
 
@@ -35,6 +35,7 @@
 
 ### Changelog
 
+* v.2.0.16 - Mar 13th - Added support for ypub and zpub for Bitcoin and Litecoin in test mode. See `xpub support` in the docs.
 * v.2.0.15 - Mar 12th - Added Dash support in test mode. We're supporting all the features for DASH as we support for other Satoshi-like coins. Additional columns: `blocks.cbtx`, `transactions.type` (possible types: `simple`, `proregtx`, `proupservtx`, `proupregtx`, `prouprevtx`, `cbtx`, `qctx`, `subtxregister`, `subtxtopup`, `subtxresetkey`, `subtxcloseaccount`), `transactions.is_instant_lock`, `transactions.is_special` (`true` for all transaction types except `simple`), `transactions.special_json` (contains special transaction data encoded in json). E.g.: `https://api.blockchair.com/dash/blocks`
 * v.2.0.14 - Mar 6th
     * Added xpub support in test mode. There's now support for retrieving info about multiple addresses using xpub keys. Use `https://api.blockchair.com/{chain}/dashboards/xpub/{xpub}`. See `xpub support` in the docs.
@@ -72,6 +73,7 @@
 
 ##### xpub support (since Mar 6th 2019)
 
+* v.b2 - Mar 13th - We're bringing support for ypub and zpub as well (for Bitcoin and Litecoin). The endpoints are `https://api.blockchair.com/{chain}/dashboards/ypub/{ypub}` and `https://api.blockchair.com/{chain}/dashboards/zpub/{zpub}` (where `{chain}` is one of these: `bitcoin`, `litecoin`)
 * v.b1 - Mar 6th - There's now support for retrieving info about multiple addresses using xpub keys. Use `https://api.blockchair.com/{chain}/dashboards/xpub/{xpub}` (where `{chain}` is one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, e.g. `https://api.blockchair.com/bitcoin/dashboards/xpub/xpub6CUGRUonZSQ4TWtTMmzXdrXDtypWKiKrhko4egpiMZbpiaQL2jkwSB1icqYh2cfDfVxdx4df189oLKnC5fSwqPfgyP3hooxujYzAu3fDVmz`). The response contains following keys:
     * `xpub` - information about group of addresses, including its current balance (`xpub.balance`)
     * `addresses` - array of addresses (returns the same schema as `https://api.blockchair.com/{chain}/dashboards/address/{addr}` with two exceptions: there's no `transaction_count` key, and there's `path key` showing xpub path)
