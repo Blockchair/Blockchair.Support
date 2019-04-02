@@ -1,4 +1,4 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.17 Documentation
+## [Blockchair.com](https://blockchair.com/) API v.2.0.18 Documentation
 
 ![Blockchair logo](https://blockchair.com/images/logo_full.png "Blockchair logo")
 
@@ -35,14 +35,23 @@
 
 ### Changelog
 
+* v.2.0.18 - Apr 2nd
+    * Added biggest transactions over the last 24h to `https://api.blockchair.com/{chain}/stats` calls (`largest_transaction_24h` key);
+    * Updated xpub support to v.b3 (see `xpub support` in the docs, there are some breaking changes); 
+    * Updated aggregation support to v.b4 (see `Data aggregation support` in the docs)
+    * We're **DEPRECATING** usage of unsupported parameters in GET and POST requests to our API endpoints (e.g. `https://api.blockchair.com/stats?myarbitrarykey=1234` might result in a `400 Bad Request` error);
+    * Previously DEPRECATED API v.1 has been shut down
+    * Previously DEPRECATED undocumented `?export=` functionality now requires an API key (apply at <`info@blockchair.com`>) for everything except:
+        * Aggregated results
+        * `blocks` tables across all blockchains we support
 * v.2.0.17 - Mar 14th - Added support for Bitcoin SV nodes, they are now separate from Bitcoin Cash nodes. Endpoint: `https://api.blockchair.com/bitcoin-sv/nodes`.
 * v.2.0.16 - Mar 13th - Added support for ypub and zpub for Bitcoin and Litecoin in test mode. See `xpub support` in the docs.
 * v.2.0.15 - Mar 12th - Added Dash support in test mode. We're supporting all the features for DASH as we support for other Satoshi-like coins. Additional columns: `blocks.cbtx`, `transactions.type` (possible types: `simple`, `proregtx`, `proupservtx`, `proupregtx`, `prouprevtx`, `cbtx`, `qctx`, `subtxregister`, `subtxtopup`, `subtxresetkey`, `subtxcloseaccount`), `transactions.is_instant_lock`, `transactions.is_special` (`true` for all transaction types except `simple`), `transactions.special_json` (contains special transaction data encoded in json). E.g.: `https://api.blockchair.com/dash/blocks`
 * v.2.0.14 - Mar 6th
     * Added xpub support in test mode. There's now support for retrieving info about multiple addresses using xpub keys. Use `https://api.blockchair.com/{chain}/dashboards/xpub/{xpub}`. See `xpub support` in the docs.
     * Extended data aggregation abilities (still in test mode), see `Data aggregation support` in the docs. Now it's possbile to find correlations with price, and use special functions (e.g. to calculate SegWit adoption). 
-    * We're DEPRECATING API v.1 and will be shutting it down on April 1st, 2019.
-    * We're DEPRECATING undocumented `?export=` functionality when exporting large datasets without an API key. This feature will be documented in one of the next updates.
+    * We're **DEPRECATING** API v.1 and will be shutting it down on April 1st, 2019.
+    * We're **DEPRECATING** undocumented `?export=` functionality when exporting large datasets without an API key. This feature will be documented in one of the next updates.
     * Full support for `CREATE2` in Ethereum (see `https://blockchair.com/ethereum/calls?q=type(create2)#`)
     * When using CSV/TSV API (undocumented `?export=` functionality) amounts in USD are now shown as in the JSON API version (previously you had to divide them by 10000). `bitcoin.outputs.type`, `ethereum.transaction.type`, and `ethereum.calls.type` now yield strings (e.g. `pubkeyhash` instead of `2`).
 * v.2.0.13 - Feb 13th - Added support for Cyrillic characters in fulltext search, e.g. `https://api.blockchair.com/bitcoin/outputs?q=script_bin(~привет)`
@@ -74,6 +83,10 @@
 
 ##### xpub support (since Mar 6th 2019)
 
+* v.b3 - Apr 2nd
+    * Fixed a bug where unconfirmed balance didn't show up for xpubs
+    * Some optimizations to the address calculation process have been made, now response is generated 2.5-3x times faster
+    * Breaking change: paths for ypub, zpub (and possibly in the future for ltub, etc.) now all start with `https://api.blockchair.com/{chain}/dashboards/xpub/`, i.e. to use ypub functionality you'll need to use `https://api.blockchair.com/{chain}/dashboards/xpub/{ypub}` instead of `https://api.blockchair.com/{chain}/dashboards/ypub/{ypub}`
 * v.b2 - Mar 13th - We're bringing support for ypub and zpub as well (for Bitcoin and Litecoin). The endpoints are `https://api.blockchair.com/{chain}/dashboards/ypub/{ypub}` and `https://api.blockchair.com/{chain}/dashboards/zpub/{zpub}` (where `{chain}` is one of these: `bitcoin`, `litecoin`)
 * v.b1 - Mar 6th - There's now support for retrieving info about multiple addresses using xpub keys. Use `https://api.blockchair.com/{chain}/dashboards/xpub/{xpub}` (where `{chain}` is one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, e.g. `https://api.blockchair.com/bitcoin/dashboards/xpub/xpub6CUGRUonZSQ4TWtTMmzXdrXDtypWKiKrhko4egpiMZbpiaQL2jkwSB1icqYh2cfDfVxdx4df189oLKnC5fSwqPfgyP3hooxujYzAu3fDVmz`). The response contains following keys:
     * `xpub` - information about group of addresses, including its current balance (`xpub.balance`)
@@ -82,6 +95,7 @@
 
 ##### Data aggregation support (since Oct 8th 2018)
 
+* v.b4 - Apr 2nd - Fixed a bug where some usd values under functions when exporting to TSV/CSV were multiplied by 10000. Use `&export=tsv` or `&export=csv` to export the dataset into the corresponding format, e.g.: `https://api.blockchair.com/bitcoin/transactions?a=date,avg(fee_usd)&q=time(2019-01-01..2019-04-01)&export=tsv` 
 * v.b3 - Mar 6th
     * New function `price({ticker1}_{ticker2})` which shows the price if `date` (or one of: `week`, `month`, `year`) is also applied. E.g. it's now possible to build a chart showing correlation between price and transaction count: `https://api.blockchair.com/bitcoin/blocks?a=month,sum(transaction_count),price(btc_usd)`. Supported tickers: usd, btc, bch, bsv, eth, ltc, doge.
     * Output values now have correct types (e.g. `sum(transaction_count)` is now integer instead of string).
