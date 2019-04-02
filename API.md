@@ -6,6 +6,15 @@
 
 ### Changelog
 
+* v.2.0.18 - Apr 2nd
+    * Added biggest transactions over the last 24h to `https://api.blockchair.com/{chain}/stats` calls (`largest_transaction_24h` key);
+    * Updated xpub support to v.b3 (see `xpub support` in the docs, there are some breaking changes); 
+    * Updated aggregation support to v.b4 (see `Data aggregation support` in the docs)
+    * We're **DEPRECATING** usage of unsupported parameters in GET and POST requests to our API endpoints (e.g. `https://api.blockchair.com/stats?myarbitrarykey=1234` might result in a `400 Bad Request` error);
+    * Previously DEPRECATED API v.1 has been shut down
+    * Previously DEPRECATED undocumented `?export=` functionality now requires an API key (apply at <`info@blockchair.com`>) for everything except:
+        * Aggregated results
+        * `blocks` tables across all blockchains we support
 * v.2.0.17 - Mar 14th - Added support for Bitcoin SV nodes, they are now separate from Bitcoin Cash nodes. Endpoint: `https://api.blockchair.com/bitcoin-sv/nodes`.
 * v.2.0.16 - Mar 13th - Added support for ypub and zpub for Bitcoin and Litecoin in test mode. See `xpub support` in the docs.
 * v.2.0.15 - Mar 12th - Added Dash support in test mode. We're supporting all the features for DASH as we support for other Satoshi-like coins. Additional columns: `blocks.cbtx`, `transactions.type` (possible types: `simple`, `proregtx`, `proupservtx`, `proupregtx`, `prouprevtx`, `cbtx`, `qctx`, `subtxregister`, `subtxtopup`, `subtxresetkey`, `subtxcloseaccount`), `transactions.is_instant_lock`, `transactions.is_special` (`true` for all transaction types except `simple`), `transactions.special_json` (contains special transaction data encoded in json). E.g.: `https://api.blockchair.com/dash/blocks`
