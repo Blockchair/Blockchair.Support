@@ -1,4 +1,4 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.18 Documentation
+## [Blockchair.com](https://blockchair.com/) API v.2.0.19 Documentation
 
 ![Blockchair logo](https://blockchair.com/images/logo_full.png "Blockchair logo")
 
@@ -35,6 +35,11 @@
 
 ### Changelog
 
+* v.2.0.19 - Apr 17th
+    * Added alpha support for Ripple (see `Ripple support` in the docs)
+    * Introducing Graph API for Ethereum (a possibility to find connections between two Ethereum addresses), see `Ethereum graph` in the docs) - it's in private alpha test mode
+    * If you're constantly hitting Error 402 (i.e. by making too many requests per minute to our free API), you'll now receive Error 429 which means that your IP is banned for an hour. Not honoring our limits may result in a permanent ban
+    * Fixed a couple of minor bugs in our Ethereum engine. We'll be rolling out an updated engine the next week, there shouldn't be any compatibility breaking changes
 * v.2.0.18 - Apr 2nd
     * Added biggest transactions over the last 24h to `https://api.blockchair.com/{chain}/stats` calls (`largest_transaction_24h` key);
     * Updated xpub support to v.b3 (see `xpub support` in the docs, there are some breaking changes); 
@@ -43,7 +48,7 @@
     * Previously DEPRECATED API v.1 has been shut down
     * Previously DEPRECATED undocumented `?export=` functionality now requires an API key (apply at <`info@blockchair.com`>) for everything except:
         * Aggregated results
-        * `blocks` tables across all blockchains we support
+        * `blocks` and `mempool/*` tables across all blockchains we support
 * v.2.0.17 - Mar 14th - Added support for Bitcoin SV nodes, they are now separate from Bitcoin Cash nodes. Endpoint: `https://api.blockchair.com/bitcoin-sv/nodes`.
 * v.2.0.16 - Mar 13th - Added support for ypub and zpub for Bitcoin and Litecoin in test mode. See `xpub support` in the docs.
 * v.2.0.15 - Mar 12th - Added Dash support in test mode. We're supporting all the features for DASH as we support for other Satoshi-like coins. Additional columns: `blocks.cbtx`, `transactions.type` (possible types: `simple`, `proregtx`, `proupservtx`, `proupregtx`, `prouprevtx`, `cbtx`, `qctx`, `subtxregister`, `subtxtopup`, `subtxresetkey`, `subtxcloseaccount`), `transactions.is_instant_lock`, `transactions.is_special` (`true` for all transaction types except `simple`), `transactions.special_json` (contains special transaction data encoded in json). E.g.: `https://api.blockchair.com/dash/blocks`
@@ -76,6 +81,14 @@
 * v.2.0.1 - Sep 1st 2018 - Added Litecoin support
 
 ### Tested features changelog
+
+##### Ripple support (since Apr 17th 2019)
+
+* v.a1 - Apr 17th - Added alpha support for Ripple. We're not releasing the documentation for API yet, but we begin using it in our front end ourselves. If you're interested in participating in alpha test, drop us a line at <`info@blockchair.com`>
+
+##### Ethereum graph (since Apr 17th 2019)
+
+* v.a1 - Apr 17th - It's now possible to find connections between two Ethereum addresses using our API. Please note that since it's a resource consuming feature, it's available to our Private API users only (if you're interested in participating in alpha test, drop us a line at <`info@blockchair.com`>)
 
 ##### Dash support (since Mar 12th 2019)
 
