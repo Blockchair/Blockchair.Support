@@ -6,6 +6,11 @@
 
 ### Changelog
 
+* v.2.0.19 - Apr 17th
+    * Added alpha support for Ripple (see `Ripple support` in the docs)
+    * Introducing Graph API for Ethereum (a possibility to find connections between two Ethereum addresses), see `Ethereum graph` in the docs) - it's in private alpha test mode
+    * If you're constantly hitting Error 402 (i.e. by making too many requests per minute to our free API), you'll now receive Error 429 which means that your IP is banned for an hour. Not honoring our limits may result in a permanent ban
+    * Fixed a couple of minor bugs in our Ethereum engine. We'll be rolling out an updated engine the next week, there shouldn't be any compatibility breaking changes
 * v.2.0.18 - Apr 2nd
     * Added biggest transactions over the last 24h to `https://api.blockchair.com/{chain}/stats` calls (`largest_transaction_24h` key);
     * Updated xpub support to v.b3 (see `xpub support` in the docs, there are some breaking changes); 
