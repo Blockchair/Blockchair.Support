@@ -1,40 +1,40 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.19 Documentation
+## [Blockchair.com](https://blockchair.com/) API v.2.0.20 Documentation
 
 ![Blockchair logo](https://blockchair.com/images/logo_full.png "Blockchair logo")
 
 ### Table of contents
 
-+ [Changelog](#changelog)
-  + [Tested features changelog](#tested-features-changelog)
-+ [General Provisions](#general-provisions)
-+ [Infinitable Calls (blockhain tables)](#infinitable-calls-blockhain-tables)
-+ Bitcoin, Bitcoin Cash, Litecoin
-  + [Blocks](#bitcoin-cashlitecoinmempoolblocks)
-  + [Transaction](#bitcoin-cashlitecoinmempooltransactions)
-  + [Outputs](#bitcoin-cashlitecoinmempooloutputs)
-+ Ethereum
-  + [Blocks](#ethereummempoolblocks)
-  + [Uncles](#ethereumuncles)
-  + [Transactions](#ethereummempooltransactions)
-  + [Calls](#ethereumcalls)
-+ [Notes](#notes)
-+ [Dashboard calls](#dashboard-calls)
-  + [Blocks](#bitcoin-cashlitecoinethereumdashboardsblocka-and-bitcoin-cashlitecoinethereumdashboardsblocksab)
-  + [Uncles (Ethereum)](#ethereumdashboardsunclea-and-ethereumdashboardsunclesab)
-  + [Transactions](#bitcoin-cashlitecoinethereumdashboardstransactiona-and-bitcoin-cashlitecoinethereumdashboardstransactionsab)
-  + [Unconfirmed transactions priority (in mempool)](#bitcoin-cashlitecoinethereumdashboardstransactionhashpriority)
-  + [Address (Bitcoin, Bitcoin Cash, Litecoin)](#bitcoin-cashlitecoindashboardsaddressa)
-  + [Address (Ethereum)](#ethereumdashboardsaddressa)
-  + [Stats](#bitcoin-cashlitecoinethereumstats)
-  + [General stats](#stats)
-+ [API request example](#api-request-examples)
-+ [Broadcasting transactions](#broadcasting-transactions)
-+ [Retrieving raw transactions](#retrieving-raw-transactions)
-+ [Support](#support)
++ [Changelog](#link_changelog)
+  + [Tested features changelog](#link_testedfeatureschangelog)
++ [General Provisions](#link_generalprovisions)
++ [Dashboard calls](#link_dashboardcalls) (Retrieve information about various Bitcoin, Ethereum, Bitcoin Cash, Litecoin, Dash, Bitcoin SV, Dogecoin entities)
+  + [Block](#link_block)
+  + [Uncle](#link_uncle) (Ethereum only)
+  + [Transaction](#link_transaction)
+  + [Address](#link_bitcoinaddress)
+  + [Stats](#link_chainstats)
+  + [General stats](#link_stats)
++ [Infinitable Calls (blockhain tables)](#link_infinitablecalls) (Filter and sort blockchain data)
+    + Bitcoin, Bitcoin Cash, Litecoin, Dash, Bitcoin SV, Dogecoin:
+      + [Blocks](#link_bitcoinblocks)
+      + [Transaction](#link_bitcointransactions)
+      + [Outputs](#link_bitcoinoutputs)
+    + Ethereum:
+      + [Blocks](#link_ethereumblocks)
+      + [Uncles](#link_ethereumuncles)
+      + [Transactions](#link_ethereumtransactions)
+      + [Calls](#link_ethereumcalls)
++ Misc
+    + [API request example](#link_examples)
+    + [Broadcasting transactions](#link_broadcasting)
+    + [Retrieving raw transactions](#link_raw)
+    + [State changes](#link_state)
+    + [Support](#link_support)
 
+### <a name="link_changelog"></a> Changelog
 
-### Changelog
-
+* v.2.0.20 - Apr 19th
+    * Now it's possible to query state changes caused by a block for all chains we support except for ETH. The endpoint is `https://api.blockchair.com/{:chain}/state/changes/block/{:block_id)`. The response contains an array where the keys are addresses which were affected by the block, and the values are balance changes. Example: `https://api.blockchair.com/bitcoin/state/changes/block/1` returns `12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX => 5000000000` which means that the only state change caused by a block was rewarding the miner with 50 bitcoins. This is useful if you need to track balance changes for a lot of addresses - you can now simply track state changes and find the needed addresses there instead of constantly retrieving information about the balances.
 * v.2.0.19 - Apr 17th
     * Added alpha support for Ripple (see `Ripple support` in the docs)
     * Introducing Graph API for Ethereum (a possibility to find connections between two Ethereum addresses), see `Ethereum graph` in the docs) - it's in private alpha test mode
@@ -80,7 +80,7 @@
 * v.2.0.2 - Sep 9th - Added `address.contract_created` to the `ethereum/dashboards/address/{A}` call
 * v.2.0.1 - Sep 1st 2018 - Added Litecoin support
 
-### Tested features changelog
+### <a name="link_testedfeatureschangelog"></a> Tested features changelog
 
 ##### Ripple support (since Apr 17th 2019)
 
@@ -157,7 +157,7 @@ Possible fields:
 
 * v.a1 - Sep 18th - Added alpha support for Omni Layer in Bitcoin (`bitcoin/omni/properties`, `bitcoin/omni/dashboards/property/{id}` calls, plus `_omni` key in the `bitcoin/dashboards/transaction` call and `_omni` key in the `bitcoin/dashboards/address` call), and support for Wormhole in Bitcoin Cash (`bitcoin-cash/wormhole/properties`, `bitcoin-cash/wormhole/dashboards/property/{id}` calls, plus `_wormhole` key in the `bitcoin-cash/dashboards/transaction` call and `_wormhole` key in the `bitcoin-cash/dashboards/address` call). Please don't use this in production yet, there will be massive changes!
 
-### General Provisions
+### <a name="link_generalprovisions"></a> General Provisions
 
 * Requests to our server should be made through the HTTPS protocol by GET requests to the domain `api.blockchair.com`
 
@@ -193,7 +193,7 @@ Note: it makes sense to check `context.api.version` and, if `context.api.next_ma
 
 * Disclaimer: we do not guarantee the reliability or integrity of the provided information. Information provided by our API should not be used for making critical decisions. We do not guarantee an uptime for our free API.
 
-#### Infinitable Calls (blockhain tables)
+#### <a name="link_infinitablecalls"></a> Infinitable Calls (blockhain tables)
 
 Return data from the tables according to the filters (`q`), sorting (`s`), limit (`limit`), and offset (`offset`).
 
@@ -255,7 +255,7 @@ If you need to apply several sorts, you can list them by commas, similar to filt
 
 **Offset** can be used as a paginator, e.g., `?offset=10` returns the next 10 results. `context.offset` takes the value of the set `OFFSET`. The maximum value is 10000. If you need just the last page, it's easier and quicker to change the direction of the sorting to the opposite. Important: when iterating through the results, it is extremely likely that the number of rows in the database will increase because new blocks were found. To avoid that, you may add an additional condition that limits the block id to the value obtained in `context.state` in the first query.
 
-#### bitcoin/blocks, bitcoin-cash/blocks, bitcoin-sv/blocks, litecoin/blocks, dogecoin/blocks
+#### <a name="link_bitcoinblocks"></a> bitcoin/blocks, bitcoin-cash/blocks, bitcoin-sv/blocks, litecoin/blocks, dogecoin/blocks
 
 E.g. `https://api.blockchair.com/bitcoin/blocks`
 
@@ -317,7 +317,7 @@ Notes:
 - (\*\*) - only for Dogecoin
 - the default sorting - id DESC
 
-#### bitcoin/transactions, bitcoin/mempool/transactions, bitcoin-cash/transactions, bitcoin-cash/mempool/transactions, litecoin/transactions, litecoin/mempool/transactions, dogecoin/transactions, dogecoin/mempool/transactions
+#### <a name="link_bitcointransactions"></a> bitcoin/transactions, bitcoin/mempool/transactions, bitcoin-cash/transactions, bitcoin-cash/mempool/transactions, litecoin/transactions, litecoin/mempool/transactions, dogecoin/transactions, dogecoin/mempool/transactions
 
 E.g. `https://api.blockchair.com/dogecoin/mempool/transactions`
 
@@ -357,7 +357,7 @@ Notes:
 - the default sort is id DESC
 - `block_id` for mempool transactions is `-1`
 
-#### bitcoin/outputs, bitcoin/mempool/outputs, bitcoin-cash/outputs, bitcoin-cash/mempool/outputs, litecoin/outputs, litecoin/mempool/outputs, dogecoin/outputs, dogecoin/mempool/outputs
+#### <a name="link_bitcoinoutputs"></a> bitcoin/outputs, bitcoin/mempool/outputs, bitcoin-cash/outputs, bitcoin-cash/mempool/outputs, litecoin/outputs, litecoin/mempool/outputs, dogecoin/outputs, dogecoin/mempool/outputs
 
 E.g. `https://api.blockchair.com/litecoin/mempool/outputs`
 
@@ -405,7 +405,7 @@ Notes:
 - (\*) - only for Bitcoin and Litecoin (SegWit data)
 - the default sort is - transaction_id DESC
 
-#### ethereum/blocks, ethereum/mempool/blocks
+#### <a name="link_ethereumblocks"></a> ethereum/blocks, ethereum/mempool/blocks
 
 Returns block data (`mempool` contains the latest 6 blocks)
 
@@ -462,7 +462,7 @@ Notes:
 - the difference between `value_total` and `internal_value_total`: e.g., a transaction itself sends 0 eth, but this transaction is a call of a contract that sends someone, let's say, 10 eth. Then `value` will be 0 eth, and `internal_value` - 10 eth
 - the default sort is id DESC
 
-#### ethereum/uncles
+#### <a name="link_ethereumuncles"></a> ethereum/uncles
 
 Returns information about uncles
 
@@ -504,7 +504,7 @@ Notes:
 - the search over `extra_data_hex` column can be done by the operator `^`, you can also use `~` for `extra_data_bin` (however, the field `extra_data_bin` will still not be shown)
 - sort by default - parent_block_id DESC
 
-#### ethereum/transactions, ethereum/mempool/transactions
+#### <a name="link_ethereumtransactions"></a> ethereum/transactions, ethereum/mempool/transactions
 
 Returns transaction information
 
@@ -560,7 +560,7 @@ Notes:
     * create_tree - create a new contract that create contracts or starts making calls
     * synthetic_coinbase - a synthetic transaction for awarding a reward to the miner (block or uncle)
 
-#### ethereum/calls
+#### <a name="link_ethereumcalls"></a> ethereum/calls
 
 Returns information about internal calls
 
@@ -601,11 +601,11 @@ Notes:
     - `date` and` time` indicate the time when the transaction was received by our node
 - when using `offset`, it is reasonable to add to the filters the maximum block number (`?q=block_id(..N)`), since it is very likely that during the iteration new rows will be added to the table. For convenience, you can take the value of `context.state` from the first result of any query containing the number of the latest block at the query time and use this result later on.
 
-### Dashboard calls
+### <a name="link_dashboardcalls"></a> Dashboard calls
 
 The API supports a number of calls that produce some aggregated data, or data in a more convenient form for certain entities.
 
-#### {chain}/dashboards/block/{A} and {chain}/dashboards/blocks/{A[,B,...]}
+#### <a name="link_block"></a> {chain}/dashboards/block/{A} and {chain}/dashboards/blocks/{A[,B,...]}
 
 `{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `ethereum`
 
@@ -617,14 +617,14 @@ As the input data (`{A}`), it takes the height or hash of the block(s). `data` r
 
 `context.results` contains the number of found blocks.
 
-#### ethereum/dashboards/uncle/{A} and ethereum/dashboards/uncles/{A[,B,...]}
+#### <a name="link_uncle"></a> ethereum/dashboards/uncle/{A} and ethereum/dashboards/uncles/{A[,B,...]}
 
 As the input data (`{A}`), it takes an uncle hash(es). `data` returns an array with uncle hashes used as keys, and arrays of elements as values:
 * `uncle` - information about the block in infinitable-format `ethereum/uncles`
 
 `context.results` contains the number of found uncles.
 
-#### {chain}/dashboards/transaction/{A} and {chain}/dashboards/transactions/{A[,B,...]}
+#### <a name="link_transaction"></a> {chain}/dashboards/transaction/{A} and {chain}/dashboards/transactions/{A[,B,...]}
 
 `{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `ethereum`
 
@@ -636,13 +636,13 @@ At the input data, it takes an internal blockchair-id or a hash of a transaction
 
 `context.results` contains the number of found transactions.
 
-#### {chain}/dashboards/transaction/{hash}/priority
+#### <a name="link_priority"></a> {chain}/dashboards/transaction/{hash}/priority
 
 `{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `ethereum`
 
 For mempool transactions shows priority (`position`) (for Bitcoin - by `fee_per_kwu`, for Bitcoin Cash - by `fee_per_kb`, for Ethereum - by `gas_price`) over other transactions (`out_of` mempool transactions). It has the same structure as the `(bitcoin[-cash]|ethereum)/dashboards/transaction/{A}` call
 
-#### {chain}/dashboards/address/{A}
+#### <a name="link_bitcoinaddress"></a> {chain}/dashboards/address/{A}
 
 `{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`
 
@@ -669,7 +669,7 @@ Uses address as the input data. `data` returns an array with one element (if the
 
 To iterate `transactions`, `?offset=N` is supported.
 
-#### ethereum/dashboards/address/{A}
+#### <a name="link_ethereumaddress"></a> ethereum/dashboards/address/{A}
 
 Uses address as the input data. `data` returns an array with one element (if the address is found), in that case the address is the key, and the value is an array consisting of the following elements:
 * `address`
@@ -703,7 +703,7 @@ Notes:
 - (\*) - in these columns, the value in wei can be rounded. For a million of calls, the error can be more than 1 ether.
 - (\*\*) - counted only those calls that fit the following condition: ethereum/calls.transferred = true (see the `ethereum/calls` documentation), i.e. those calls as well as failed calls that do not change state (staticcall, etc.) are not considered
 
-#### {chain}/stats
+#### <a name="link_chainstats"></a> {chain}/stats
 
 `{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `ethereum`
 
@@ -736,7 +736,7 @@ Returns an array with blockchain statistics:
 * `market_dominance_percentage` - dominance index (how much % of the total cryptocurrency market is the market capitalization of the coin)
 ... there's also some other self-explanatory keys
 
-#### stats
+#### <a name="link_stats"></a> stats
 
 https://api.blockchair.com/stats
 
@@ -748,7 +748,7 @@ Returns data on six calls:
 * `bitcoin-sv/stats`
 * `dogecoin/stats`
 
-### API request examples
+### <a name="link_examples"></a> API request examples
 
 Suppose we would like to receive all the latest transactions from the Ethereum blockchain which amount to more than $1M USD. The following request should be done for this:
 * `https://api.blockchair.com/ethereum/transactions?q=internal_value_usd(10000000..)&s=id(desc)`
@@ -763,7 +763,7 @@ From its result we save `context.state`, put it in a variable `_S_`, and further
 
 Increase offset value until getting a data set with the transaction that we already knew about.
 
-### Broadcasting transactions
+### <a name="link_broadcasting"></a> Broadcasting transactions
 
 In order to broadcast a transaction into the network, you should make a POST request to `https://api.blockchair.com/{chain}/push/transaction` (where `{chain}` can be one of those: `bitcoin`, `bitcoin-cash`, `ethereum`, or `litecoin`) with `data` holding hex represenatation of a transaction (for Ethereum it should start with `0x`). An example:
 
@@ -779,7 +779,7 @@ Example of a successful response:
 {"data":{"transaction_hash": "0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098…"},"context":{"code":200,…
 ```
 
-### Retrieving raw transactions
+### <a name="link_raw"></a> Retrieving raw transactions
 
 It's possible to get raw transaction data directly from our nodes. In order to do this you should make the following API call: `https://api.blockchair.com/{chain}/raw/transaction/{txhash}` (where `{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `ethereum`)
 
@@ -787,7 +787,19 @@ The response contains two keys which are:
 * `raw_transaction` - raw transaction represented as hex string
 * `decoded_raw_transaction` (not available for Ethereum) - raw transaction encoded in JSON by our nodes. Please note that the structure of this JSON array may change as we upgrade our nodes, and this won't be reflected in our change logs.
 
-### Support
+### <a name="link_state"></a> State changes
+
+It's possible to query state changes caused by a block for all chains we support except for ETH.
+
+The endpoint is `https://api.blockchair.com/{:chain}/state/changes/block/{:block_id)`.
+
+The response contains an array where the keys are addresses which were affected by the block, and the values are balance changes.
+
+Example: `https://api.blockchair.com/bitcoin/state/changes/block/1` returns `12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX => 5000000000` which means that the only state change caused by a block was rewarding the miner with 50 bitcoins.
+
+This is useful if you need to track balance changes for a lot of addresses - you can now simply track state changes and find the needed addresses there instead of constantly retrieving information about the balances.
+
+### <a name="link_support"></a> Support
 
 * E-mail: [info@blockchair.com](mailto:info@blockchair.com)
 * Telegram chat: [@Blockchair](https://telegram.me/Blockchair)
