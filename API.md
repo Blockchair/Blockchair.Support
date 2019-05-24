@@ -8,6 +8,10 @@
 
 ### Changelog
 
+* v.2.0.23 - May 24th, 2019
+    * Added support for Dash nodes. The endpoint is `https://api.blockchair.com/dash/nodes`. The `stats` endpoint (`https://api.blockchair.com/dash/stats`) now also shows the node count.
+    * It's now possible to query Dash xpubs (see `xpub support` in the docs)
+    * Dash is now out of beta on our platform
 * v.2.0.22 - May 23rd, 2019
     * The state changes feature introduced in v.2.0.20 is now available for Ethereum. The endpoint is `https://api.blockchair.com/ethereum/state/changes/block/{:block_id}`. Please note that it shows only the balance changes caused by a block. Values are returned as strings because some wei values don't fit into int64.
     * Some optimizations to the Ethereum mempool processing - we now show a lot more unconfirmed transactions
