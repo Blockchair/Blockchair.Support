@@ -8,6 +8,8 @@
 
 ### Changelog
 
+* v.2.0.24 - Jun 6th, 2019
+    * Added an optional `countdowns` array to `{:chain}/stats` calls. If present, this array contains information about various upcoming events such as hard forks or reward halvings. There are two keys for each event: `event` which contains event description, and `time_left` showing how many seconds are left until the event occurs. Please note that the number of seconds is an approximate value because most events are triggered after a block at a specific height is mined, and since it's not possible to know for sure when a block becomes mined, we can only approximate that.
 * v.2.0.23 - May 24th, 2019
     * Added support for Dash nodes. The endpoint is `https://api.blockchair.com/dash/nodes`. The `stats` endpoint (`https://api.blockchair.com/dash/stats`) now also shows the node count.
     * It's now possible to query Dash xpubs (see `xpub support` in the docs)
