@@ -1,4 +1,4 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.24 Documentation
+## [Blockchair.com](https://blockchair.com/) API v.2.0.25 Documentation
 
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
@@ -34,6 +34,11 @@
 
 ### <a name="link_changelog"></a> Changelog
 
+
+* v.2.0.25 - Jun 19th, 2019
+    * Added Groestlcoin support (it has SegWit support, so all API functionality available for Bitcoin and Litecoin is available for Groestlcoin as well).
+    * Added `suggested_transaction_fee_per_byte_sat` key to `{:chain}/stats` calls. This value shows a good enough approximation of an optimal fee value suggested by our engine based on the current mempool state (in satoshi per byte) to get into the next block. Please note that for transactions less important for you this fee suggestion may be too high, while for very important transactions it may not be enough if you'll get unlucky because of the lack of new blocks. Supported for all coins except for Ripple and Ethereum for which we'll have a separate value suggesting an appropriate gas price value.
+    * Updated xpub support to v.b5 (see `xpub support` in the docs: two bugs have been fixed); 
 * v.2.0.24 - Jun 6th, 2019
     * Added an optional `countdowns` array to `{:chain}/stats` calls. If present, this array contains information about various upcoming events such as hard forks or reward halvings. There are two keys for each event: `event` which contains event description, and `time_left` showing how many seconds are left until the event occurs. Please note that the number of seconds is an approximate value because most events are triggered after a block at a specific height is mined, and since it's not possible to know for sure when a block becomes mined, we can only approximate that.
 * v.2.0.23 - May 24th, 2019
@@ -119,6 +124,10 @@
 
 ##### xpub support (since Mar 6th 2019)
 
+* v.b5 - Jun 19th
+    * Added support for Groestlcoin
+    * Fixed a bug where some addresses were missing if there were huge gaps between used address (according the BIP44 / BIP32 standards the maximum gap is currently set to 20). Thanks to the Groestlcoin team for providing us with some great xpub examples.
+    * Fixed a bug where some of xpubs containing a very large set of addresses (>100) returned a 500 error.
 * v.b4 - May 24th
     * Added support for Dash
 * v.b3 - Apr 2nd
@@ -154,27 +163,27 @@ See the examples:
 To use aggregation, put the fields by which you'd like to group by (zero, one, or several), and fields (at least one) which you'd like to calculate using some aggregate function under the `?a=` section. You can also sort the results by one of the fields included in the `?a=` section (`asc` or `desc`) using the `?s=` section, and apply additional filters (see the documentation for the `?q=` section).
 
 Possible fields:
-* Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash:
-    * [Blocks table](#bitcoin-cashlitecoinmempoolblocks)
+* Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin:
+    * Blocks table
         * Group by: date (or week, month, year), version, guessed_miner
         * To calculate: size, stripped_size (except BCH), weight (except BCH), transaction_count, witness_count, input_count, output_count, input_total, input_total_usd, output_total, output_total_usd, fee_total, fee_total_usd, fee_per_kb, fee_per_kb_usd, fee_per_kwu (except BCH), fee_per_kwu_usd (except BCH), cdd_total, generation, generation_usd, reward, reward_usd — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
-    * [Transactions table](#bitcoin-cashlitecoinmempooltransactions)
+    * Transactions table
         * Group by: block_id, date (or week, month, year), version, is_coinbase, has_witness (except BCH), input_count, output_count
         * To calculate: size, weight (except BCH), input_count, output_count, input_total, input_total_usd, output_total, output_total_usd, fee, fee_usd, fee_per_kb, fee_per_kb_usd, fee_per_kwu (except BCH), fee_per_kwu_usd (except BCH), cdd_total — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
-    * [Outputs table](#bitcoin-cashlitecoinmempooloutputs)
+    * Outputs table
         * Group by: block_id, date (or week, month, year), type, is_from_coinbase, is_spendable, is_spent, spending_block_id, spending_date (no support for spending_week, spending_month, spending_year yet)
         * To calculate: value, value_usd, spending_value_usd, lifespan, cdd — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
 * Ethereum:
-    * [Blocks table](#ethereummempoolblocks)
+    * Blocks table
         * Group by: date (or week, month, year), miner
         * To calculate: size, difficulty, gas_used, gas_limit, uncle_count, transaction_count, synthetic_transaction_count, call_count, synthetic_call_count, value_total, value_total_usd, internal_value_total, internal_value_total_usd, generation, generation_usd, uncle_generation, uncle_generation_usd, fee_total, fee_total_usd, reward, reward_usd — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
-    * [Uncles table](#ethereumuncles)
+    * Uncles table
         * Group by: parent_block_id, date (or week, month, year), miner
         * To calculate: size, difficulty, gas_used, gas_limit, generation, generation_usd — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
-    * [Transactions table](#ethereummempooltransactions)
+    * Transactions table
         * Group by: block_id, date (or week, month, year), failed, type
         * To calculate: call_count, value, value_usd, internal_value, internal_value_usd, fee, fee_usd, gas_used, gas_limit, gas_price — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
-    * [Calls table](#ethereumcalls)
+    * Calls table
         * Group by: block_id, date (or week, month, year), failed, fail_reason, type, transferred
         * To calculate: child_call_count, value, value_usd — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()  
 
@@ -233,7 +242,7 @@ E.g. `https://api.blockchair.com/bitcoin/blocks?q=size(1000000..)`
     * `bitcoin/outputs` - contains all Bitcoin outputs, excluding the outputs contained in the mempool transactions as well as in the transactions from the latest block
     * `bitcoin/mempool/transactions` - contains Bitcoin mempool transactions
 	* `bitcoin/mempool/outputs` - contains Bitcoin outputs included in mempool transactions
-* Bitcoin Cash, Bitcoin SV, Litecoin, Dogecoin, Dash - the same as for Bitcoin
+* Bitcoin Cash, Bitcoin SV, Litecoin, Dogecoin, Dash, Groestlcoin - the same as for Bitcoin
 * Ethereum:
 	* `ethereum/blocks` - contains all Ethereum blocks, except the last 6
 	* `ethereum/uncles` - contains all Ethereum uncles, except those that belong to the last 6 blocks
@@ -242,7 +251,7 @@ E.g. `https://api.blockchair.com/bitcoin/blocks?q=size(1000000..)`
 	* `ethereum/mempool/blocks` - contains the last 6 Ethereum blocks, some columns contain nulls
 	* `ethereum/mempool/transactions` - contains all Ethereum transactions from the last 6 blocks as well as mempool transactions 
 
-Notes: to speed up the process, our architecture contains separate tables (`mempool*`) for unconfirmed transactions, as well as for blocks that with a certain probability can be forked off from the main chain. For Bitcoin, Bitcoin Cash, and Litecoin, `mempool*` contains the latest block transactions in addition to mempool transactions, and for Ethereum, that's the latest 6 blocks plus the mempool. Exception: for Bitcoin, Bitcoin Cash, and Litecoin, the `blocks` table also contains information about the latest block (this may change in the future). For Ethereum, we do not "replay" transactions entirely (i.e. not looking for internal calls) for the last 6 blocks, so there is no `mempool/calls` table.
+Notes: to speed up the process, our architecture contains separate tables (`mempool*`) for unconfirmed transactions, as well as for blocks that with a certain probability can be forked off from the main chain. For Ethereum, that's the latest 6 blocks plus the mempool. For Ethereum, we do not "replay" transactions entirely (i.e. not looking for internal calls) for the last 6 blocks, so there is no `mempool/calls` table.
 
 **You can use filters** as follows: `?q=field(value)[,field(value)...]`, where `field` is the column by which a filter is needed, and `value` is a value, special value, or a range of values. The possible columns are listed in the tables below. Possible expressions for values:
 * `value` - e.g., ` bitcoin/blocks?q=id(0)` finds information about block 0
@@ -280,7 +289,7 @@ If you need to apply several sorts, you can list them by commas, similar to filt
 
 **Offset** can be used as a paginator, e.g., `?offset=10` returns the next 10 results. `context.offset` takes the value of the set `OFFSET`. The maximum value is 10000. If you need just the last page, it's easier and quicker to change the direction of the sorting to the opposite. Important: when iterating through the results, it is extremely likely that the number of rows in the database will increase because new blocks were found. To avoid that, you may add an additional condition that limits the block id to the value obtained in `context.state` in the first query.
 
-#### <a name="link_bitcoinblocks"></a> bitcoin/blocks, bitcoin-cash/blocks, bitcoin-sv/blocks, litecoin/blocks, dogecoin/blocks, dash/blocks
+#### <a name="link_bitcoinblocks"></a> bitcoin/blocks, bitcoin-cash/blocks, bitcoin-sv/blocks, litecoin/blocks, dogecoin/blocks, dash/blocks, groestlcoin/blocks
 
 E.g. `https://api.blockchair.com/bitcoin/blocks`
 
@@ -339,12 +348,12 @@ Notes:
 - for the columns `id` and` hash` the increased efficiency at unloading of one record is applied
 - there is no possibility to search over the `date` column directly, you can search like `?q=time(YYYY-MM-DD)`
 - the search over the column `coinbase_data_hex` is done by the operator `^`, you can also use `~` for `coinbase_data_bin` (however, the field `coinbase_data_bin` will not be shown anyway)
-- (\*) - only for Bitcoin and Litecoin (SegWit data)
+- (\*) - only for Bitcoin, Litecoin, and Groestlcoin (SegWit data)
 - (\*\*) - only for Dogecoin
 - (\*\*\*) - only for Dash
 - the default sorting - id DESC
 
-#### <a name="link_bitcointransactions"></a> bitcoin/transactions, bitcoin/mempool/transactions, bitcoin-cash/transactions, bitcoin-cash/mempool/transactions, litecoin/transactions, litecoin/mempool/transactions, dogecoin/transactions, dogecoin/mempool/transactions, dash/transactions, dash/mempool/transactions
+#### <a name="link_bitcointransactions"></a> bitcoin/transactions, bitcoin/mempool/transactions, bitcoin-cash/transactions, bitcoin-cash/mempool/transactions, litecoin/transactions, litecoin/mempool/transactions, dogecoin/transactions, dogecoin/mempool/transactions, dash/transactions, dash/mempool/transactions, groestlcoin/transaction, groestlcoin/mempool/transactions
 
 E.g. `https://api.blockchair.com/dogecoin/mempool/transactions`
 
@@ -380,7 +389,7 @@ Returns transaction data
 Notes:
 - for the columns `id` and` hash` the increased efficiency at unloading of one record is applied
 - there is no possibility to search over `date` column, you can use `?q=time(YYYY-MM-DD instead
-- (\*) - only for Bitcoin and Litecoin (SegWit data)
+- (\*) - only for Bitcoin, Litecoin, and Groestlcoin (SegWit data)
 - the default sort is id DESC
 - `block_id` for mempool transactions is `-1`
 
@@ -393,7 +402,7 @@ Additional Dash-specific columns:
 | is_special | boolean | | + | `true` for all transaction types except `simple` |
 | special_json | string `.*` | Special transaction data (encoded JSON) | | | |
 
-#### <a name="link_bitcoinoutputs"></a> bitcoin/outputs, bitcoin/mempool/outputs, bitcoin-cash/outputs, bitcoin-cash/mempool/outputs, litecoin/outputs, litecoin/mempool/outputs, dogecoin/outputs, dogecoin/mempool/outputs, dash/outputs, dash/mempool/outputs
+#### <a name="link_bitcoinoutputs"></a> bitcoin/outputs, bitcoin/mempool/outputs, bitcoin-cash/outputs, bitcoin-cash/mempool/outputs, litecoin/outputs, litecoin/mempool/outputs, dogecoin/outputs, dogecoin/mempool/outputs, dash/outputs, dash/mempool/outputs, groestlcoin/outputs, groestlcoin/mempool/outputs
 
 E.g. `https://api.blockchair.com/litecoin/mempool/outputs`
 
@@ -438,7 +447,7 @@ Notes:
 - for columns `transaction_id` and `spending_transaction_id`, the increased efficiency at unloading records if one specific transaction is specified (and not the range), is applied
 - there is no possibility to search over the `date` and `spending_date` columns, you can use `?q=time(YYYY-MM-DD)` and `?q=spending_time(YYYY-MM-DD)` instead
 - the search over `script_hex` column can be done by the operator `^`, you can also use `~` for `script_bin` (however, the field `script_bin` will still not be shown)
-- (\*) - only for Bitcoin and Litecoin (SegWit data)
+- (\*) - only for Bitcoin, Litecoin, and Groestlcoin (SegWit data)
 - the default sort is - transaction_id DESC
 
 #### <a name="link_ethereumblocks"></a> ethereum/blocks, ethereum/mempool/blocks
@@ -643,7 +652,7 @@ The API supports a number of calls that produce some aggregated data, or data in
 
 #### <a name="link_block"></a> {chain}/dashboards/block/{A} and {chain}/dashboards/blocks/{A[,B,...]}
 
-`{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `dash`, `ethereum`
+`{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `dash`, `ethereum`, `groestlcoin`
 
 As the input data (`{A}`), it takes the height or hash of the block(s). `data` returns an array with block heights or block hashes used as keys, and arrays of elements as values:
 * `block` - information about the block in infinitable-format `(bitcoin[-cash]|ethereum)/blocks`
@@ -662,7 +671,7 @@ As the input data (`{A}`), it takes an uncle hash(es). `data` returns an array w
 
 #### <a name="link_transaction"></a> {chain}/dashboards/transaction/{A} and {chain}/dashboards/transactions/{A[,B,...]}
 
-`{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `dash`, `ethereum`
+`{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `dash`, `ethereum`, `groestlcoin`
 
 At the input data, it takes an internal blockchair-id or a hash of a transaction (transactions). `data` returns an array with identifiers or hashes of transactions used as keys, and arrays of elements as keys:
 * `transaction` - transaction information in infinitable-format `bitcoin[-cash]/transactions`
@@ -674,13 +683,13 @@ At the input data, it takes an internal blockchair-id or a hash of a transaction
 
 #### <a name="link_priority"></a> {chain}/dashboards/transaction/{hash}/priority
 
-`{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `dash`, `ethereum`
+`{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `dash`, `ethereum`, `groestlcoin`
 
 For mempool transactions shows priority (`position`) (for Bitcoin - by `fee_per_kwu`, for Bitcoin Cash - by `fee_per_kb`, for Ethereum - by `gas_price`) over other transactions (`out_of` mempool transactions). It has the same structure as the `(bitcoin[-cash]|ethereum)/dashboards/transaction/{A}` call
 
 #### <a name="link_bitcoinaddress"></a> {chain}/dashboards/address/{A}
 
-`{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `dash`
+`{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `dash`, `groestlcoin`
 
 Uses address as the input data. `data` returns an array with one element (if the address is found), in that case the address is the key, and the value is an array consisting of the following elements:
 * `address`
@@ -741,7 +750,7 @@ Notes:
 
 #### <a name="link_chainstats"></a> {chain}/stats
 
-`{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `dash`, `ethereum`
+`{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `dash`, `ethereum`, `groestlcoin`
 
 Returns an array with blockchain statistics:
 * `blocks` - total number of blocks
@@ -749,10 +758,10 @@ Returns an array with blockchain statistics:
 * `transactions` - total number of transactions
 * (only ethereum) `calls` - total number of internal calls
 * `blocks_24h` - blocks for the last 24 hours
-* `circulation` for bitcoin[-cash]|litecoin, `circulation_approximate` for ethereum - number of coins in circulation (in Satoshi, or in wei for Ethereum - an approximate value)
+* `circulation` for Bitcoin-like cryptos, `circulation_approximate` for Ethereum - number of coins in circulation (in Satoshi, or in wei for Ethereum - an approximate value)
 * `transactions_24h` - transactions for the last 24 hours
 * `difficulty` - current difficulty
-* `volume_24h` for bitcoin[-cash]|litecoin, `volume_24h_approximate` for ethereum - monetary volume of transactions for the last 24 hours (for ethereum - an approximate value)
+* `volume_24h` for Bitcoin-like cryptos, `volume_24h_approximate` for Ethereum - monetary volume of transactions for the last 24 hours (for ethereum - an approximate value)
 * `mempool_transactions` - number of transactions in the mempool
 * (only ethereum) `mempool_median_gas_price` - median gas price in the mempool
 * (except ethereum) `mempool_size` - the mempool size in bytes
@@ -784,6 +793,7 @@ Returns data on seven calls:
 * `bitcoin-sv/stats`
 * `dogecoin/stats`
 * `dash/stats`
+* `groestlcoin/stats`
 
 ### <a name="link_examples"></a> API request examples
 
@@ -802,7 +812,7 @@ Increase offset value until getting a data set with the transaction that we alre
 
 ### <a name="link_broadcasting"></a> Broadcasting transactions
 
-In order to broadcast a transaction into the network, you should make a POST request to `https://api.blockchair.com/{chain}/push/transaction` (where `{chain}` can be one of those: `bitcoin`, `bitcoin-cash`, `ethereum`, or `litecoin`) with `data` holding hex represenatation of a transaction (for Ethereum it should start with `0x`). An example:
+In order to broadcast a transaction into the network, you should make a POST request to `https://api.blockchair.com/{:chain}/push/transaction` (where `{chain}` can be one of those: `bitcoin`, `bitcoin-cash`, `ethereum`, `litecoin`, `bitcoin-sv`, `dash`, `dogecoin`, `groestlcoin`) with `data` holding hex represenatation of a transaction (for Ethereum it should start with `0x`). An example:
 
 ```
 curl -v --data "data=01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0704ffff001d0104ffffffff0100f2052a0100000043410496b538e853519c726a2c91e61ec11600ae1390813a627c66fb8be7947be63c52da7589379515d4e0a604f8141781e62294721166bf621e73a82cbf2342c858eeac00000000" https://api.blockchair.com/bitcoin/push/transaction
@@ -818,19 +828,19 @@ Example of a successful response:
 
 ### <a name="link_raw"></a> Retrieving raw transactions
 
-It's possible to get raw transaction data directly from our nodes. In order to do this you should make the following API call: `https://api.blockchair.com/{chain}/raw/transaction/{txhash}` (where `{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `dash`, `ethereum`)
+It's possible to get raw transaction data directly from our nodes. In order to do this you should make the following API call: `https://api.blockchair.com/{:chain}/raw/transaction/{txhash}` (where `{:chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `dash`, `ethereum`, `groestlcoin`)
 
 The response contains two keys which are:
 * `raw_transaction` - raw transaction represented as hex string
 * `decoded_raw_transaction` (not available for Ethereum) - raw transaction encoded in JSON by our nodes. Please note that the structure of this JSON array may change as we upgrade our nodes, and this won't be reflected in our change logs.
 
-### <a name="link_nodes"></a> Node list: {chain}/nodes
+### <a name="link_nodes"></a> Node list: {:chain}/nodes
 
 Returns a list of full network nodes (except for Ethereum)
 
 ### <a name="link_state"></a> State changes
 
-It's possible to query state changes caused by a block for all chains we support.
+It's possible to query state changes caused by a block for all chains we support (except for Ripple).
 
 The endpoint is `https://api.blockchair.com/{:chain}/state/changes/block/{:block_id)`.
 
