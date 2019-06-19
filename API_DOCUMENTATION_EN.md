@@ -7,7 +7,7 @@
 + [Changelog](#link_changelog)
   + [Tested features changelog](#link_testedfeatureschangelog)
 + [General Provisions](#link_generalprovisions)
-+ [Dashboard calls](#link_dashboardcalls) (Retrieve information about various Bitcoin, Ethereum, Bitcoin Cash, Litecoin, Dash, Bitcoin SV, Dogecoin entities)
++ [Dashboard calls](#link_dashboardcalls) (Retrieve information about various Bitcoin, Ethereum, Bitcoin Cash, Litecoin, Dash, Bitcoin SV, Dogecoin, Groestlcoin entities)
   + [Block](#link_block)
   + [Uncle](#link_uncle) (Ethereum only)
   + [Transaction](#link_transaction)
@@ -15,7 +15,7 @@
   + [Stats](#link_chainstats)
   + [General stats](#link_stats)
 + [Infinitable Calls (blockhain tables)](#link_infinitablecalls) (Filter and sort blockchain data)
-    + Bitcoin, Bitcoin Cash, Litecoin, Dash, Bitcoin SV, Dogecoin:
+    + Bitcoin, Bitcoin Cash, Litecoin, Dash, Bitcoin SV, Dogecoin, Groestlcoin:
       + [Blocks](#link_bitcoinblocks)
       + [Transaction](#link_bitcointransactions)
       + [Outputs](#link_bitcoinoutputs)
