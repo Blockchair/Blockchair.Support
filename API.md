@@ -3,11 +3,32 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [API_DOCUMENTATION_EN.md](API_DOCUMENTATION_EN.md) (up to v.2.0.25)
+* English: [API_DOCUMENTATION_EN.md](API_DOCUMENTATION_EN.md) (up to v.2.0.26)
 * Russian: [API_DOCUMENTATION_RU.md](API_DOCUMENTATION_RU.md) (up to v.2.0.10)
 
 ### Changelog
 
+* v.2.0.26 - Jun 20th, 2019
+    * Added `utxo` array showing available unspent transaction outputs for Bitcoin-like coins to the following endpoints:
+        * `api.blockchair.com/{:chain}/dashboards/address/{:address}`
+        * `api.blockchair.com/{:chain}/dashboards/addresses/{:address1}[,{:address2}…]`
+        * `api.blockchair.com/{:chain}/dashboards/xpub/{:[xyz]pub}`
+      
+      Each array element has the following structure:
+        * `block_id` - block number (`-1` for unconfirmed outputs)
+        * `transaction_hash` - transaction hash
+        * `index` - output index in the transaction (also known as the `vout` number)
+        * `value` - output value in satoshi
+        * `address` (only for `addresses` and `xpub` dashboards) - showing the output owner
+      
+      This new functionality **DEPRECATES** usage of an old method to retrieve the UTXO set for an address, namely `api.blockchair.com/{:chain}/outputs?q=recipient({:address}),is_spent(false)`. See the discussion with some examples here: https://github.com/Blockchair/Blockchair.Support/issues/192
+    * The 3 above listed endpoints now also have a new way to iterate through the transaction list and the UTXO set. It's now possible to use `?limit=A,B` and `?offset=C,D` sections in the query. The first number affects the transaction list, the second number affects the UTXO set. If only one number is set, it affects both. The default `limit` is `100`. The maximum `limit` is `10000`. The default offset is `0`. The maximum offset is `1000000`. Here are some examples:
+        * `api.blockchair.com/{:chain}/dashboards/address/{:address}` - shows address data with an array of 100 latest transactions and 100 latest UTXOs
+        * `api.blockchair.com/{:chain}/dashboards/address/{:address}?limit=0` - if you require just some general stats like the address balance
+        * `api.blockchair.com/{:chain}/dashboards/address/{:address}?limit=0,100` - if you need just the general stats and the UTXO set
+        * `api.blockchair.com/{:chain}/dashboards/address/{:address}?limit=100,0` - if you need just the general stats and the transaction list
+        * `api.blockchair.com/{:chain}/dashboards/address/{:address}?limit=100,0&offset=100,0` - ... and to iterate it
+    * The `api.blockchair.com/{:chain}/dashboards/block/{:hash}|{:id}` endpoint now also has an iterable set of transaction hashes included in the block. The default `limit` is `100`. The maximum `limit` is `10000`. The default offset is `0`. The maximum offset is `1000000`. This feature implements https://github.com/Blockchair/Blockchair.Support/issues/189
 * v.2.0.25 - Jun 19th, 2019
     * Added Groestlcoin support (it has SegWit support, so all API functionality available for Bitcoin and Litecoin is available for Groestlcoin as well).
     * Added `suggested_transaction_fee_per_byte_sat` key to `{:chain}/stats` calls. This value shows a good enough approximation of an optimal fee value suggested by our engine based on the current mempool state (in satoshi per byte) to get into the next block. Please note that for transactions less important for you this fee suggestion may be too high, while for very important transactions it may not be enough if you'll get unlucky because of the lack of new blocks. Supported for all coins except for Ripple and Ethereum for which we'll have a separate value suggesting an appropriate gas price value.
