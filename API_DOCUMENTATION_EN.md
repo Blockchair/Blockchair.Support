@@ -1,4 +1,4 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.26 Documentation
+## [Blockchair.com](https://blockchair.com/) API v.2.0.27 Documentation
 
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
@@ -34,6 +34,9 @@
 
 ### <a name="link_changelog"></a> Changelog
 
+* v.2.0.27 - Jun 27th, 2019
+    * Effective July 19th, there will be a new policy on using our Public API for both non-commercial and commercial projects. Please see [Applying for an API key first](#link_apikey) and apply for an API key before July 19th! Since this is a major compatibility-breaking change, `context.api.next_major_update` is set to `2019-07-19 18:07:19` (see [General Provisions](#link_generalprovisions))
+    * Removed `ethereum.uncles.total_difficulty` column according to https://github.com/ethereum/go-ethereum/issues/19024
 * v.2.0.26 - Jun 20th, 2019
     * Added `utxo` array showing available unspent transaction outputs for Bitcoin-like coins to the following endpoints:
         * `api.blockchair.com/{:chain}/dashboards/address/{:address}`
@@ -247,7 +250,26 @@ Note: it makes sense to check `context.api.version` and, if `context.api.next_ma
 
 * Disclaimer: we do not guarantee the reliability or integrity of the provided information. Information provided by our API should not be used for making critical decisions. We do not guarantee an uptime for our free API.
 
-#### <a name="link_infinitablecalls"></a> Infinitable Calls (blockhain tables)
+#### <a name="link_apikey"></a> Please apply for an API key first
+
+tl;dr:
+* If you use our API occasionally a key is not required
+* Non-commercial and academic projects constantly using our API should apply for a free Public API key
+* Commercial projects should apply for a key to Premium API
+
+Since the introduction of our API more than two years ago it has been free to use in both non-commercial and commercial cases with a limit of 30 requests per minute. Obtaining an API key has been required only for those who were hitting this limit.
+
+**Beginning July 19th, 2019 we require all applications using our API to obtain an API key.**
+
+If you develop a non-commercial project (e.g. a website showing some stats) or conducting academic research, please apply for a free key to our Public API (<info@blockchair.com>).
+
+If you develop a commercial project (e.g. a web wallet showing ads), please apply for a key to our Premium API (<info@blockchair.com>).
+
+While we still allow making requests without a key, services which make too many resource-consuming requests may automatically be banned (the API will return HTTP Error 430 in this case).
+
+The key is applied to the end of the request string like this: `api.blockchair.com/bitcoin/blocks?key=MYSECRETKEY`. Please remember that your key is a secret -- don't disclose it to client-side applications as unauthorized users may start to use your key.
+
+### <a name="link_infinitablecalls"></a> Infinitable Calls (blockhain tables)
 
 Return data from the tables according to the filters (`q`), sorting (`s`), limit (`limit`), and offset (`offset`).
 
