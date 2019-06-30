@@ -904,6 +904,7 @@ The endpoint for mempool state changes is `https://api.blockchair.com/{:chain}/s
 
 Here's an example logic for an application watching for Bitcoin transactions incoming/outgoing to/from 1 million addresses:
 
+
 ```
 latest_known_block_height = 0
 addresses = [1Abc, 1Efg, 1Hij, ...]
@@ -912,10 +913,12 @@ while (true)
     if any of api_response.data keys are in the addresses array
         print 'Found new transaction in the mempool'
     if latest_known_block_height < api_response.context.state // A new block has been mined (context.state always yields the latest block number)
-        latest_known_block_height = api_response.context.state
-        api_response_block = api_request('https://api.blockchair.com/bitcoin/state/changes/block/{:api_response.context.state}')
-        if any of api_response_block.data keys are in the addresses array
-            print 'Found new transaction in the latest block'
+    	// it’s possible that while you’re requesting a block multiple new blocks can be found
+        for each block number {block} between latest_known_block_height and api_response.context.state do
+            latest_known_block_height = block
+            api_response_block = api_request('https://api.blockchair.com/bitcoin/state/changes/block/{:block}')
+            if any of api_response_block.data keys are in the addresses array
+                print 'Found new transaction in the {block}th block'
     sleep(10) // The mempool data is cached for 10 seconds on our servers by default
 ```
 
