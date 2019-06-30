@@ -1,4 +1,4 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.28 Documentation
+## [Blockchair.com](https://blockchair.com/) API v.2.0.29 Documentation
 
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
@@ -34,6 +34,8 @@
 
 ### <a name="link_changelog"></a> Changelog
 
+* v.2.0.29 - Jun 30th, 2019
+    * The [State changes](#link_state) feature now supports requesting potential state changes caused by mempool transactions. The endpoint is `https://api.blockchair.com/{:chain}/state/changes/mempool`. It's now possible to easily build an app watching for transactions incoming/outgoing to/from millions of addresses, see [an example](#link_state).
 * v.2.0.28 - Jun 28th, 2019
     * Added support for Groestlcoin nodes. The endpoint is `https://api.blockchair.com/groestlcoin/nodes`. The `stats` endpoint (`https://api.blockchair.com/groestlcoin/stats`) now also shows the node count.
 * v.2.0.27 - Jun 27th, 2019
@@ -895,6 +897,27 @@ Example: `https://api.blockchair.com/bitcoin/state/changes/block/1` returns `12c
 This is useful if you need to track balance changes for a lot of addresses - you can now simply track state changes and find the needed addresses there instead of constantly retrieving information about the balances.
 
 Note: values are returned as strings for Ethereum.
+
+It's also possible to query potential state changes caused by mempool transactions (this is not supported for Ethereum yet).
+
+The endpoint for mempool state changes is `https://api.blockchair.com/{:chain}/state/changes/mempool`.
+
+Here's an example logic for an application watching for Bitcoin transactions incoming/outgoing to/from 1 million addresses:
+
+```
+latest_known_block_height = 0
+addresses = [1Abc, 1Efg, 1Hij, ...]
+while (true)
+    api_response = api_request('https://api.blockchair.com/bitcoin/state/changes/mempool')
+    if any of api_response.data keys are in the addresses array
+        print 'Found new transaction in the mempool'
+    if latest_known_block_height < api_response.context.state // A new block has been mined (context.state always yields the latest block number)
+        latest_known_block_height = api_response.context.state
+        api_response_block = api_request('https://api.blockchair.com/bitcoin/state/changes/block/{:api_response.context.state}')
+        if any of api_response_block.data keys are in the addresses array
+            print 'Found new transaction in the latest block'
+    sleep(10) // The mempool data is cached for 10 seconds on our servers by default
+```
 
 ### <a name="link_support"></a> Support
 
