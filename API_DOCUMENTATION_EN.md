@@ -1,4 +1,4 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.29 Documentation
+## [Blockchair.com](https://blockchair.com/) API v.2.0.30 Documentation
 
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
@@ -16,14 +16,15 @@
   + [General stats](#link_stats)
 + [Infinitable Calls (blockhain tables)](#link_infinitablecalls) (Filter and sort blockchain data)
     + Bitcoin, Bitcoin Cash, Litecoin, Dash, Bitcoin SV, Dogecoin, Groestlcoin:
-      + [Blocks](#link_bitcoinblocks)
-      + [Transaction](#link_bitcointransactions)
-      + [Outputs](#link_bitcoinoutputs)
+      + [Blocks](#link_bitcoinblocks) (table)
+      + [Transaction](#link_bitcointransactions) (table)
+      + [Outputs](#link_bitcoinoutputs) (table)
+      + [Addresses](#link_bitcoinaddresses) (view)
     + Ethereum:
-      + [Blocks](#link_ethereumblocks)
-      + [Uncles](#link_ethereumuncles)
-      + [Transactions](#link_ethereumtransactions)
-      + [Calls](#link_ethereumcalls)
+      + [Blocks](#link_ethereumblocks) (table)
+      + [Uncles](#link_ethereumuncles) (table)
+      + [Transactions](#link_ethereumtransactions) (table)
+      + [Calls](#link_ethereumcalls) (table)
 + Misc
     + [API request example](#link_examples)
     + [Broadcasting transactions](#link_broadcasting)
@@ -34,6 +35,15 @@
 
 ### <a name="link_changelog"></a> Changelog
 
+* v.2.0.30 - Jul 4th, 2019
+    * We're adding a new table called `addresses` containing the list of all addresses and their confirmed balances to all Bitcoin-like coins (Bitcoin, Bitcoin Cash, Litecoin, Dash, Bitcoin SV, Dogecoin, Groestlcoin). Unlike other "infinitables" (`blocks`, `transactions`, `outputs`) this table isn't live, it's automatically updated every 5 minutes, thus we're classifying it as an "infiniview", meaning it's not really a table, but a view over the `outputs` table. See [the documentation](#link_bitcoinaddresses) for this table. Here are some examples of how it can be used:
+        * `api.blockchair.com/bitcoin/addresses` - show Bitcoin addresses with biggest balances (i.e. the rich list)
+        * `api.blockchair.com/bitcoin/addresses?q=balance(100000000)` - show Bitcoin addresses having exactly 1 BTC on their balance
+        * `api.blockchair.com/bitcoin/addresses?a=count()` - count the number of addresses with a non-zero balance
+        * `api.blockchair.com/bitcoin/addresses?a=count()&q=balance(100000000..)` - count the number of addresses holding at least 1 BTC
+        * `api.blockchair.com/bitcoin/addresses?a=sum(balance)&q=balance(100000000..)` - calculate how many bitcoins do the addresses from the previous example hold
+        * `api.blockchair.com/bitcoin/addresses?a=median(balance)` - calculate the median balance
+      Using this table makes it trivial to build various sorts of rich lists. It's now also possible to retrieve a full list of addresses and balances in one file (available only in our Private API solution). Please note that this table shouldn't be used for retrieving balances for a particular set of addresses, please use the `api.blockchair.com/{:chain}/dashboards/addresses/{:addr1}[,{:addr2}...]` dashboard endpoint instead.
 * v.2.0.29 - Jun 30th, 2019
     * The [State changes](#link_state) feature now supports requesting potential state changes caused by mempool transactions. The endpoint is `https://api.blockchair.com/{:chain}/state/changes/mempool`. It's now possible to easily build an app watching for transactions incoming/outgoing to/from millions of addresses, see [an example](#link_state).
 * v.2.0.28 - Jun 28th, 2019
@@ -169,6 +179,7 @@
 
 ##### Data aggregation support (since Oct 8th 2018)
 
+* v.b5 - Jul 4th - Added an ability to aggregate over the `addresses table`. 
 * v.b4 - Apr 2nd - Fixed a bug where some usd values under functions when exporting to TSV/CSV were multiplied by 10000. Use `&export=tsv` or `&export=csv` to export the dataset into the corresponding format, e.g.: `https://api.blockchair.com/bitcoin/transactions?a=date,avg(fee_usd)&q=time(2019-01-01..2019-04-01)&export=tsv` 
 * v.b3 - Mar 6th
     * New function `price({ticker1}_{ticker2})` which shows the price if `date` (or one of: `week`, `month`, `year`) is also applied. E.g. it's now possible to build a chart showing correlation between price and transaction count: `https://api.blockchair.com/bitcoin/blocks?a=month,sum(transaction_count),price(btc_usd)`. Supported tickers: usd, btc, bch, bsv, eth, ltc, doge.
@@ -200,6 +211,9 @@ Possible fields:
     * Outputs table
         * Group by: block_id, date (or week, month, year), type, is_from_coinbase, is_spendable, is_spent, spending_block_id, spending_date (no support for spending_week, spending_month, spending_year yet)
         * To calculate: value, value_usd, spending_value_usd, lifespan, cdd — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
+    * Addresses view
+        * Group by: -
+        * To calculate: balance — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
 * Ethereum:
     * Blocks table
         * Group by: date (or week, month, year), miner
@@ -399,7 +413,7 @@ Notes:
 - (\*\*\*) - only for Dash
 - the default sorting - id DESC
 
-#### <a name="link_bitcointransactions"></a> bitcoin/transactions, bitcoin/mempool/transactions, bitcoin-cash/transactions, bitcoin-cash/mempool/transactions, litecoin/transactions, litecoin/mempool/transactions, dogecoin/transactions, dogecoin/mempool/transactions, dash/transactions, dash/mempool/transactions, groestlcoin/transaction, groestlcoin/mempool/transactions
+#### <a name="link_bitcointransactions"></a> bitcoin/transactions, bitcoin/mempool/transactions, bitcoin-cash/transactions, bitcoin-cash/mempool/transactions, litecoin/transactions, litecoin/mempool/transactions, dogecoin/transactions, dogecoin/mempool/transactions, dash/transactions, dash/mempool/transactions, bitcoin-sv/transactions, bitcoin-sv/mempool/transactions, groestlcoin/transaction, groestlcoin/mempool/transactions
 
 E.g. `https://api.blockchair.com/dogecoin/mempool/transactions`
 
@@ -448,7 +462,7 @@ Additional Dash-specific columns:
 | is_special | boolean | | + | `true` for all transaction types except `simple` |
 | special_json | string `.*` | Special transaction data (encoded JSON) | | | |
 
-#### <a name="link_bitcoinoutputs"></a> bitcoin/outputs, bitcoin/mempool/outputs, bitcoin-cash/outputs, bitcoin-cash/mempool/outputs, litecoin/outputs, litecoin/mempool/outputs, dogecoin/outputs, dogecoin/mempool/outputs, dash/outputs, dash/mempool/outputs, groestlcoin/outputs, groestlcoin/mempool/outputs
+#### <a name="link_bitcoinoutputs"></a> bitcoin/outputs, bitcoin/mempool/outputs, bitcoin-cash/outputs, bitcoin-cash/mempool/outputs, litecoin/outputs, litecoin/mempool/outputs, dogecoin/outputs, dogecoin/mempool/outputs, dash/outputs, dash/mempool/outputs, bitcoin-sv/outputs, bitcoin-sv/mempool/outputs, groestlcoin/outputs, groestlcoin/mempool/outputs
 
 E.g. `https://api.blockchair.com/litecoin/mempool/outputs`
 
@@ -495,6 +509,20 @@ Notes:
 - the search over `script_hex` column can be done by the operator `^`, you can also use `~` for `script_bin` (however, the field `script_bin` will still not be shown)
 - (\*) - only for Bitcoin, Litecoin, and Groestlcoin (SegWit data)
 - the default sort is - transaction_id DESC
+
+#### <a name="link_bitcoinaddresses"></a> bitcoin/addresses, bitcoin-cash/addresses, litecoin/addresses, dogecoin/addresses, dash/addresses, bitcoin-sv/addresses, groestlcoin/addresses
+
+E.g. `https://api.blockchair.com/bitcoin/addresses`
+
+The `addresses` view contains the list of all addresses and their confirmed balances. Unlike other infinitables (`blocks`, `transactions`, `outputs`) this table isn't live, it's automatically updated every 5 minutes, thus we classify it as a "view".
+
+| Column | Type | Description | Q? | S? | 
+|--------|------|-------------|----|----|
+| address | string `[0-9a-zA-Z\-]*` | Bitcoin address or synthetic address | | |
+| balance | int | Its confirmed balance | + | + |
+
+Notes:
+- the default sort is - `balance DESC`
 
 #### <a name="link_ethereumblocks"></a> ethereum/blocks, ethereum/mempool/blocks
 
