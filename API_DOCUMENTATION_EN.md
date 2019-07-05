@@ -1,4 +1,4 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.30 Documentation
+## [Blockchair.com](https://blockchair.com/) API v.2.0.31 Documentation
 
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
@@ -35,6 +35,12 @@
 
 ### <a name="link_changelog"></a> Changelog
 
+* v.2.0.31 - Jul 5th, 2019
+     * Added two new keys to `bitcoin/stats` and `litecoin/stats` calls:
+        * `next_retarget_time_estimate` yields an estimated timestamp of the next difficulty retarget
+        * `next_difficulty_estimate` yeilds an estimated next difficulty value
+        
+       These keys are available for Bitcoin and Litecoin as other cryptos we support recalculate difficulty every block.   
 * v.2.0.30 - Jul 4th, 2019
     * We're adding a new table called `addresses` containing the list of all addresses and their confirmed balances to all Bitcoin-like coins (Bitcoin, Bitcoin Cash, Litecoin, Dash, Bitcoin SV, Dogecoin, Groestlcoin). Unlike other "infinitables" (`blocks`, `transactions`, `outputs`) this table isn't live, it's automatically updated every 5 minutes, thus we're classifying it as an "infiniview", meaning it's not really a table, but a view over the `outputs` table. See [the documentation](#link_bitcoinaddresses) for this table. Here are some examples of how it can be used:
         * `api.blockchair.com/bitcoin/addresses` - show Bitcoin addresses with biggest balances (i.e. the rich list)
@@ -43,6 +49,7 @@
         * `api.blockchair.com/bitcoin/addresses?a=count()&q=balance(100000000..)` - count the number of addresses holding at least 1 BTC
         * `api.blockchair.com/bitcoin/addresses?a=sum(balance)&q=balance(100000000..)` - calculate how many bitcoins do the addresses from the previous example hold
         * `api.blockchair.com/bitcoin/addresses?a=median(balance)` - calculate the median balance
+        
       Using this table makes it trivial to build various sorts of rich lists. It's now also possible to retrieve a full list of addresses and balances in one file (available only in our Private API solution). Please note that this table shouldn't be used for retrieving balances for a particular set of addresses, please use the `api.blockchair.com/{:chain}/dashboards/addresses/{:addr1}[,{:addr2}...]` dashboard endpoint instead.
 * v.2.0.29 - Jun 30th, 2019
     * The [State changes](#link_state) feature now supports requesting potential state changes caused by mempool transactions. The endpoint is `https://api.blockchair.com/{:chain}/state/changes/mempool`. It's now possible to easily build an app watching for transactions incoming/outgoing to/from millions of addresses, see [an example](#link_state).
