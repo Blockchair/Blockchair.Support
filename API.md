@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [API_DOCUMENTATION_EN.md](API_DOCUMENTATION_EN.md) (up to v.2.0.31)
+* English: [API_DOCUMENTATION_EN.md](API_DOCUMENTATION_EN.md) (up to v.2.0.32)
 * Russian: [API_DOCUMENTATION_RU.md](API_DOCUMENTATION_RU.md) (up to v.2.0.10)
 
 ### Please apply for an API key first
@@ -27,6 +27,18 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.32 - Jul 15th, 2019
+    * We're launching Bitcoin Testnet support for developers! All the functions available for Bitcoin are now available for Bitcoin Testnet as well, including:
+        * Filtering and sorting blockchain data using infinitables (`api.blockchair.com/bitcoin/testnet/blocks`, `api.blockchair.com/bitcoin/testnet/transactions`, `api.blockchair.com/bitcoin/testnet/outputs`, `api.blockchair.com/bitcoin/testnet/mempool/transactions`, `api.blockchair.com/bitcoin/testnet/mempool/outputs`, and `api.blockchair.com/bitcoin/testnet/addresses`), including aggregation capabilities
+        * Dashboards (`api.blockchair.com/bitcoin/testnet/dashboards/block/{:id|hash}`, `api.blockchair.com/bitcoin/testnet/dashboards/blocks/{:id|hash},{:id|hash},...`, `api.blockchair.com/bitcoin/testnet/dashboards/transaction/{:hash}`, `api.blockchair.com/bitcoin/testnet/dashboards/transactions/{:hash},{:hash},...`), `api.blockchair.com/bitcoin/testnet/dashboards/address/{:address}`, `api.blockchair.com/bitcoin/testnet/dashboards/addresses/{:address},{:address},...`, `api.blockchair.com/bitcoin/testnet/dashboards/xpub/{:[xyz]pub}`
+        * Broadcasting transactions (`api.blockchair.com/bitcoin/testnet/push/transaction`)
+        * State changes (`api.blockchair.com/bitcoin/testnet/state/changes/block/{:block_id)` and `api.blockchair.com/bitcoin/testnet/state/changes/mempool`)
+        * Stats (`api.blockchair.com/bitcoin/testnet/stats`)
+    
+      See documentation for Bitcoin for more details. Please note that USD countervalue for testnet coins is always 0. In the future we also plan to launch support for Bitcoin Cash and Ethereum testnets.
+    * `outputs.type` column for SegWit-coins can now yield `witness_unknown` type
+    * `blocks.generation` column for Bitcoin-like coins can now yield negative values in case there are transaction fees, but the output for the coinbase transaction is less than the sum of the fees
+    * The `utxo` array in the `{:chain}/dashboards/xpub/{[xyz]pub}` dashboard now shows which utxo belongs to which addresses (now it's identical to `{:address1}[,{:address2}…]`)
 * v.2.0.31 - Jul 5th, 2019
      * Added two new keys to `bitcoin/stats` and `litecoin/stats` calls:
         * `next_retarget_time_estimate` yields an estimated timestamp of the next difficulty retarget
