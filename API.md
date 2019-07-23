@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [API_DOCUMENTATION_EN.md](API_DOCUMENTATION_EN.md) (up to v.2.0.32)
+* English: [API_DOCUMENTATION_EN.md](API_DOCUMENTATION_EN.md) (up to v.2.0.33)
 * Russian: [API_DOCUMENTATION_RU.md](API_DOCUMENTATION_RU.md) (up to v.2.0.10)
 
 ### Please apply for an API key first
@@ -27,6 +27,19 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.33 - Jul 23rd, 2019
+    * According to the Bitcoin SV roadmap we've upgraded our nodes to support the Quasar upgrade
+    * **BREAKING CHANGE**: Upon popular request (#161, #162, #193, #196, #211, and others), starting **July 29th 00:00:00+0000** we're switching to the legacy address format for Bitcoin SV. This will affect the output of the following endpoints:
+        * `api.blockchair.com/bitcoin-sv/dashboards/transaction/{:hash}`
+        * `api.blockchair.com/bitcoin-sv/dashboards/transactions/{:hash},{:hash},...`
+        * `api.blockchair.com/bitcoin-sv/dashboards/address/{:address}` (it will be still possible to use CashAddr in the query string)
+        * `api.blockchair.com/bitcoin-sv/dashboards/addresses/{:address},{:address},...` (the same)
+        * `api.blockchair.com/bitcoin-sv/dashboards/xpub/{:[xyz]pub}`
+        * `api.blockchair.com/bitcoin-sv/outputs?{:params}`
+        * `api.blockchair.com/bitcoin-sv/mempool/outputs?{:params}`
+        * `api.blockchair.com/bitcoin-sv/addresses?{:params}`
+        * `api.blockchair.com/bitcoin-sv/state/changes/block/{:block_id)`
+        * `api.blockchair.com/bitcoin-sv/state/changes/mempool`
 * v.2.0.32 - Jul 15th, 2019
     * We're launching Bitcoin Testnet support for developers! All the functions available for Bitcoin are now available for Bitcoin Testnet as well, including:
         * Filtering and sorting blockchain data using infinitables (`api.blockchair.com/bitcoin/testnet/blocks`, `api.blockchair.com/bitcoin/testnet/transactions`, `api.blockchair.com/bitcoin/testnet/outputs`, `api.blockchair.com/bitcoin/testnet/mempool/transactions`, `api.blockchair.com/bitcoin/testnet/mempool/outputs`, and `api.blockchair.com/bitcoin/testnet/addresses`), including aggregation capabilities
