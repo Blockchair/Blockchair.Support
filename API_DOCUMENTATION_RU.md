@@ -515,7 +515,7 @@ It is expected that Dogecoin will be out of beta mode very soon. Wow.
 | time | string `YYYY-MM-DD HH:ii:ss` | Время блока, в котором содержится колл (UTC) | + | + |
 | failed | bool | Не зафейлился ли колл | + | |
 | fail_reason | string `.*` или null  | Если зафейлился, то строка с причиной, если нет, то `null` | + | |
-| type | string (enum) | Тип колла - одно из следующих значений: `call/delegatecall/staticcall/callcode/selfdesctruct/create/synthetic_coinbase` | + | |
+| type | string (enum) | Тип колла - одно из следующих значений: `call/delegatecall/staticcall/callcode/selfdestruct/create/synthetic_coinbase` | + | |
 | sender(\*\*) | string `0x[0-9a-f]{40}` | Адрес вызывающего колл (с 0x) | + | |
 | recipient | string `0x[0-9a-f]{40}` | Адрес вызываемого коллом (с 0x) | + | |
 | child_call_count | int | Количество дочерних коллов | + | + |

@@ -726,7 +726,7 @@ Returns information about internal calls
 | time | string `YYYY-MM-DD HH:ii:ss` | Time of the block that contains the call (UTC) | + | + |
 | failed | bool | Failed call or not | + | |
 | fail_reason | string `.*` or null | If failed, then the failure description, if not, then `null` | + | |
-| type | string (enum) | The call type, one of the following values: `call/delegatecall/staticcall/callcode/selfdesctruct/create/synthetic_coinbase` | + | |
+| type | string (enum) | The call type, one of the following values: `call/delegatecall/staticcall/callcode/selfdestruct/create/synthetic_coinbase` | + | |
 | sender (\*\*) | string `0x[0-9a-f]{40}` | Sender's address (with 0x) | + | |
 | recipient | string `0x[0-9a-f]{40}` | Recipient's address (with 0x) | + | |
 | child_call_count | int | Number of child calls | + | + |
