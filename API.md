@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [API_DOCUMENTATION_EN.md](API_DOCUMENTATION_EN.md) (up to v.2.0.33)
+* English: [API_DOCUMENTATION_EN.md](API_DOCUMENTATION_EN.md) (up to v.2.0.34)
 * Russian: [API_DOCUMENTATION_RU.md](API_DOCUMENTATION_RU.md) (up to v.2.0.10)
 
 ### Please apply for an API key first
