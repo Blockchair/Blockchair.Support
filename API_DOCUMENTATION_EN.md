@@ -632,6 +632,7 @@ Returns information about uncles
 |--------|------|-------------|----|----|
 | parent_block_id | int | Parent block id | + | + |
 | index | int | Uncle index in the block | + | + |
+| id | int | Uncle id | + | + |
 | hash | string `0x[0-9a-f]{64}` | Uncle hash (with 0x) | + | |
 | date | string `YYYY-MM-DD` | Date of generation (UTC) | | |
 | time | string `YYYY-MM-DD HH:ii:ss` | Time of generation (UTC) | + | + |
