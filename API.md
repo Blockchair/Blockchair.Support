@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [API_DOCUMENTATION_EN.md](API_DOCUMENTATION_EN.md) (up to v.2.0.34)
+* English: [API_DOCUMENTATION_EN.md](API_DOCUMENTATION_EN.md) (up to v.2.0.35)
 * Russian: [API_DOCUMENTATION_RU.md](API_DOCUMENTATION_RU.md) (up to v.2.0.10)
 
 ### Please apply for an API key first
@@ -27,6 +27,10 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.35 - Sep 11th, 2019
+    * `api.blockchair.com/{:chain}/nodes` endpoint now also returns the `heights` array showing distribution of the latest block numbers among nodes. See a visualisation on our web interface as an example: https://blockchair.com/bitcoin/nodes
+    * There's a new endpoint `api.blockchair.com/nodes` showing some aggregated node stats across 7 networks (Bitcoin, Bitcoin Cash, Bitcoin SV, Litecoin, Dash, Dogecoin, and Groestlcoin).
+    * Our database dumps now also feature daily balances snapshot, see Bitcoin for example: https://gz.blockchair.com/bitcoin/addresses/ (please note that the download speed is limited for non-premium users). The format is `address<TAB>balance`.
 * v.2.0.34 - Aug 7th, 2019
     * It's now possible to retrieve raw block data directly from our nodes. The endpoint is `api.blockchair.com/{:chain}/raw/block/{:hash}|{:id}`. This endpoint supports all chains except for `ripple`.
         * For Bitcoin-like chains the `data` array returns two elements:
