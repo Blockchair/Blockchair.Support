@@ -1,4 +1,4 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.35 Documentation
+## [Blockchair.com](https://blockchair.com/) API v.2.0.36 Documentation
 
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
@@ -35,6 +35,20 @@
 
 ### <a name="link_changelog"></a> Changelog
 
+* v.2.0.36 - Sep 17th, 2019
+    * We begin a public beta test of ERC-20 support on our platform. Over 100.000 tokens are available to explore!
+        * New ERC-20 endpoints:
+            * ERC-20 tokens infinitable: `https://api.blockchair.com/ethereum/erc-20/tokens`
+            * ERC-20 transactions infinitable: `https://api.blockchair.com/ethereum/erc-20/transactions` (example: `https://api.blockchair.com/ethereum/erc-20/transactions?q=token_address({:token_address})` - filter transactions by a specific token). These two infinitables act as other infinitables in our API, i.e. it's possible to sort and filter by many params, to paginate, etc.
+            * ERC-20 token stats dashboard: `https://api.blockchair.com/ethereum/erc-20/{:token_address}/stats` - returns some basic stats about a token
+            * ERC-20 token holder dashboard: `https://api.blockchair.com/ethereum/erc-20/{:token_address}/dashboards/address/{:address}` - returns info about a token holder (the balance, list of latest transactions, etc.)
+        * New options and changes to the existing Ethereum dashboards:
+            * Ethereum transaction dashboard: `https://api.blockchair.com/ethereum/dashboards/transaction/{:transaction_hash}?erc_20=true` - returns info about a transaction including ERC-20 transfers
+            * Ethereum address dashboard: `https://api.blockchair.com/ethereum/dashboards/address/{:address}?erc_20=true` - returns info about an address including its ERC-20 token balances (tip: addresses and hashes should start with `0x`)
+            * Ethereum stats dashboards (`https://api.blockchair.com/ethereum/stats`) now have `data.layer_2.erc_20` key yielding basic stats on ERC-20's: the total number of tokens, the total number of transactions, and the number of new tokens and transactions over the last 24 hours.
+            * For all Ethereum endpoints there's a new key `context.state_layer_2` which yields the latest processed block number. It can be different from `context.state` as it takes some time to process second layer transactions.
+            
+      Please note these endpoints are in beta, so there may be some unannounced compatibility-breaking changes. More detailed documentation will come later this month. Appending `?erc_20=true` to requests makes it counted as 2 separate requests in the matter of API limits (including Premium API).
 * v.2.0.35 - Sep 11th, 2019
     * `api.blockchair.com/{:chain}/nodes` endpoint now also returns the `heights` array showing distribution of the latest block numbers among nodes. See a visualisation on our web interface as an example: https://blockchair.com/bitcoin/nodes
     * There's a new endpoint `api.blockchair.com/nodes` showing some aggregated node stats across 7 networks (Bitcoin, Bitcoin Cash, Bitcoin SV, Litecoin, Dash, Dogecoin, and Groestlcoin).
