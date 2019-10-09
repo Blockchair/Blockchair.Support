@@ -1,4 +1,4 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.36 Documentation
+## [Blockchair.com](https://blockchair.com/) API v.2.0.37 Documentation
 
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
@@ -35,6 +35,17 @@
 
 ### <a name="link_changelog"></a> Changelog
 
+* v.2.0.37 - Oct 9th, 2019
+    * `{:chain}/dashboards/address/{:address}` endpoint now has an optional parameter `?transaction_details=true` which allows you to retrieve transaction details in the `transactions` array instead of just transaction hashes. Each `transactions` array element contains the following values:
+        * `hash` - transaction hash
+        * `time` - transaction timestamp (UTC)
+        * `balance_change` - how the transaction affected the balance of `{:address}`
+        
+    Appending a request with `?transaction_details=true` makes it count as 2 separate requests in the matter of API limits (including Premium API).
+    
+    Usage example: `https://api.blockchair.com/bitcoin/dashboards/address/12cbQLTFMXRnSzktFkuoG3eHoMeFtpTu3S?transaction_details=true`
+    
+    This option is supported for Bitcoin, Bitcoin Cash, Litecoin, Dash, Bitcoin SV, Dogecoin, and Groestlcoin only.
 * v.2.0.36 - Sep 17th, 2019
     * We begin a public beta test of ERC-20 support on our platform. Over 100.000 tokens are available to explore!
         * New ERC-20 endpoints:
@@ -92,7 +103,7 @@
 * v.2.0.31 - Jul 5th, 2019
      * Added two new keys to `bitcoin/stats` and `litecoin/stats` calls:
         * `next_retarget_time_estimate` yields an estimated timestamp of the next difficulty retarget
-        * `next_difficulty_estimate` yeilds an estimated next difficulty value
+        * `next_difficulty_estimate` yields an estimated next difficulty value
         
        These keys are available for Bitcoin and Litecoin as other cryptos we support recalculate difficulty every block.   
 * v.2.0.30 - Jul 4th, 2019
@@ -211,6 +222,10 @@
     * Added Litecoin support
 
 ### <a name="link_testedfeatureschangelog"></a> Tested features changelog
+
+##### ERC-20 support (since Sep 13th 2019)
+
+* v.a1 - Sep 13th - See the changelog for v.2.0.36
 
 ##### Ripple support (since Apr 17th 2019)
 
