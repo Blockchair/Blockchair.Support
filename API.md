@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [API_DOCUMENTATION_EN.md](API_DOCUMENTATION_EN.md) (up to v.2.0.36)
+* English: [API_DOCUMENTATION_EN.md](API_DOCUMENTATION_EN.md) (up to v.2.0.37)
 * Russian: [API_DOCUMENTATION_RU.md](API_DOCUMENTATION_RU.md) (up to v.2.0.10)
 
 ### Please apply for an API key first
@@ -27,6 +27,17 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.37 - Oct 9th, 2019
+    * `{:chain}/dashboards/address/{:address}` endpoint now has an optional parameter `?transaction_details=true` which allows you to retrieve transaction details in the `transactions` array instead of just transaction hashes. Each `transactions` array element contains the following values:
+        * `hash` - transaction hash
+        * `time` - transaction timestamp (UTC)
+        * `balance_change` - how the transaction affected the balance of `{:address}`
+        
+    Appending a request with `?transaction_details=true` makes it count as 2 separate requests in the matter of API limits (including Premium API).
+    
+    Usage example: `https://api.blockchair.com/bitcoin/dashboards/address/12cbQLTFMXRnSzktFkuoG3eHoMeFtpTu3S?transaction_details=true`
+    
+    This option is supported for Bitcoin, Bitcoin Cash, Litecoin, Dash, Bitcoin SV, Dogecoin, and Groestlcoin only.
 * v.2.0.36 - Sep 17th, 2019
     * We begin a public beta test of ERC-20 support on our platform. Over 100.000 tokens are available to explore!
         * New ERC-20 endpoints:
