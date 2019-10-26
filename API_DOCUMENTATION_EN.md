@@ -1,4 +1,4 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.38 Documentation
+# [Blockchair.com](https://blockchair.com/) API v.2.0.38 Documentation
 
 ```
     ____  __           __        __          _     
@@ -9,7 +9,7 @@
                                                    
 ```
 
-## Table of contents
+# Table of contents
 
 + [Introduction](#link_M0)
   + [Supported blockchains and second layers](#link_M01)
@@ -78,7 +78,7 @@
 
 
 
-## <a name="link_M0"></a> Introduction
+# <a name="link_M0"></a> Introduction
 
 Blockchair API provides developers with access to data contained in [9 different blockchains](#link_M01). Unlike other APIs, Blockchair also support numerous analytical queries like filtering, sorting, and aggregating blockchain data.
 
@@ -102,7 +102,7 @@ Our API is free to try under some limitations, and we have a variety of premium 
 
 
 
-### <a name="link_M01"></a> Supported blockchains and second layers
+## <a name="link_M01"></a> Supported blockchains and second layers
 
 As of today, our API supports **9 blockchains** divided into 3 groups:
 * Bitcoin-like blockchains (Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin), also known as UTXO-based blockchains
@@ -155,7 +155,7 @@ We also plan to bring ERC-721 support in the near future. Please note that we'll
 
 
 
-### <a name="link_M02"></a> Quick endpoint reference
+## <a name="link_M02"></a> Quick endpoint reference
 
 This is the full list of available API endpoints.
 
@@ -242,7 +242,7 @@ The base request cost is used only if there are no additional parameters include
 
 
 
-### <a name="link_M03"></a> Basic API request
+## <a name="link_M03"></a> Basic API request
 
 Requests to the API should be made through the HTTPS protocol by GET requests to the domain `api.blockchair.com`. Here's an example request URL: `https://api.blockchair.com/bitcoin/blocks?a=sum(generation)`
 
@@ -260,7 +260,7 @@ Here are some considerations:
 
 
 
-### <a name="link_M04"></a> Basic API response
+## <a name="link_M04"></a> Basic API response
 
 API returns JSON-encoded data. Typically, the response is an array consisting of two subarrays:
 
@@ -300,7 +300,7 @@ There are also some things which are the same across all endpoints:
 
 
 
-### <a name="link_M05"></a> API rate limits, API keys, and Premium API
+## <a name="link_M05"></a> API rate limits, API keys, and Premium API
 
 While we do allow to perform some amount of requests free of charge, generally our API is not free to use.
 
@@ -352,7 +352,7 @@ There's an extra API endpoint for those who have an API key allowing to [track t
 
 
 
-### <a name="link_M06"></a> API versioning
+## <a name="link_M06"></a> API versioning
 
 As a reminder, there's the `context.api` array in every API response which contains the following data:
 
@@ -370,11 +370,11 @@ It makes sense to check if `context.api.version` has increased and/or just wheth
 
 
 
-## <a name="link_M1"></a> General stats endpoints
+# <a name="link_M1"></a> General stats endpoints
 
 
 
-### <a name="link_000"></a> Stats on multiple blockchains at once
+## <a name="link_000"></a> Stats on multiple blockchains at once
 
 Allows to retrieve the most important stats on all blockchains we support via just one API request.
 
@@ -483,7 +483,7 @@ Always `1`.
 
 
 
-### <a name="link_001"></a> Bitcoin-like blockchain stats
+## <a name="link_001"></a> Bitcoin-like blockchain stats
 
 **Endpoints:**
 
@@ -610,7 +610,7 @@ Always `1`.
 
 
 
-### <a name="link_002"></a> Ethereum-like blockchain stats
+## <a name="link_002"></a> Ethereum-like blockchain stats
 
 **Endpoint:**
 
@@ -733,7 +733,7 @@ Always `1`.
 
 
 
-### <a name="link_003"></a> Ripple-like blockchain stats
+## <a name="link_003"></a> Ripple-like blockchain stats
 
 **Endpoint:**
 
@@ -819,7 +819,7 @@ Always `1`.
 
 
 
-### <a name="link_500"></a> Omni Layer and Wormhole stats
+## <a name="link_500"></a> Omni Layer and Wormhole stats
 
 Allows to retrieve the some basic stats on Omni Layer (Bitcoin) and Wormhole (Bitcoin Cash). Since Wormhole is based on Omni Layer, the output is the same for both. Note that this endpoint is in the Alpha stage, and Wormhole is deprecated on our platform.
 
@@ -892,14 +892,14 @@ Always `1`.
 
 
 
-### <a name="link_509"></a> ERC-20 stats
+## <a name="link_509"></a> ERC-20 stats
 
 There's no separate endpoint to get ERC-20 stats, use `https://api.blockchair.com/ethereum/stats` instead which includes ERC-20 info. Description is available [here](#link_002)
 
 
 
 
-## <a name="link_M2"></a> Dashboard endpoints
+# <a name="link_M2"></a> Dashboard endpoints
 
 Retrieve information about various entities in a neat format from our databases
 
@@ -907,11 +907,11 @@ The API supports a number of calls that produce some aggregated data, or data in
 
 
 
-### <a name="link_M21"></a> Dashboard endpoints for Bitcoin-like blockchains (Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Bitcoin Testnet)
+## <a name="link_M21"></a> Dashboard endpoints for Bitcoin-like blockchains (Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Bitcoin Testnet)
 
 
 
-#### <a name="link_100"></a> Block info
+### <a name="link_100"></a> Block info
 
 **Endpoints:**
 
@@ -1033,7 +1033,7 @@ Note that the total number of transactions in the block is contained in `data.{:
 
 
 
-#### <a name="link_200"></a> Transaction info
+### <a name="link_200"></a> Transaction info
 
 **Endpoints:**
 
@@ -1228,7 +1228,7 @@ For mempool transactions shows priority (`position`) — for chains supporting S
 
 
 
-#### <a name="link_300"></a> Address and extended public key (xpub) info
+### <a name="link_300"></a> Address and extended public key (xpub) info
 
 **Endpoints:**
 
@@ -1803,11 +1803,11 @@ Address object specification:
 
 
 
-### <a name="link_M22"></a> Dashboard endpoints for Ethereum
+## <a name="link_M22"></a> Dashboard endpoints for Ethereum
 
 
 
-#### <a name="link_103"></a> Block info
+### <a name="link_103"></a> Block info
 
 **Endpoints:**
 
@@ -1938,7 +1938,7 @@ Note that the total number of transactions in the block is contained in `data.{:
 
 
 
-#### <a name="link_401"></a> Uncle info
+### <a name="link_401"></a> Uncle info
 
 **Endpoints:**
 
@@ -2024,7 +2024,7 @@ If there's no `{:hash}ᵢ` has been found in the database, there won't be such k
 
 
 
-#### <a name="link_204"></a> Transaction info
+### <a name="link_204"></a> Transaction info
 
 **Endpoints:**
 
@@ -2196,7 +2196,7 @@ For mempool transactions shows priority (`position`) by `gas_price` over other t
 
 
 
-#### <a name="link_302"></a> Address info
+### <a name="link_302"></a> Address info
 
 **Endpoint:**
 
@@ -2365,11 +2365,11 @@ Notes:
 
 
 
-### <a name="link_M23"></a> Dashboard endpoints for second layers
+## <a name="link_M23"></a> Dashboard endpoints for second layers
 
 
 
-#### <a name="link_501"></a> Omni Layer and Wormhole property info
+### <a name="link_501"></a> Omni Layer and Wormhole property info
 
 Allows to retrieve the some basic information on an Omni Layer (Bitcoin) or Wormhole (Bitcoin Cash) property (token). Since Wormhole is based on Omni Layer, the output is the same for both. Note that this endpoint is in the Alpha stage, and Wormhole is deprecated on our platform.
 
@@ -2434,7 +2434,7 @@ Always `1`.
 
 
 
-#### <a name="link_503"></a> ERC-20 token info
+### <a name="link_503"></a> ERC-20 token info
 
 Allows to retrieve the some basic information on an ERC-20 token. Note that this endpoint is in the Beta stage.
 
@@ -2503,7 +2503,7 @@ Always `1`.
 
 
 
-#### <a name="link_504"></a> ERC-20 token holder info
+### <a name="link_504"></a> ERC-20 token holder info
 
 **Endpoint:**
 
@@ -2598,17 +2598,17 @@ The structure is similar to the [Ethereum address](#link_302) endpoint with the 
 
 
 
-## <a name="link_M3"></a> Raw data endpoints
+# <a name="link_M3"></a> Raw data endpoints
 
 Retrieve raw information about various entities directly from our full nodes
 
 
 
-### <a name="link_M31"></a> Raw data endpoints for Bitcoin-like blockchains (Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Bitcoin Testnet)
+## <a name="link_M31"></a> Raw data endpoints for Bitcoin-like blockchains (Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Bitcoin Testnet)
 
 
 
-#### <a name="link_101"></a> Raw block data
+### <a name="link_101"></a> Raw block data
 
 Returns raw block data directly from our full node. If the block is larger than 10 megabytes in size, returns a `402` error.
 
@@ -2688,7 +2688,7 @@ Always `1`.
 
 
 
-#### <a name="link_201"></a> Raw transaction data
+### <a name="link_201"></a> Raw transaction data
 
 Returns raw transaction data directly from our full node.
 
@@ -2792,11 +2792,11 @@ Always `1`.
 
 
 
-### <a name="link_M32"></a> Dashboard endpoints for Ethereum
+## <a name="link_M32"></a> Dashboard endpoints for Ethereum
 
 
 
-#### <a name="link_104"></a> Raw block data
+### <a name="link_104"></a> Raw block data
 
 Returns raw block data directly from our full node.
 
@@ -2882,7 +2882,7 @@ Always `1`.
 
 
 
-#### <a name="link_205"></a> Raw transaction data
+### <a name="link_205"></a> Raw transaction data
 
 Returns raw transaction data directly from our full node.
 
@@ -2938,11 +2938,11 @@ Always `1`.
 
 
 
-### <a name="link_M33"></a> Dashboard endpoints for Ripple
+## <a name="link_M33"></a> Dashboard endpoints for Ripple
 
 
 
-#### <a name="link_106"></a> Raw ledger data
+### <a name="link_106"></a> Raw ledger data
 
 Returns raw ledger data directly from our full node.
 
@@ -3032,7 +3032,7 @@ Always `1`.
 
 
 
-#### <a name="link_207"></a> Raw transaction data
+### <a name="link_207"></a> Raw transaction data
 
 Returns raw transaction data directly from our full node.
 
@@ -3138,7 +3138,7 @@ Always `1`.
 
 
 
-#### <a name="link_303"></a> Raw account data
+### <a name="link_303"></a> Raw account data
 
 Returns raw account data directly from our full node.
 
@@ -3379,7 +3379,7 @@ Always `1`.
 
 
 
-## <a name="link_05"></a> Infinitable endpoints (blockchain tables)
+# <a name="link_05"></a> Infinitable endpoints (blockchain tables)
 
 These endpoints allow you to filter, sort, and aggregate blockchain data. The output is database rows. Unlike dashboard and raw endpoints, all infinitable endpoints listed in this section can be considered as just one endpoint as it has the same options and the same output structure across different blockchains and entities. Here it is: `https://api.blockchair.com/{:table}{:query}`.
 
@@ -3663,11 +3663,11 @@ There can also be synthetic columns which aren't shown in the response, but you 
 
 
 
-### <a name="link_M41"></a> Inifinitable endpoints for Bitcoin-like blockchains (Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Bitcoin Testnet)
+## <a name="link_M41"></a> Inifinitable endpoints for Bitcoin-like blockchains (Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Bitcoin Testnet)
 
 
 
-#### <a name="link_102"></a> `blocks` table
+### <a name="link_102"></a> `blocks` table
 
 **Endpoint:**
 
@@ -3814,7 +3814,7 @@ See [request costs for infinitables](#link_05)
 
 
 
-#### <a name="link_203"></a> `transactions` table
+### <a name="link_203"></a> `transactions` table
 
 **Endpoints:**
 
@@ -3946,7 +3946,7 @@ See [request costs for infinitables](#link_05)
 
 
 
-#### <a name="link_400"></a> `outputs` table
+### <a name="link_400"></a> `outputs` table
 
 **Endpoints:**
 
@@ -4129,7 +4129,7 @@ See [request costs for infinitables](#link_05)
 
 
 
-#### <a name="link_301"></a> `addresses` view
+### <a name="link_301"></a> `addresses` view
 
 **Endpoints:**
 
@@ -4272,13 +4272,13 @@ See [request costs for infinitables](#link_05)
 
 
 
-### <a name="link_M42"></a> Inifinitable endpoints for Ethereum
+## <a name="link_M42"></a> Inifinitable endpoints for Ethereum
 
 Please note that unlike with Bitcoin-like chains, where we populate our databases synchronically (block after block as there's the UTXO model used), for Ethereum we use asynchronous process, thus it's possible that for some brief period of time there will be information about block `n`, but there may not be for block `n-1` and further.
 
 
 
-#### <a name="link_105"></a> `blocks` table
+### <a name="link_105"></a> `blocks` table
 
 **Endpoint:**
 
@@ -4412,7 +4412,7 @@ See [request costs for infinitables](#link_05)
 
 
 
-#### <a name="link_402"></a> `uncles` table
+### <a name="link_402"></a> `uncles` table
 
 **Endpoint:**
 
@@ -4518,7 +4518,7 @@ See [request costs for infinitables](#link_05)
 
 
 
-#### <a name="link_206"></a> `transactions` table
+### <a name="link_206"></a> `transactions` table
 
 **Endpoint:**
 
@@ -4671,7 +4671,7 @@ See [request costs for infinitables](#link_05)
 
 
 
-#### <a name="link_403"></a> `calls` table
+### <a name="link_403"></a> `calls` table
 
 **Endpoint:**
 
@@ -4766,11 +4766,11 @@ See [request costs for infinitables](#link_05)
 
 
 
-### <a name="link_M43"></a> Inifinitable endpoints for second layers
+## <a name="link_M43"></a> Inifinitable endpoints for second layers
 
 
 
-#### <a name="link_502"></a> `properties` table (Omni Layer and Wormhole)
+### <a name="link_502"></a> `properties` table (Omni Layer and Wormhole)
 
 Note: this particular table doesn't support querying. The only query section it supports is `?offset=`. Note that this endpoint is in the Alpha stage, and Wormhole is deprecated on our platform.
 
@@ -4836,7 +4836,7 @@ See [request costs for infinitables](#link_05)
 
 
 
-#### <a name="link_505"></a> `tokens` table (ERC-20)
+### <a name="link_505"></a> `tokens` table (ERC-20)
 
 **Endpoint:**
 
@@ -4933,7 +4933,7 @@ See [request costs for infinitables](#link_05)
 
 
 
-#### <a name="link_506"></a> `transactions` table (ERC-20)
+### <a name="link_506"></a> `transactions` table (ERC-20)
 
 **Endpoint:**
 
@@ -5015,11 +5015,11 @@ See [request costs for infinitables](#link_05)
 
 
 
-## <a name="link_M5"></a> Misc endpoints
+# <a name="link_M5"></a> Misc endpoints
 
 
 
-### <a name="link_202"></a> Broadcasting transactions
+## <a name="link_202"></a> Broadcasting transactions
 
 Broadcast a transaction to the network
 
@@ -5079,7 +5079,7 @@ Always `1`.
 
 
 
-### <a name="link_508"></a> Nodes
+## <a name="link_508"></a> Nodes
 
 List of full network nodes
 
@@ -5173,7 +5173,7 @@ Always `1`.
 
 
 
-### <a name="link_507"></a> State changes
+## <a name="link_507"></a> State changes
 
 Allows to query state changes caused by a block and potential state changes caused by mempool transactions in case they get confirmed.
 
@@ -5249,11 +5249,11 @@ Note that this example doesn't account for cases like new multiple blocks have b
 
 
 
-### <a name="link_M51"></a> Premium API endpoints
+## <a name="link_M51"></a> Premium API endpoints
 
 
 
-#### <a name="link_600"></a> Premium API usage stats
+### <a name="link_600"></a> Premium API usage stats
 
 This is a special endpoint for Premium API users showing some stats on your API key usage.
 
@@ -5306,7 +5306,7 @@ Always `0`. This request is free to use.
 
 
 
-## <a name="link_M7"></a> Support
+# <a name="link_M7"></a> Support
 
 * E-mail: [info@blockchair.com](mailto:info@blockchair.com)
 * Telegram chat: [@Blockchair](https://telegram.me/Blockchair)
