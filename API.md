@@ -3,8 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [API_DOCUMENTATION_EN.md](API_DOCUMENTATION_EN.md) (up to v.2.0.37)
-* Russian: [API_DOCUMENTATION_RU.md](API_DOCUMENTATION_RU.md) (up to v.2.0.10)
+* English: [API_DOCUMENTATION_EN.md](API_DOCUMENTATION_EN.md) (up to v.2.0.38)
 
 ### Please apply for an API key first
 
@@ -27,6 +26,21 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.38 - Oct 26th, 2019
+    * We've published new documentation for our API which is lots more clear and describes all the functions we have, it's now available here: https://blockchair.com/api/docs
+    * Changes to the Omni Layer and Wormhole support (as they're in Alpha test mode these are compatibility-breaking changes; we'll be bringing Omni to Stable the next year):
+        * As Wormhole as a protocol isn't used anymore, we'll shut it down on our platform on January 1st, 2020
+        * Retrieving infomation about Omni Layer transfers within a Bitcoin transaction now requires a `?omni=true` parameter
+        * Retrieving infomation about Wormhole transfers within a Bitcoin Cash transaction now requires a `?wormhole=true` parameter
+        * Retrieving infomation about Omni Layer token balances of a Bitcoin address now requires a `?omni=true` parameter
+        * Retrieving infomation about Wormhole token balances of a Bitcoin Cash transaction now requires a `?wormhole=true` parameter
+        * Data is now yielded in `layer_2.omni` and `layer_2.wormhole` arrays instead of `_omni` and `_wormhole`
+    * Changes to Ripple endpoints (they're in Alpha test mode as well):
+        * `https://api.blockchair.com/{:xrp_chain}/dashboards/ledger/{:hash|id}₀` is now `https://api.blockchair.com/{:xrp_chain}/raw/ledger/{:hash|id}₀`
+        * `https://api.blockchair.com/{:xrp_chain}/dashboards/transaction/{:hash}₀` is now `https://api.blockchair.com/{:xrp_chain}/raw/transaction/{:hash}₀`
+        * `https://api.blockchair.com/{:xrp_chain}/dashboards/account/{:address}₀` is now `https://api.blockchair.com/{:xrp_chain}/raw/account/{:address}₀`
+    * Added `block_id` property to the output of the `?transaction_details=true` param introduced in v.2.0.37 - it's now easier to count the number of confirmations. Also a small bug has been fixed with the timestamps (thanks to Maxim Chistov for noticing)
+    * We're introducing the "request cost" concept (full description is available in our new documentation; basically, the idea is that some of API requests will cost more than others). We'll not be forcing this rule at the moment, the launch date will be announced later. That won't affect our existing API customers until the end of their subscription periods.
 * v.2.0.37 - Oct 9th, 2019
     * `{:chain}/dashboards/address/{:address}` endpoint now has an optional parameter `?transaction_details=true` which allows you to retrieve transaction details in the `transactions` array instead of just transaction hashes. Each `transactions` array element contains the following values:
         * `hash` - transaction hash
