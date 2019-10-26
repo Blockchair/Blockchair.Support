@@ -1,1013 +1,5230 @@
-## [Blockchair.com](https://blockchair.com/) API v.2.0.37 Documentation
-
-<img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
-
-### Table of contents
-
-+ [Changelog](#link_changelog)
-  + [Tested features changelog](#link_testedfeatureschangelog)
-+ [General Provisions](#link_generalprovisions)
-+ [Dashboard calls](#link_dashboardcalls) (Retrieve information about various Bitcoin, Ethereum, Bitcoin Cash, Litecoin, Dash, Bitcoin SV, Dogecoin, Groestlcoin entities)
-  + [Block](#link_block)
-  + [Uncle](#link_uncle) (Ethereum only)
-  + [Transaction](#link_transaction)
-  + [Address](#link_bitcoinaddress)
-  + [Stats](#link_chainstats)
-  + [General stats](#link_stats)
-+ [Infinitable Calls (blockhain tables)](#link_infinitablecalls) (Filter and sort blockchain data)
-    + Bitcoin, Bitcoin Cash, Litecoin, Dash, Bitcoin SV, Dogecoin, Groestlcoin:
-      + [Blocks](#link_bitcoinblocks) (table)
-      + [Transaction](#link_bitcointransactions) (table)
-      + [Outputs](#link_bitcoinoutputs) (table)
-      + [Addresses](#link_bitcoinaddresses) (view)
-    + Ethereum:
-      + [Blocks](#link_ethereumblocks) (table)
-      + [Uncles](#link_ethereumuncles) (table)
-      + [Transactions](#link_ethereumtransactions) (table)
-      + [Calls](#link_ethereumcalls) (table)
-+ Misc
-    + [API request example](#link_examples)
-    + [Broadcasting transactions](#link_broadcasting)
-    + [Retrieving raw transactions](#link_raw)
-    + [Nodes](#link_nodes)
-    + [State changes](#link_state)
-    + [Support](#link_support)
-
-### <a name="link_changelog"></a> Changelog
-
-* v.2.0.37 - Oct 9th, 2019
-    * `{:chain}/dashboards/address/{:address}` endpoint now has an optional parameter `?transaction_details=true` which allows you to retrieve transaction details in the `transactions` array instead of just transaction hashes. Each `transactions` array element contains the following values:
-        * `hash` - transaction hash
-        * `time` - transaction timestamp (UTC)
-        * `balance_change` - how the transaction affected the balance of `{:address}`
-        
-    Appending a request with `?transaction_details=true` makes it count as 2 separate requests in the matter of API limits (including Premium API).
-    
-    Usage example: `https://api.blockchair.com/bitcoin/dashboards/address/12cbQLTFMXRnSzktFkuoG3eHoMeFtpTu3S?transaction_details=true`
-    
-    This option is supported for Bitcoin, Bitcoin Cash, Litecoin, Dash, Bitcoin SV, Dogecoin, and Groestlcoin only.
-* v.2.0.36 - Sep 17th, 2019
-    * We begin a public beta test of ERC-20 support on our platform. Over 100.000 tokens are available to explore!
-        * New ERC-20 endpoints:
-            * ERC-20 tokens infinitable: `https://api.blockchair.com/ethereum/erc-20/tokens`
-            * ERC-20 transactions infinitable: `https://api.blockchair.com/ethereum/erc-20/transactions` (example: `https://api.blockchair.com/ethereum/erc-20/transactions?q=token_address({:token_address})` - filter transactions by a specific token). These two infinitables act as other infinitables in our API, i.e. it's possible to sort and filter by many params, to paginate, etc.
-            * ERC-20 token stats dashboard: `https://api.blockchair.com/ethereum/erc-20/{:token_address}/stats` - returns some basic stats about a token
-            * ERC-20 token holder dashboard: `https://api.blockchair.com/ethereum/erc-20/{:token_address}/dashboards/address/{:address}` - returns info about a token holder (the balance, list of latest transactions, etc.)
-        * New options and changes to the existing Ethereum dashboards:
-            * Ethereum transaction dashboard: `https://api.blockchair.com/ethereum/dashboards/transaction/{:transaction_hash}?erc_20=true` - returns info about a transaction including ERC-20 transfers
-            * Ethereum address dashboard: `https://api.blockchair.com/ethereum/dashboards/address/{:address}?erc_20=true` - returns info about an address including its ERC-20 token balances (tip: addresses and hashes should start with `0x`)
-            * Ethereum stats dashboards (`https://api.blockchair.com/ethereum/stats`) now have `data.layer_2.erc_20` key yielding basic stats on ERC-20's: the total number of tokens, the total number of transactions, and the number of new tokens and transactions over the last 24 hours.
-            * For all Ethereum endpoints there's a new key `context.state_layer_2` which yields the latest processed block number. It can be different from `context.state` as it takes some time to process second layer transactions.
-            
-      Please note these endpoints are in beta, so there may be some unannounced compatibility-breaking changes. More detailed documentation will come later this month. Appending `?erc_20=true` to requests makes it counted as 2 separate requests in the matter of API limits (including Premium API).
-* v.2.0.35 - Sep 11th, 2019
-    * `api.blockchair.com/{:chain}/nodes` endpoint now also returns the `heights` array showing distribution of the latest block numbers among nodes. See a visualisation on our web interface as an example: https://blockchair.com/bitcoin/nodes
-    * There's a new endpoint `api.blockchair.com/nodes` showing some aggregated node stats across 7 networks (Bitcoin, Bitcoin Cash, Bitcoin SV, Litecoin, Dash, Dogecoin, and Groestlcoin).
-    * Our database dumps now also feature daily balances snapshot, see Bitcoin for example: https://gz.blockchair.com/bitcoin/addresses/ (please note that the download speed is limited for non-premium users). The format is `address<TAB>balance`.
-* v.2.0.34 - Aug 7th, 2019
-    * It's now possible to retrieve raw block data directly from our nodes. The endpoint is `api.blockchair.com/{:chain}/raw/block/{:hash}|{:id}`. This endpoint supports all chains except for `ripple`.
-        * For Bitcoin-like chains the `data` array returns two elements:
-            * `raw_block` - contains hex representation of the block
-            * `decoded_raw_block` - contains json representation of the block that is generated by our node
-        * For Ethereum only `decoded_raw_block` is available 
-      
-      Please note that these endpoints are for development usage only. The result is returned directly from our nodes, so we can't guarantee backward compatibility in case we upgrade our nodes. For production, please use the `api.blockchair.com/{:chain}/dashboards/block/{:hash}|{:id}` endpoint - it pulls data from our databases.
-    * Ethereum uncles now have an `id` property (previously they only had `parent_block_id`, `index`, and `hash` properties as identifiers). This affects `api.blockchair.com/ethereum/dashboards/uncle/{:hash}` and `api.blockchair.com/ethereum/uncles?{:params}` endpoints. Please note that `id` is not a unique identifier for an uncle (use `hash` or `parent_block_id:index` instead).
-    * Fixed a bug where `api.blockchair.com/{:chain}/dashboards/addresses/{:address},{:address},...` endpoint returned `500` if `?limit=0` was applied
-    * `context.state` doesn't return the latest block number anymore in case API returns an error (`400`, `402`, `404`, etc.)
-* v.2.0.33 - Jul 23rd, 2019
-    * According to the Bitcoin SV roadmap we've upgraded our nodes to support the Quasar upgrade
-    * **BREAKING CHANGE**: Upon popular request (#161, #162, #193, #196, #211, and others), starting **July 29th 00:00:00+0000** we're switching to the legacy address format for Bitcoin SV. This will affect the output of the following endpoints:
-        * `api.blockchair.com/bitcoin-sv/dashboards/transaction/{:hash}`
-        * `api.blockchair.com/bitcoin-sv/dashboards/transactions/{:hash},{:hash},...`
-        * `api.blockchair.com/bitcoin-sv/dashboards/address/{:address}` (it will be still possible to use CashAddr in the query string)
-        * `api.blockchair.com/bitcoin-sv/dashboards/addresses/{:address},{:address},...` (the same)
-        * `api.blockchair.com/bitcoin-sv/dashboards/xpub/{:[xyz]pub}`
-        * `api.blockchair.com/bitcoin-sv/outputs?{:params}`
-        * `api.blockchair.com/bitcoin-sv/mempool/outputs?{:params}`
-        * `api.blockchair.com/bitcoin-sv/addresses?{:params}`
-        * `api.blockchair.com/bitcoin-sv/state/changes/block/{:block_id)`
-        * `api.blockchair.com/bitcoin-sv/state/changes/mempool`
-* v.2.0.32 - Jul 15th, 2019
-    * We're launching Bitcoin Testnet support for developers! All the functions available for Bitcoin are now available for Bitcoin Testnet as well, including:
-        * Filtering and sorting blockchain data using infinitables (`api.blockchair.com/bitcoin/testnet/blocks`, `api.blockchair.com/bitcoin/testnet/transactions`, `api.blockchair.com/bitcoin/testnet/outputs`, `api.blockchair.com/bitcoin/testnet/mempool/transactions`, `api.blockchair.com/bitcoin/testnet/mempool/outputs`, and `api.blockchair.com/bitcoin/testnet/addresses`), including aggregation capabilities
-        * Dashboards (`api.blockchair.com/bitcoin/testnet/dashboards/block/{:id|hash}`, `api.blockchair.com/bitcoin/testnet/dashboards/blocks/{:id|hash},{:id|hash},...`, `api.blockchair.com/bitcoin/testnet/dashboards/transaction/{:hash}`, `api.blockchair.com/bitcoin/testnet/dashboards/transactions/{:hash},{:hash},...`), `api.blockchair.com/bitcoin/testnet/dashboards/address/{:address}`, `api.blockchair.com/bitcoin/testnet/dashboards/addresses/{:address},{:address},...`, `api.blockchair.com/bitcoin/testnet/dashboards/xpub/{:[xyz]pub}`
-        * Broadcasting transactions (`api.blockchair.com/bitcoin/testnet/push/transaction`)
-        * State changes (`api.blockchair.com/bitcoin/testnet/state/changes/block/{:block_id)` and `api.blockchair.com/bitcoin/testnet/state/changes/mempool`)
-        * Stats (`api.blockchair.com/bitcoin/testnet/stats`)
-    
-      See documentation for Bitcoin for more details. Please note that USD countervalue for testnet coins is always 0. In the future we also plan to launch support for Bitcoin Cash and Ethereum testnets.
-    * `outputs.type` column for SegWit-coins can now yield `witness_unknown` type
-    * `blocks.generation` column for Bitcoin-like coins can now yield negative values in case there are transaction fees, but the output for the coinbase transaction is less than the sum of the fees
-    * The `utxo` array in the `{:chain}/dashboards/xpub/{[xyz]pub}` dashboard now shows which utxo belongs to which addresses (now it's identical to `{:address1}[,{:address2}…]`)
-* v.2.0.31 - Jul 5th, 2019
-     * Added two new keys to `bitcoin/stats` and `litecoin/stats` calls:
-        * `next_retarget_time_estimate` yields an estimated timestamp of the next difficulty retarget
-        * `next_difficulty_estimate` yields an estimated next difficulty value
-        
-       These keys are available for Bitcoin and Litecoin as other cryptos we support recalculate difficulty every block.   
-* v.2.0.30 - Jul 4th, 2019
-    * We're adding a new table called `addresses` containing the list of all addresses and their confirmed balances to all Bitcoin-like coins (Bitcoin, Bitcoin Cash, Litecoin, Dash, Bitcoin SV, Dogecoin, Groestlcoin). Unlike other "infinitables" (`blocks`, `transactions`, `outputs`) this table isn't live, it's automatically updated every 5 minutes, thus we're classifying it as an "infiniview", meaning it's not really a table, but a view over the `outputs` table. See [the documentation](#link_bitcoinaddresses) for this table. Here are some examples of how it can be used:
-        * `api.blockchair.com/bitcoin/addresses` - show Bitcoin addresses with biggest balances (i.e. the rich list)
-        * `api.blockchair.com/bitcoin/addresses?q=balance(100000000)` - show Bitcoin addresses having exactly 1 BTC on their balance
-        * `api.blockchair.com/bitcoin/addresses?a=count()` - count the number of addresses with a non-zero balance
-        * `api.blockchair.com/bitcoin/addresses?a=count()&q=balance(100000000..)` - count the number of addresses holding at least 1 BTC
-        * `api.blockchair.com/bitcoin/addresses?a=sum(balance)&q=balance(100000000..)` - calculate how many bitcoins do the addresses from the previous example hold
-        * `api.blockchair.com/bitcoin/addresses?a=median(balance)` - calculate the median balance
-        
-      Using this table makes it trivial to build various sorts of rich lists. It's now also possible to retrieve a full list of addresses and balances in one file (available only in our Private API solution). Please note that this table shouldn't be used for retrieving balances for a particular set of addresses, please use the `api.blockchair.com/{:chain}/dashboards/addresses/{:addr1}[,{:addr2}...]` dashboard endpoint instead.
-* v.2.0.29 - Jun 30th, 2019
-    * The [State changes](#link_state) feature now supports requesting potential state changes caused by mempool transactions. The endpoint is `https://api.blockchair.com/{:chain}/state/changes/mempool`. It's now possible to easily build an app watching for transactions incoming/outgoing to/from millions of addresses, see [an example](#link_state).
-* v.2.0.28 - Jun 28th, 2019
-    * Added support for Groestlcoin nodes. The endpoint is `https://api.blockchair.com/groestlcoin/nodes`. The `stats` endpoint (`https://api.blockchair.com/groestlcoin/stats`) now also shows the node count.
-* v.2.0.27 - Jun 27th, 2019
-    * Effective July 19th, there will be a new policy on using our Public API for both non-commercial and commercial projects. Please see [Applying for an API key first](#link_apikey) and apply for an API key before July 19th! Since this is a major compatibility-breaking change, `context.api.next_major_update` is set to `2019-07-19 18:07:19` (see [General Provisions](#link_generalprovisions))
-    * Removed `ethereum.uncles.total_difficulty` column according to https://github.com/ethereum/go-ethereum/issues/19024
-* v.2.0.26 - Jun 20th, 2019
-    * Added `utxo` array showing available unspent transaction outputs for Bitcoin-like coins to the following endpoints:
-        * `api.blockchair.com/{:chain}/dashboards/address/{:address}`
-        * `api.blockchair.com/{:chain}/dashboards/addresses/{:address1}[,{:address2}…]`
-        * `api.blockchair.com/{:chain}/dashboards/xpub/{:[xyz]pub}`
-      
-      Each array element has the following structure:
-        * `block_id` - block number (`-1` for unconfirmed outputs)
-        * `transaction_hash` - transaction hash
-        * `index` - output index in the transaction (also known as the `vout` number)
-        * `value` - output value in satoshi
-        * `address` (only for `addresses` and `xpub` dashboards) - showing the output owner
-      
-      This new functionality **DEPRECATES** usage of an old method to retrieve the UTXO set for an address, namely `api.blockchair.com/{:chain}/outputs?q=recipient({:address}),is_spent(false)`. See the discussion with some examples here: https://github.com/Blockchair/Blockchair.Support/issues/192
-    * The 3 above listed endpoints now also have a new way to iterate through the transaction list and the UTXO set. It's now possible to use `?limit=A,B` and `?offset=C,D` sections in the query. The first number affects the transaction list, the second number affects the UTXO set. If only one number is set, it affects both. The default `limit` is `100`. The maximum `limit` is `10000`. The default offset is `0`. The maximum offset is `1000000`. Here are some examples:
-        * `api.blockchair.com/{:chain}/dashboards/address/{:address}` - shows address data with an array of 100 latest transactions and 100 latest UTXOs
-        * `api.blockchair.com/{:chain}/dashboards/address/{:address}?limit=0` - if you require just some general stats like the address balance
-        * `api.blockchair.com/{:chain}/dashboards/address/{:address}?limit=0,100` - if you need just the general stats and the UTXO set
-        * `api.blockchair.com/{:chain}/dashboards/address/{:address}?limit=100,0` - if you need just the general stats and the transaction list
-        * `api.blockchair.com/{:chain}/dashboards/address/{:address}?limit=100,0&offset=100,0` - ... and to iterate it
-    * The `api.blockchair.com/{:chain}/dashboards/block/{:hash}|{:id}` endpoint now also has an iterable set of transaction hashes included in the block. The default `limit` is `100`. The maximum `limit` is `10000`. The default offset is `0`. The maximum offset is `1000000`. This feature implements https://github.com/Blockchair/Blockchair.Support/issues/189
-* v.2.0.25 - Jun 19th, 2019
-    * Added Groestlcoin support (it has SegWit support, so all API functionality available for Bitcoin and Litecoin is available for Groestlcoin as well).
-    * Added `suggested_transaction_fee_per_byte_sat` key to `{:chain}/stats` calls. This value shows a good enough approximation of an optimal fee value suggested by our engine based on the current mempool state (in satoshi per byte) to get into the next block. Please note that for transactions less important for you this fee suggestion may be too high, while for very important transactions it may not be enough if you'll get unlucky because of the lack of new blocks. Supported for all coins except for Ripple and Ethereum for which we'll have a separate value suggesting an appropriate gas price value.
-    * Updated xpub support to v.b5 (see `xpub support` in the docs: two bugs have been fixed); 
-* v.2.0.24 - Jun 6th, 2019
-    * Added an optional `countdowns` array to `{:chain}/stats` calls. If present, this array contains information about various upcoming events such as hard forks or reward halvings. There are two keys for each event: `event` which contains event description, and `time_left` showing how many seconds are left until the event occurs. Please note that the number of seconds is an approximate value because most events are triggered after a block at a specific height is mined, and since it's not possible to know for sure when a block becomes mined, we can only approximate that.
-* v.2.0.23 - May 24th, 2019
-    * Added support for Dash nodes. The endpoint is `https://api.blockchair.com/dash/nodes`. The `stats` endpoint (`https://api.blockchair.com/dash/stats`) now also shows the node count.
-    * It's now possible to query Dash xpubs (see `xpub support` in the docs)
-    * Dash is now out of beta on our platform
-* v.2.0.22 - May 23rd, 2019
-    * The state changes feature introduced in v.2.0.20 is now available for Ethereum. The endpoint is `https://api.blockchair.com/ethereum/state/changes/block/{:block_id}`. Please note that it shows only the balance changes caused by a block. Values are returned as strings because some wei values don't fit into int64.
-    * Some optimizations to the Ethereum mempool processing - we now show a lot more unconfirmed transactions
-* v.2.0.21 - Apr 22nd, 2019
-    * We've added an ability to query multiple addresses at once. The endpoint is `https://api.blockchair.com/{:chain}/dashboards/addresses/{:addr1},{:addr2},...` (supported for BTC, BCH, LTC, DASH, BSV, and DOGE). E.g., now, if you need to retrieve information about 3 different addresses, you wouldn't need to make 3 separate queries, you'd need to query just `https://api.blockchair.com/bitcoin/dashboards/addresses/1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa,12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX,1HLoD9E4SDFFPDiYfNYnkBLQ85Y51J3Zb1`. The response contains information on the set of addresses (total balance, total transaction count, etc.), information about each address, and the list of the latest 100 transactions for this set (iterable with `&offset=N`). The maximum number of addresses in one query is 100 (higher limits are available for our premium users). Querying multiple addresses at once works much faster (e.g. it's almost 95 times faster to query 100 addresses via the new endpoint compared to making separate requests).
-* v.2.0.20 - Apr 19th, 2019
-    * Now it's possible to query state changes caused by a block for all chains we support except for ETH. The endpoint is `https://api.blockchair.com/{:chain}/state/changes/block/{:block_id}`. The response contains an array where the keys are addresses which were affected by the block, and the values are balance changes. Example: `https://api.blockchair.com/bitcoin/state/changes/block/1` returns `12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX => 5000000000` which means that the only state change caused by this block was rewarding the miner with 50 bitcoins. This is useful if you need to track balance changes for a lot of addresses - you can now simply track state changes and find the needed addresses there instead of constantly retrieving information about the balances.
-* v.2.0.19 - Apr 17th, 2019
-    * Added alpha support for Ripple (see `Ripple support` in the docs)
-    * Introducing Graph API for Ethereum (a possibility to find connections between two Ethereum addresses), see `Ethereum graph` in the docs) - it's in private alpha test mode
-    * If you're constantly hitting Error 402 (i.e. by making too many requests per minute to our free API), you'll now receive Error 429 which means that your IP is banned for an hour. Not honoring our limits may result in a permanent ban
-    * Fixed a couple of minor bugs in our Ethereum engine. We'll be rolling out an updated engine the next week, there shouldn't be any compatibility breaking changes
-* v.2.0.18 - Apr 2nd, 2019
-    * Added biggest transactions over the last 24h to `https://api.blockchair.com/{chain}/stats` calls (`largest_transaction_24h` key);
-    * Updated xpub support to v.b3 (see `xpub support` in the docs, there are some breaking changes); 
-    * Updated aggregation support to v.b4 (see `Data aggregation support` in the docs)
-    * We're **DEPRECATING** usage of unsupported parameters in GET and POST requests to our API endpoints (e.g. `https://api.blockchair.com/stats?myarbitrarykey=1234` might result in a `400 Bad Request` error);
-    * Previously DEPRECATED API v.1 has been shut down
-    * Previously DEPRECATED undocumented `?export=` functionality now requires an API key (apply at <`info@blockchair.com`>) for everything except:
-        * Aggregated results
-        * `blocks` and `mempool/*` tables across all blockchains we support
-* v.2.0.17 - Mar 14th, 2019
-    * Added support for Bitcoin SV nodes, they are now separate from Bitcoin Cash nodes. Endpoint: `https://api.blockchair.com/bitcoin-sv/nodes`.
-* v.2.0.16 - Mar 13th, 2019
-    * Added support for ypub and zpub for Bitcoin and Litecoin in test mode. See `xpub support` in the docs.
-* v.2.0.15 - Mar 12th, 2019
-    * Added Dash support in test mode. We're supporting all the features for DASH as we support for other Satoshi-like coins. Additional columns: `blocks.cbtx`, `transactions.type` (possible types: `simple`, `proregtx`, `proupservtx`, `proupregtx`, `prouprevtx`, `cbtx`, `qctx`, `subtxregister`, `subtxtopup`, `subtxresetkey`, `subtxcloseaccount`), `transactions.is_instant_lock`, `transactions.is_special` (`true` for all transaction types except `simple`), `transactions.special_json` (contains special transaction data encoded in json). E.g.: `https://api.blockchair.com/dash/blocks`
-* v.2.0.14 - Mar 6th, 2019
-    * Added xpub support in test mode. There's now support for retrieving info about multiple addresses using xpub keys. Use `https://api.blockchair.com/{chain}/dashboards/xpub/{xpub}`. See `xpub support` in the docs.
-    * Extended data aggregation abilities (still in test mode), see `Data aggregation support` in the docs. Now it's possbile to find correlations with price, and use special functions (e.g. to calculate SegWit adoption). 
-    * We're **DEPRECATING** API v.1 and will be shutting it down on April 1st, 2019.
-    * We're **DEPRECATING** undocumented `?export=` functionality when exporting large datasets without an API key. This feature will be documented in one of the next updates.
-    * Full support for `CREATE2` in Ethereum (see `https://blockchair.com/ethereum/calls?q=type(create2)#`)
-    * When using CSV/TSV API (undocumented `?export=` functionality) amounts in USD are now shown as in the JSON API version (previously you had to divide them by 10000). `bitcoin.outputs.type`, `ethereum.transaction.type`, and `ethereum.calls.type` now yield strings (e.g. `pubkeyhash` instead of `2`).
-* v.2.0.13 - Feb 13th, 2019
-    * Added support for Cyrillic characters in fulltext search, e.g. `https://api.blockchair.com/bitcoin/outputs?q=script_bin(~привет)`
-* v.2.0.12 - Feb 12th, 2019
-    * Fixed a bug in Ethereum where some contract creations were erroneously shown as failed (thanks Daniel Luca for noticing) 
-* v.2.0.11 - Feb 5th, 2019
-    * We're changing behavior of our `mempool` tables (for all supported coins except for Ethereum): now they don't contain the contents of the latest block (it was quite a clumsy thing to have both mempool transactions and transactions from the latest block in this table, but we've rebuilt our engine, so now `mempool` tables contain mempool content only, and it finally makes sense!). That means:
-        * `{chain}/mempool/blocks` is deprecated. Hint: if you used `mempool/blocks` to get info about the latest block you can simply switch to using `blocks?limit=1`, e.g. `https://api.blockchair.com/bitcoin/blocks?limit=1`
-        * `{chain}/mempool/transactions` and `{chain}/mempool/outputs` now don't contain info from the latest block, while `{chain}/transactions` and `{chain}/outputs` do
-        * Before this update when using (undocumented) `export` functionality there was no information about the latest block at all, now there is
-        * The same change to Ethereum will come in one of the next updates
-    * Dogecoin is out of beta.
-    * Bitcoin SV is out of beta. Please note there's still a possibility that we won't be able to offer some functionality in the long term if blocks suddenly become larger than 1 exabyte, we're still waiting for a more clear development roadmap.
-* v.2.0.10 - Jan 29th, 2019
-    * Added Dogecoin support in test mode
-* v.2.0.9 - Dec 13th, 2018
-    * Added Bitcoin SV support in test mode; updated [aggregation abilities](#data-aggregation-support-since-oct-8th)
-* v.2.0.8 - Nov 26th, 2018
-    * Added the ability to retrieve raw transaction data in hex, see [Retrieving raw transactions](#retrieving-raw-transactions)
-* v.2.0.7 - Nov 22th, 2018
-    * Now it's possible to broadcast transactions using our API, see [Broadcasting transactions](#broadcasting-transactions)
-* v.2.0.6 - Oct 8th, 2018
-    * Added data aggregation of blockchain data in beta mode, see `Data aggregation support` below
-* v.2.0.5 - Oct 8th, 2018
-    * Fixed bug where `balance` and `received` for bitcoin[-cash]|litecoin addresses in the `{chain}/dashboards/address/{address}` call were calculated wrong if there were specific unconfirmed transactions
-* v.2.0.4 - Oct 3rd, 2018
-    * Added some new useful fields to `{chain}/stats` calls
-* v.2.0.3 - Sep 18th, 2018
-    * Added `context.api.tested_features` with the list of features our API supports, but with no guarantee for backward compatibility if updated. Added Omni Layer and Wormhole support in testing mode (see the "Tested features changelog" below)
-* v.2.0.2 - Sep 9th, 2018
-    * Added `address.contract_created` to the `ethereum/dashboards/address/{A}` call
-* v.2.0.1 - Sep 1st, 2018
-    * Added Litecoin support
-
-### <a name="link_testedfeatureschangelog"></a> Tested features changelog
-
-##### ERC-20 support (since Sep 13th 2019)
-
-* v.a1 - Sep 13th - See the changelog for v.2.0.36
-
-##### Ripple support (since Apr 17th 2019)
-
-* v.a1 - Apr 17th - Added alpha support for Ripple. We're not releasing the documentation for API yet, but we begin using it in our front end ourselves. If you're interested in participating in alpha test, drop us a line at <`info@blockchair.com`>
-
-##### Ethereum graph (since Apr 17th 2019)
-
-* v.a1 - Apr 17th - It's now possible to find connections between two Ethereum addresses using our API. Please note that since it's a resource consuming feature, it's available to our Private API users only (if you're interested in participating in alpha test, drop us a line at <`info@blockchair.com`>)
-
-##### xpub support (since Mar 6th 2019)
-
-* v.b5 - Jun 19th
-    * Added support for Groestlcoin
-    * Fixed a bug where some addresses were missing if there were huge gaps between used address (according the BIP44 / BIP32 standards the maximum gap is currently set to 20). Thanks to the Groestlcoin team for providing us with some great xpub examples.
-    * Fixed a bug where some of xpubs containing a very large set of addresses (>100) returned a 500 error.
-* v.b4 - May 24th
-    * Added support for Dash
-* v.b3 - Apr 2nd
-    * Fixed a bug where unconfirmed balance didn't show up for xpubs
-    * Some optimizations to the address calculation process have been made, now response is generated 2.5-3x times faster
-    * Breaking change: paths for ypub, zpub (and possibly in the future for ltub, etc.) now all start with `https://api.blockchair.com/{chain}/dashboards/xpub/`, i.e. to use ypub functionality you'll need to use `https://api.blockchair.com/{chain}/dashboards/xpub/{ypub}` instead of `https://api.blockchair.com/{chain}/dashboards/ypub/{ypub}`
-* v.b2 - Mar 13th - We're bringing support for ypub and zpub as well (for Bitcoin and Litecoin). The endpoints are `https://api.blockchair.com/{chain}/dashboards/ypub/{ypub}` and `https://api.blockchair.com/{chain}/dashboards/zpub/{zpub}` (where `{chain}` is one of these: `bitcoin`, `litecoin`)
-* v.b1 - Mar 6th - There's now support for retrieving info about multiple addresses using xpub keys. Use `https://api.blockchair.com/{chain}/dashboards/xpub/{xpub}` (where `{chain}` is one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, e.g. `https://api.blockchair.com/bitcoin/dashboards/xpub/xpub6CUGRUonZSQ4TWtTMmzXdrXDtypWKiKrhko4egpiMZbpiaQL2jkwSB1icqYh2cfDfVxdx4df189oLKnC5fSwqPfgyP3hooxujYzAu3fDVmz`). The response contains following keys:
-    * `xpub` - information about group of addresses, including its current balance (`xpub.balance`)
-    * `addresses` - array of addresses (returns the same schema as `https://api.blockchair.com/{chain}/dashboards/address/{addr}` with two exceptions: there's no `transaction_count` key, and there's `path key` showing xpub path)
-    * `transactions` - hashes of the latest transactions, iterable using `?offset=N` 
-
-##### Data aggregation support (since Oct 8th 2018)
-
-* v.b5 - Jul 4th - Added an ability to aggregate over the `addresses table`. 
-* v.b4 - Apr 2nd - Fixed a bug where some usd values under functions when exporting to TSV/CSV were multiplied by 10000. Use `&export=tsv` or `&export=csv` to export the dataset into the corresponding format, e.g.: `https://api.blockchair.com/bitcoin/transactions?a=date,avg(fee_usd)&q=time(2019-01-01..2019-04-01)&export=tsv` 
-* v.b3 - Mar 6th
-    * New function `price({ticker1}_{ticker2})` which shows the price if `date` (or one of: `week`, `month`, `year`) is also applied. E.g. it's now possible to build a chart showing correlation between price and transaction count: `https://api.blockchair.com/bitcoin/blocks?a=month,sum(transaction_count),price(btc_usd)`. Supported tickers: usd, btc, bch, bsv, eth, ltc, doge.
-    * Output values now have correct types (e.g. `sum(transaction_count)` is now integer instead of string).
-    * Now it's possible to use special functions and applying special filters to them. Two examples:
-        * `https://api.blockchair.com/bitcoin/blocks?a=date,f(sum(witness_count)/sum(transaction_count))&q=time(2017-08-24..)` - calculate SegWit adoption
-        * `https://api.blockchair.com/bitcoin/outputs?a=date,f(count()/count())&q=type(nulldata),time(2019-02)&aq=0:0` - calculate the percentage of nulldata outputs: the `?aq=0:0` section applies 0th condition to 0th function (NB: after that 0th condition isn't used in the `WHERE` clause)
-* v.b2 - Dec 12th - Now it's possible to apply `?limit=` and `?offset=` sections to aggregated queries. `context.total_rows` now shows how many aggregated results are there, and `context.rows` shows how many are shown.
-* v.b1 - Oct 8th - Bringing the ability to obtain aggregated data. Now you can use Blockchair not only to filter and sort blockchain data, but also to aggregate it.
-
-Please don't use this in production yet, there could be massive changes!
-
-See the examples:
-* https://api.blockchair.com/bitcoin/blocks?a=year,count()# - get the total number of Bitcoin blocks by year
-* https://api.blockchair.com/bitcoin/transactions?a=month,median(fee_usd)# - get the median Bitcoin transaction fees by month
-* https://api.blockchair.com/ethereum/blocks?a=miner,sum(generation)&s=sum(generation)(desc)# - get the list of Ethereum miners (except uncle miners) and sort it by the total amount minted
-* https://api.blockchair.com/bitcoin-cash/blocks?a=sum(fee_total_usd)&q=id(478559..)# - calculate how much miners have collected in fees since the fork
-    
-To use aggregation, put the fields by which you'd like to group by (zero, one, or several), and fields (at least one) which you'd like to calculate using some aggregate function under the `?a=` section. You can also sort the results by one of the fields included in the `?a=` section (`asc` or `desc`) using the `?s=` section, and apply additional filters (see the documentation for the `?q=` section).
-
-Possible fields:
-* Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin:
-    * Blocks table
-        * Group by: date (or week, month, year), version, guessed_miner
-        * To calculate: size, stripped_size (except BCH), weight (except BCH), transaction_count, witness_count, input_count, output_count, input_total, input_total_usd, output_total, output_total_usd, fee_total, fee_total_usd, fee_per_kb, fee_per_kb_usd, fee_per_kwu (except BCH), fee_per_kwu_usd (except BCH), cdd_total, generation, generation_usd, reward, reward_usd — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
-    * Transactions table
-        * Group by: block_id, date (or week, month, year), version, is_coinbase, has_witness (except BCH), input_count, output_count
-        * To calculate: size, weight (except BCH), input_count, output_count, input_total, input_total_usd, output_total, output_total_usd, fee, fee_usd, fee_per_kb, fee_per_kb_usd, fee_per_kwu (except BCH), fee_per_kwu_usd (except BCH), cdd_total — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
-    * Outputs table
-        * Group by: block_id, date (or week, month, year), type, is_from_coinbase, is_spendable, is_spent, spending_block_id, spending_date (no support for spending_week, spending_month, spending_year yet)
-        * To calculate: value, value_usd, spending_value_usd, lifespan, cdd — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
-    * Addresses view
-        * Group by: -
-        * To calculate: balance — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
-* Ethereum:
-    * Blocks table
-        * Group by: date (or week, month, year), miner
-        * To calculate: size, difficulty, gas_used, gas_limit, uncle_count, transaction_count, synthetic_transaction_count, call_count, synthetic_call_count, value_total, value_total_usd, internal_value_total, internal_value_total_usd, generation, generation_usd, uncle_generation, uncle_generation_usd, fee_total, fee_total_usd, reward, reward_usd — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
-    * Uncles table
-        * Group by: parent_block_id, date (or week, month, year), miner
-        * To calculate: size, difficulty, gas_used, gas_limit, generation, generation_usd — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
-    * Transactions table
-        * Group by: block_id, date (or week, month, year), failed, type
-        * To calculate: call_count, value, value_usd, internal_value, internal_value_usd, fee, fee_usd, gas_used, gas_limit, gas_price — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()
-    * Calls table
-        * Group by: block_id, date (or week, month, year), failed, fail_reason, type, transferred
-        * To calculate: child_call_count, value, value_usd — possible functions: avg(field), median(field), min(field), max(field), sum(field), count()  
-
-##### Omni Layer and Wormhole support (since Sep 18th 2018)
-
-* v.a1 - Sep 18th - Added alpha support for Omni Layer in Bitcoin (`bitcoin/omni/properties`, `bitcoin/omni/dashboards/property/{id}` calls, plus `_omni` key in the `bitcoin/dashboards/transaction` call and `_omni` key in the `bitcoin/dashboards/address` call), and support for Wormhole in Bitcoin Cash (`bitcoin-cash/wormhole/properties`, `bitcoin-cash/wormhole/dashboards/property/{id}` calls, plus `_wormhole` key in the `bitcoin-cash/dashboards/transaction` call and `_wormhole` key in the `bitcoin-cash/dashboards/address` call). Please don't use this in production yet, there will be massive changes!
-
-### <a name="link_generalprovisions"></a> General Provisions
-
-* Requests to our server should be made through the HTTPS protocol by GET requests to the domain `api.blockchair.com`
-
-* The server response returns a JSON array always consisting of two subarrays:
-	* `data` - contains some data
-	* `context` - contains metadata, e.g., a status code, a query execution time, and so on.
-	
-* `data` can contain either an associative array (e.g., for `bitcoin/stats`), or for infinitable-queries (see below) - an unnumbered array (for example, `bitcoin/blocks`), or for dashboard-queries (see below) - an associative array with keys which are parts of the query (e.g., for `bitcoin/dashboards/transactions/A,B`, the keys are `A` and `B`), and with values - arrays of data.
-* `context`, depending on the call type, can contain the following useful values:
-	* `context.code` - server response code, can return:
-		* `200` if the request succeeds
-		* `400` if there is a user error in the request
-		* `402` if any limit on the number or complexity of requests is exceeded (see the restrictions below, please contact us at <info@blockchair.com> for private API access)
-		* `500` or` 503` in case of a server error (it makes sense to wait and repeat the same request or open a ticket at https://github.com/Blockchair/Blockchair.Support/issues/new or write to <info@blockchair.com>)
-	* There is a field `context.error` with an error description in the case of` 40x` and `50x` errors
-	* `context.state` contains the number of the latest block in case of requests to the blockchains (for example, for all requests beginning with `bitcoin` there will be the latest block number for Bitcoin). It is useful in order, e.g., to calculate the number of network сonfirmations, or correctly iterate trough the results using `offset`
-	* `context.results` - contains the number of found results for dashboard-calls
-	* `context.limit` - applied limit to the number of results
-	* `context.offset` - applied offset
-	* `context.rows` - contains the number of returned rows for infinitable-calls 
-	* `context.pre_rows` - for some infinitable-calls contains the number of rows that should've been returned before duplicate removal (note: this architecture is used for the `bitcoin[-cash].outputs` tables only)
-	* `context.total_rows` - number of rows that a query returns
-	* `context.api` - an array of data on the status of the API:
-		* `context.api.version` - version of API
-		* `context.api.last_major_update` - time of the last update, that somehow broke backward compatibility
-		* `context.api.next_major_update` - time of the next scheduled update, that can break compatibility, or` null`, if no updates are scheduled
-		* `context.api.tested_features` - the list (comma-separated) of features with version numbers our API supports, but with no guarantee for backward compatibility if updated (in this case there will be no changes to `context.api.next_major_update` as well)
-		* `context.api.documentation` - an URL to the latest version of documentation
-
-Note: it makes sense to check `context.api.version` and, if `context.api.next_major_update` is not `null`, notify yourself and review the changelog. If there are no changes in the changelog that violate the compatibility of your application, make sure that the value of `context.api.next_major_update` won't exceed the current one. If there are changes, adjust the application logic so, that after the specified time a new logic is applied. Additional note: in case the backward compatibility is violated only for one API call, then `context.api.next_major_update` won't be `null` just for this call.
-
-* Request limits: as of now, we allow up to 30 requests per minute to our API. If this limit is exceeded, an error `402` will be returned. In case of abuse, your IP address can be blocked. If your application needs more requests, please contact us at <info@blockchair.com>. If you need to unload a large amount of information once, please contact us at <export@blockchair.com> and, in case the academic or research unloading goal - you will receive the data for free in a convenient format.
-
-* Disclaimer: we do not guarantee the reliability or integrity of the provided information. Information provided by our API should not be used for making critical decisions. We do not guarantee an uptime for our free API.
-
-#### <a name="link_apikey"></a> Please apply for an API key first
-
-tl;dr:
-* If you use our API occasionally a key is not required
-* Non-commercial and academic projects constantly using our API should apply for a free Public API key
-* Commercial projects should apply for a key to Premium API
-
-Since the introduction of our API more than two years ago it has been free to use in both non-commercial and commercial cases with a limit of 30 requests per minute. Obtaining an API key has been required only for those who were hitting this limit.
-
-**Beginning July 19th, 2019 we require all applications using our API to obtain an API key.**
-
-If you develop a non-commercial project (e.g. a website showing some stats) or conducting academic research, please apply for a free key to our Public API (<info@blockchair.com>).
-
-If you develop a commercial project (e.g. a web wallet showing ads), please apply for a key to our Premium API (<info@blockchair.com>).
-
-While we still allow making requests without a key, services which make too many resource-consuming requests may automatically be banned (the API will return HTTP Error 430 in this case).
-
-The key is applied to the end of the request string like this: `api.blockchair.com/bitcoin/blocks?key=MYSECRETKEY`. Please remember that your key is a secret -- don't disclose it to client-side applications as unauthorized users may start to use your key.
-
-### <a name="link_infinitablecalls"></a> Infinitable Calls (blockhain tables)
-
-Return data from the tables according to the filters (`q`), sorting (`s`), limit (`limit`), and offset (`offset`).
-
-A request should be construced like this: `https://api.blockchair.com/{chain}/[/mempool]{table}[?q={query}][&s={sorting}][&limit={limit}][&offset={offset}]`
-
-E.g. `https://api.blockchair.com/bitcoin/blocks?q=size(1000000..)`
-
-**Possible combinations of blockchains and tables:**
-* Bitcoin:
-    * `bitcoin/blocks` - contains all Bitcoin blocks, including the latest one
-    * `bitcoin/transactions` - contains all Bitcoin transactions, excluding mempool transactions and transactions from the latest block   
-    * `bitcoin/outputs` - contains all Bitcoin outputs, excluding the outputs contained in the mempool transactions as well as in the transactions from the latest block
-    * `bitcoin/mempool/transactions` - contains Bitcoin mempool transactions
-	* `bitcoin/mempool/outputs` - contains Bitcoin outputs included in mempool transactions
-* Bitcoin Cash, Bitcoin SV, Litecoin, Dogecoin, Dash, Groestlcoin - the same as for Bitcoin
-* Ethereum:
-	* `ethereum/blocks` - contains all Ethereum blocks, except the last 6
-	* `ethereum/uncles` - contains all Ethereum uncles, except those that belong to the last 6 blocks
-	* `ethereum/transactions` - contains all Ethereum transactions, except transactions from the last 6 blocks
-	* `ethereum/calls` - contains all transaction calls, except calls for the last 6 blocks
-	* `ethereum/mempool/blocks` - contains the last 6 Ethereum blocks, some columns contain nulls
-	* `ethereum/mempool/transactions` - contains all Ethereum transactions from the last 6 blocks as well as mempool transactions 
-
-Notes: to speed up the process, our architecture contains separate tables (`mempool*`) for unconfirmed transactions, as well as for blocks that with a certain probability can be forked off from the main chain. For Ethereum, that's the latest 6 blocks plus the mempool. For Ethereum, we do not "replay" transactions entirely (i.e. not looking for internal calls) for the last 6 blocks, so there is no `mempool/calls` table.
-
-**You can use filters** as follows: `?q=field(value)[,field(value)...]`, where `field` is the column by which a filter is needed, and `value` is a value, special value, or a range of values. The possible columns are listed in the tables below. Possible expressions for values:
-* `value` - e.g., ` bitcoin/blocks?q=id(0)` finds information about block 0
-* `left..` - non-strict inequality - e.g., `bitcoin/blocks?q=id(1..)` finds information about block 1 and above
-* `left...` - strict inequality - e.g., `bitcoin/blocks?q=id(1...)` finds information about block 2 and above
-* `..right` - non-strict inequality - e.g., `bitcoin/blocks?q=id(..1)` finds information about blocks 0 and 1
-* `...right` - strict inequality - e.g.,` bitcoin/blocks?q=id(...1)` finds information only about block 0
-* `left..right` - non-strict inequality - e.g., `bitcoin/blocks?q=id(1..3)` finds information about blocks 1, 2 and 3
-* `left...right` - strict inequality - e.g., `bitcoin/blocks?q=id(1...3)` finds information only about block 2
-* `~like` - occurrence in a string (`LIKE` operator), e.g., `bitcoin/blocks?q=coinbase_data_bin(~hello)` finds all blocks which contain `hello` in `coinbase_data_bin` 
-* `^like` - occurrence at the beginning of a string (`STARTS WITH` operator), e.g., `bitcoin/blocks?q=coinbase_data_hex(^00)` finds all blocks for which` coinbase_data_hex` begins with `00`
-
-For `time*`-fields, the value can be specified in the following formats:
-* `YYYY-MM-DD HH:ii:ss`
-* `YYYY-MM-DD`
-* `YYYY-MM`
-
-Inequalities are also supported for such values, but the left and right values must be in the same format, e.g.: `bitcoin/blocks?q=time(2009-01-03..2009-01-31)`.
-
-If you need to list several filters, you need to sepatate them by commas in the `?q=` section, e.g., `bitcoin/blocks?q=id(500000..),coinbase_data_bin(~hello)`
-
-We're currently testing support for `NOT` and `OR` operators (this may change in the future, including possible removal of these operators).
-
-The operator `NOT` is comma-separated before the expression to be inverted, e.g., `bitcoin/blocks?q=not,id(1..)` returns the block `0`.
-
-The `OR` operator is specified between the expressions and takes precedence (like it's when two expressions around `OR` are wrapped in parentheses), e.g., `bitcoin/blocks?q=id(1),or,id(2)` returns information about blocks 1 and 2.
-
-Maximum guaranteed supported number of filters in one query: 5.
-
-**Sorting** can be used as follows: `?s=field(direction)`, where `direction` can be either `asc` for sorting in ascending order, or `desc` for sorting in descending order, e.g. `bitcoin/blocks?s=id(asc)`
-
-If you need to apply several sorts, you can list them by commas, similar to filters. The maximum guaranteed number of sorts is 2.
-
-**Limit** is used like this: `?limit=N`, where N is a natural number from 1 to 100. The default is 10. In some cases `LIMIT` is ignored, and in such cases `context.limit` will be set to `NULL`.
-
-**Offset** can be used as a paginator, e.g., `?offset=10` returns the next 10 results. `context.offset` takes the value of the set `OFFSET`. The maximum value is 10000. If you need just the last page, it's easier and quicker to change the direction of the sorting to the opposite. Important: when iterating through the results, it is extremely likely that the number of rows in the database will increase because new blocks were found. To avoid that, you may add an additional condition that limits the block id to the value obtained in `context.state` in the first query.
-
-#### <a name="link_bitcoinblocks"></a> bitcoin/blocks, bitcoin-cash/blocks, bitcoin-sv/blocks, litecoin/blocks, dogecoin/blocks, dash/blocks, groestlcoin/blocks
-
-E.g. `https://api.blockchair.com/bitcoin/blocks`
-
-Returns data about blocks
-
-| Column | Type | Description | Q? | S? | 
-|--------|------|-------------|----|----|
-| id | int | Block height | + | + |
-| hash | string `[0-9a-f]{64}` | Block hash | + | + |
-| date | string `YYYY-MM-DD` | Block date (UTC) | | |
-| time | string `YYYY-MM-DD HH:ii:ss` | Block time (UTC) | + | + |
-| median_time | string `YYYY-MM-DD HH:ii:ss` | Block median time (UTC) | | | + |
-| size | int | Block size, in bytes (may be more than 1 MB for Bitcoin, up to 32 MB for Bitcoin Cash) | + | + |
-| stripped_size(\*) | int | Block size in bytes without taking witness information into account (up to 1 MB for Bitcoin) | + | + |
-| weight (\*) | int | Block weight in weight units (up to 4 MWU) | + | + |
-| version | int | Version field | + | + |
-| version_hex | string `[0-9a-f]*` | Version field in hex | | |
-| version_bits | string `[01]{30}` | Version field in binary form | | |
-| merkle_root | `[0-9a-f]{64}` | Merkle root hash | | |
-| nonce | int | Nonce value | + | + |
-| bits | int | Bits field | + | + |
-| difficulty | float | Difficulty | + | + |
-| chainwork | string `[0-9a-f]{64}` | Chainwork field | | |
-| coinbase_data_hex | string `[0-9a-f]*` | Hex information contained in the input of the coinbase transaction | + | |
-| transaction_count | int | Number of transactions in the block | + | + |
-| witness_count (\*) | int | Number of transactions in the block containing witness information | + | + |
-| input_count | int | Number of inputs in all block transactions | + | + |
-| output_count | int | Number of outputs in all block transactions | + | + |
-| input_total | int | Sum of inputs in satoshi | + | + |
-| input_total_usd | float | Sum of outputs in USD (hereinafter for USD - at the moment `date`) | + | + |
-| output_total | int | Sum of outputs in Satoshi | + | + |
-| output_total_usd | float | Sum of outputs in USD | + | + |
-| fee_total | int | Total fee in Satoshi | + | + |
-| fee_total_usd | float | Total fee in USD | + | + |
-| fee_per_kb | float | Fee per kilobyte (1000 bytes of data) in satoshi | + | + |
-| fee_per_kb_usd | float | Fee for kilobyte of data in USD | + | + |
-| fee_per_kwu (\*) | float | Fee for 1000 weight units of data in Satoshi | + | + |
-| fee_per_kwu_usd (\*) | float | Fee for 1000 weight units of data in USD | + | + |
-| cdd_total | float | Number of coindays destroyed by all transactions of the block | + | + |
-| generation | int | Miner reward for the block in Satoshi | + | + |
-| generation_usd | float | Miner reward for the block in USD | + | + |
-| reward | int | Miner total reward (reward + total fee) in Satoshi | + | + |
-| reward_usd | float | Miner total reward  (reward + total fee) in USD | + | + |
-| guessed_miner | string `.*` | The supposed name of the miner who found the block (the heuristic is based on `coinbase_data_bin` and the addresses to which the reward goes) | + | + |
-| is_aux (\*\*) | boolean | Whether a block was mined using AuxPoW | | + | |
-| cbtx (\*\*\*) | string `.*` | Coinbase transaction data (encoded JSON) | | | |
-
-
-Additional synthetic columns (you can search over them and / or sort them, but they are not shown)
-
-| Column | Type | Description | Q? | S? | 
-|--------|------|-------------|----|----|
-| coinbase_data_bin | string `.*` | Text representation of coinbase data. Allows you to use the `LIKE` operator: `?q=coinbase_data_bin(~hello)` | + | |
-
-Notes:
-- for the columns `id` and` hash` the increased efficiency at unloading of one record is applied
-- there is no possibility to search over the `date` column directly, you can search like `?q=time(YYYY-MM-DD)`
-- the search over the column `coinbase_data_hex` is done by the operator `^`, you can also use `~` for `coinbase_data_bin` (however, the field `coinbase_data_bin` will not be shown anyway)
-- (\*) - only for Bitcoin, Litecoin, and Groestlcoin (SegWit data)
-- (\*\*) - only for Dogecoin
-- (\*\*\*) - only for Dash
-- the default sorting - id DESC
-
-#### <a name="link_bitcointransactions"></a> bitcoin/transactions, bitcoin/mempool/transactions, bitcoin-cash/transactions, bitcoin-cash/mempool/transactions, litecoin/transactions, litecoin/mempool/transactions, dogecoin/transactions, dogecoin/mempool/transactions, dash/transactions, dash/mempool/transactions, bitcoin-sv/transactions, bitcoin-sv/mempool/transactions, groestlcoin/transaction, groestlcoin/mempool/transactions
-
-E.g. `https://api.blockchair.com/dogecoin/mempool/transactions`
-
-Returns transaction data
-
-| Column | Type | Description | Q? | S? | 
-|--------|------|-------------|----|----|
-| block_id | int | The height (id) of the block containing the transaction | + | + |
-| id | int | Internal transaction id (not related to the blockchain, used for internal purposes) | + | + |
-| hash | string `[0-9a-f]{64}` | Transaction hash | + | |
-| date | string `YYYY-MM-DD` | The date of the block containing the transaction (UTC) | | |
-| time | string `YYYY-MM-DD HH:ii:ss` | Time of the block containing the transaction (UTC) | + | + |
-| size | int | Transaction size in bytes | + | + |
-| weight (\*) | int | Weight of transaction in weight units | + | + |
-| version | int | Transaction version field | + | + |
-| lock_time | int | Lock time - can be either a block height, or a unix timestamp | + | + |
-| is_coinbase | boolean | Is it a coinbase (generating new coins) transaction? (For such a transaction `input_count` is equal to` 1` and means a synthetic coinbase input) | | + | |
-| has_witness (\*) | boolean | Is there a witness part in the transaction (using SegWit)? | | + | |
-| input_count | int | Number of inputs | + | + |
-| output_count | int | Number of outputs | + | + |
-| input_total | int | Input value in satoshi | + | + |
-| input_total_usd | float | Input value in USD | + | + |
-| output_total | int | Output value in Satoshi | + | + |
-| output_total_usd | float | Total output value in USD | + | + |
-| fee | int | Fee in Satoshi | + | + |
-| fee_usd | float | Fee in USD | + | + |
-| fee_per_kb | float | Fee per kilobyte (1000 bytes) of data in Satoshi | + | + |
-| fee_per_kb_usd | float | Fee for kilobyte of data in USD | + | + |
-| fee_per_kwu (\*) | float | Fee for 1000 weight units of data in Satoshi | + | + |
-| fee_per_kwu_usd (\*) | float | Fee for 1000 weight units of data in USD | + | + |
-| cdd_total | float | The number of destroyed coindays | + | + |
-
-Notes:
-- for the columns `id` and` hash` the increased efficiency at unloading of one record is applied
-- there is no possibility to search over `date` column, you can use `?q=time(YYYY-MM-DD instead
-- (\*) - only for Bitcoin, Litecoin, and Groestlcoin (SegWit data)
-- the default sort is id DESC
-- `block_id` for mempool transactions is `-1`
-
-Additional Dash-specific columns:
-
-| Column | Type | Description | Q? | S? | 
-|--------|------|-------------|----|----|
-| type | string (enum) | Transaction type, one of the following: `simple`, `proregtx`, `proupservtx`, `proupregtx`, `prouprevtx`, `cbtx`, `qctx`, `subtxregister`, `subtxtopup`, `subtxresetkey`, `subtxcloseaccount` | + | + |
-| is_instant_lock | boolean | | + | |
-| is_special | boolean | | + | `true` for all transaction types except `simple` |
-| special_json | string `.*` | Special transaction data (encoded JSON) | | | |
-
-#### <a name="link_bitcoinoutputs"></a> bitcoin/outputs, bitcoin/mempool/outputs, bitcoin-cash/outputs, bitcoin-cash/mempool/outputs, litecoin/outputs, litecoin/mempool/outputs, dogecoin/outputs, dogecoin/mempool/outputs, dash/outputs, dash/mempool/outputs, bitcoin-sv/outputs, bitcoin-sv/mempool/outputs, groestlcoin/outputs, groestlcoin/mempool/outputs
-
-E.g. `https://api.blockchair.com/litecoin/mempool/outputs`
-
-Returns information about the outputs (that become inputs when they are spent, and then `spending*` information appears)
-
-| Column | Type | Description | Q? | S? | 
-|--------|------|-------------|----|----|
-| block_id | int | Id of a block containing the transaction cointaining the output | + | + |
-| transaction_id | int | The internal transaction id containing the output | + | + |
-| index | int | Output index in a transaction (from 0) | + | + |
-| transaction_hash | string `[0-9a-f]{64}` | Transaction hash | | |
-| date | string `YYYY-MM-DD` | Date of a block containing the output (UTC) | | |
-| time | string `YYYY-MM-DD HH:ii:ss` | Time of a block containing the output (UTC) | + | + |
-| value | int | Monetary value of output | + | + |
-| value_usd | float | Monetary value of output in USD at the moment `date` | + | + |
-| recipient | string `[0-9a-zA-Z\-]*` | Bitcoin address or synthetic address of an output recipient | + | + |
-| type | string (enum) | Output type, one of the following: `pubkey/pubkeyhash/scripthash/multisig/nulldata/nonstandard/witness_v0_scripthash/witness_v0_keyhash/witness_unknown` | + | + |
-| script_hex | string `[0-9a-f]*` | Hex of the output script | + | |
-| is_from_coinbase | boolean | Is it a coinbase transaction output? | | + | |
-| is_spendable | null or boolean | Is it theoretically possible to spend this output? For `pubkey` and` multisig` outputs, the existence of the corresponding private key is tested, in that case `true` and `false` are the possible values, depending on the result of the check. For `nulldata` outputs, it is always `false`. For other types it is impossible to check trivially, in this case `null` is shown | + | |
-| is_spent | boolean | Is this output spent? (Each field further contains `null` if it is not spent | + | |
-| spending_block_id | null or int | Id of the block containing the spending transaction. `null` if the output is not yet spent. | | + | + |
-| spending_transaction_id | null or int | Internal transaction id where the output is spent | + | + |
-| spending_index | null or int | Input index in the spending transaction (from 0) | + | + |
-| spending_transaction_hash | null or string `[0-9a-f]{64}` | Spending transaction hash | | |
-| spending_date | null or string `YYYY-MM-DD` | Date of the block, in which the output is spent | | |
-| spending_time | null or string `YYYY-MM-DD HH:ii:ss` | Time of the block in which the output is spent | + | + |
-| spending_value_usd | null or float | Monetary value of output in USD at the time of `spending_date` | + | + |
-| spending_sequence | null or int | The technical sequence value | + | + |
-| spending_signature_hex | null or string `[0-9a-f]*` | Hex of the spending script (signature) | | |
-| spending_witness (\*) | null or string (JSONB) | Witness information in the escaped JSONB format | | |
-| lifespan | null or int | The number of seconds from the time of the output creation (`time`) to its spending (`spending_time`), `null` if the output is not spent | + | + |
-| cdd | null or float | The number of coindays destroyed spending the output | + | + |
-
-Additional synthetic columns (you can search over them and / or sort them, but they are not shown)
-
-| Column | Type | Description | Q? | S? | 
-|--------|------|-------------|----|----|
-| script_bin | string `.*` | Text representation of script_hex. Allows you to use the `LIKE` operator: `?q=script_bin(~hello)`| + | |
-
-Notes:
-- for columns `transaction_id` and `spending_transaction_id`, the increased efficiency at unloading records if one specific transaction is specified (and not the range), is applied
-- there is no possibility to search over the `date` and `spending_date` columns, you can use `?q=time(YYYY-MM-DD)` and `?q=spending_time(YYYY-MM-DD)` instead
-- the search over `script_hex` column can be done by the operator `^`, you can also use `~` for `script_bin` (however, the field `script_bin` will still not be shown)
-- (\*) - only for Bitcoin, Litecoin, and Groestlcoin (SegWit data)
-- the default sort is - transaction_id DESC
-
-#### <a name="link_bitcoinaddresses"></a> bitcoin/addresses, bitcoin-cash/addresses, litecoin/addresses, dogecoin/addresses, dash/addresses, bitcoin-sv/addresses, groestlcoin/addresses
-
-E.g. `https://api.blockchair.com/bitcoin/addresses`
-
-The `addresses` view contains the list of all addresses and their confirmed balances. Unlike other infinitables (`blocks`, `transactions`, `outputs`) this table isn't live, it's automatically updated every 5 minutes, thus we classify it as a "view".
-
-| Column | Type | Description | Q? | S? | 
-|--------|------|-------------|----|----|
-| address | string `[0-9a-zA-Z\-]*` | Bitcoin address or synthetic address | | |
-| balance | int | Its confirmed balance | + | + |
-
-Notes:
-- the default sort is - `balance DESC`
-
-#### <a name="link_ethereumblocks"></a> ethereum/blocks, ethereum/mempool/blocks
-
-Returns block data (`mempool` contains the latest 6 blocks)
-
-| Column | Type | Description | Q? | S? | 
-|--------|------|-------------|----|----|
-| id | int | Block id | + | + |
-| hash | string `0x[0-9a-f]{64}` | Block hash (with 0x) | + | |
-| date | string `YYYY-MM-DD` | Block date (UTC) | | |
-| time | string `YYYY-MM-DD HH:ii:ss` | Block time (UTC) | + | + |
-| size | int | Block size in bytes | + | + |
-| miner | string `0x[0-9a-f]{40}` | Address of a rewarded miner (from 0x) | + | |
-| extra_data_hex | string `[0-9a-f]*` | Additional data included by the miner | + | |
-| difficulty | int | Difficulty | + | + |
-| gas_used | int | Gas amount used by block transactions | + | + |
-| gas_limit | int | Gas limit for a block set up by the miner | + | + |
-| logs_bloom | string `[0-9a-f]*` | Logs Bloom | | |
-| mix_hash | string `[0-9a-f] {64}` | Hash Mix hash | | |
-| nonce | string `[0-9a-f]*` | Nonce value | | |
-| receipts_root | string `[0-9a-f] {64}` | Receipts Root hash | | |
-| sha3_uncles | string `[0-9a-f] {64}` | SHA3 Uncles hash | | |
-| state_root | string `[0-9a-f] {64}` | State Root hash | | |
-| total_difficulty | numeric string | Total difficulty | | |
-| transactions_root | string `[0-9a-f] {64}` | Transactions Root hash | | |
-| uncle_count | int | Number of uncles | + | + |
-| transaction_count | int | Number of transactions in the block | + | + |
-| synthetic_transaction_count | int | The number of synthetic transactions (they do not exist as separate transactions, but they change the state, e.g., genesis block transactions, miner rewards, DAO-fork transactions) | + | + |
-| call_count (\*) | int | Total number of calls spawned by transactions | + | + |
-| synthetic_call_count | int | Number of synthetic calls (same as synthetic transactions) | + | + |
-| value_total | numeric string | Monetary value of all block transactions in wei, hereinafter `numeric string` - numeric value passed as a string, because wei-values do not fit into uint64 | + | + |
-| value_total_usd | float | Monetary value of all block transactions in USD | + | + |
-| internal_value_total (\*) | numeric string | Monetary value of all internal calls in the block (see note below) in wei | + | + |
-| internal_value_total_usd (\*) | float | Monetary value of all internal calls in a block in USD | + | + |
-| generation | numeric string | The reward of a miner for the block generation in wei (3 or 5 ether + reward for uncle inclusion) | + | + |
-| generation_usd | float | The reward of a miner for the block generation in USD | + | + |
-| uncle_generation (\*) | numeric string | Total reward of uncle miners in wei | + | + |
-| uncle_generation_usd (\*) | float | Total reward of uncle miners in USD | + | + |
-| fee_total (\*) | numeric string | Total fee in wei | + | + |
-| fee_total_usd (\*) | float | Total fee in USD | + | + |
-| reward (\*) | numeric string | Total reward of the miner in the wei (reward for finding the block + fees) | + | + |
-| reward_usd (\*) | float | Total reward of the miner in USD | + | + |
-
-Additional synthetic columns (you can search over them and / or sort them, but they are not shown)
-
-| Column | Type | Description | Q? | S? | 
-|--------|------|-------------|----|----|
-| extra_data_bin | string `.*` | Text representation of extra data. Allows you to use the `LIKE` operator: `?q=extra_data_bin(~hello)`| + | |
-
-Notes:
-- (\*) - always `null` for `mempool/blocks`
-- for `id` and` hash` columns the increased efficiency at unloading of one record is applied
-- there is no possibility to search the `date` column, but you can use `?q=time(YYYY-MM-DD)` instead
-- search by fields that contain values in wei (`value_total`,` internal_value_total`, `generation`,` uncle_generation`, `fee_total`,` reward`) can be with some inaccuracies
-- the search over `extra_data_hex` column can be done by the operator `^`, you can also use `~`for `extra_data_bin` (however, the field `extra_data_bin` will still not be shown)
-- the difference between `value_total` and `internal_value_total`: e.g., a transaction itself sends 0 eth, but this transaction is a call of a contract that sends someone, let's say, 10 eth. Then `value` will be 0 eth, and `internal_value` - 10 eth
-- the default sort is id DESC
-
-#### <a name="link_ethereumuncles"></a> ethereum/uncles
-
-Returns information about uncles
-
-| Column | Type | Description | Q? | S? | 
-|--------|------|-------------|----|----|
-| parent_block_id | int | Parent block id | + | + |
-| index | int | Uncle index in the block | + | + |
-| id | int | Uncle id | + | + |
-| hash | string `0x[0-9a-f]{64}` | Uncle hash (with 0x) | + | |
-| date | string `YYYY-MM-DD` | Date of generation (UTC) | | |
-| time | string `YYYY-MM-DD HH:ii:ss` | Time of generation (UTC) | + | + |
-| size | int | Uncle size in bytes | + | + |
-| miner | string `0x[0-9a-f]{40}` | Address of the rewarded miner (with 0x) | + | |
-| extra_data_hex | string `[0-9a-f]*` | Additional data included by the miner | + | |
-| difficulty | int | Difficulty | + | + |
-| gas_used | int | Amount of gas used by transactions | + | + |
-| gas_limit | int | Gas limit for the block set up by the miner | + | + |
-| logs_bloom | string `[0-9a-f]*` | Logs Bloom | | |
-| mix_hash | string `[0-9a-f]{64}` | Hash Mix hash | | |
-| nonce | string `[0-9a-f]*` | Nonce value | | |
-| receipts_root | string `[0-9a-f]{64}` | Receipts Root hash | | |
-| sha3_uncles | string `[0-9a-f]{64}` | Uncles hash | | |
-| state_root | string `[0-9a-f]{64}` | State Root hash | | |
-| total_difficulty | numeric string | Total difficulty | | |
-| transactions_root | string `[0-9a-f]{64}` | Transactions Root hash | | |
-| generation | numeric string | The reward of the miner who generated the uncle, in wei | + | + |
-| generation_usd | float | The award of the miner who generated uncle, in USD | + | + |
-
-Additional synthetic columns (you can search over them and / or sort them, but they are not shown)
-
-| Column | Type | Description | Q? | S? | 
-|--------|------|-------------|----|----|
-| extra_data_bin | string `.*` | Text representation of extra data. Allows you to use the `LIKE` operator:`?Q=extra_data_bin(~hello)` | + | |
-
-Notes:
-
-- for the columns `parent_block_id` and `hash` increased efficiency when uploading one or more records is applied
-- there is no possibility to search the `date` column directly, but you can use `?q=time(YYYY-MM-DD)` instead
-- search by fields that contain values in wei (`generation`) can be with some inaccuracies
-- the search over `extra_data_hex` column can be done by the operator `^`, you can also use `~` for `extra_data_bin` (however, the field `extra_data_bin` will still not be shown)
-- sort by default - parent_block_id DESC
-
-#### <a name="link_ethereumtransactions"></a> ethereum/transactions, ethereum/mempool/transactions
-
-Returns transaction information
-
-| Column | Type | Description | Q? | S? | 
-|--------|------|-------------|----|----|
-| block_id | int | Id of the block containing the transaction | + | + |
-| id | int | Transaction id (not related to the blockchain, used for internal purposes) | + | + |
-| index (\*) (\*\*) | int | The transaction index number in the block | + | + |
-| hash (\*\*) | string `0x[0-9a-f]{64}` | Transaction hash (with 0x) | + | |
-| date | string `YYYY-MM-DD` | Date of the block containing the transaction (UTC) | | |
-| time | string `YYYY-MM-DD HH:ii:ss` | Time of the block containing the transaction (UTC) | + | + |
-| size | int | Transaction size in bytes | + | + |
-| failed (\*) | bool | Failed transaction or not? + | | |
-| type (\*) | string (enum) | Transaction type with one of the following values: `call/create/call_tree/create_tree/synthetic_coinbase`. Description in the note. | | + | |
-| sender (\*\*) | string `0x[0-9a-f]{40}` | Address of the transaction sender (with 0x) | + | |
-| recipient | string `0x[0-9a-f]{40}` | Address of the transaction recipient (with 0x) | + | |
-| call_count (\*) | int | Number of calls in the transaction  | + | + |
-| value | numeric string | Monetary value of transaction in wei, here and below `numeric string` - is a numeric value passed as a string, because wei-values do not fit into uint64 | + | + |
-| value_usd | float | Value of transaction in USD | + | + |
-| internal_value (\*) | numeric string | Value of all inner calls in the transaction in wei | + | + |
-| internal_value_usd (\*) | float | Value of all internal calls in the transaction in USD | + | + |
-| fee (\*) (\*\*) | numeric string | Fee in wei | + | + |
-| fee_usd (\*) (\*\*) | float | Fee in USD | + | + |
-| gas_used (\*) (\*\*) | int | Amount of gas used by a transaction | + | + |
-| gas_limit (\*\*) | int | Gas limit for transaction set by the sender | + | + |
-| gas_price (\*\*) | int | Price for gas set by the sender | + | + |
-| input_hex (\*\*) | string `[0-9a-f]*` | Transaction input data | + | |
-| nonce (\*\*) | string `[0-9a-f]*` | Nonce value | | |
-| v (\*\*) | string `[0-9a-f]*` | V value | | |
-| r (\*\*) | string `[0-9a-f]*` | R value | | |
-| s (\*\*) | string `[0-9a-f]*` | S value | | |
-
-Additional synthetic columns (you can search over them and / or sort them, but they are not shown)
-
-| Column | Type | Description | Q? | S? | 
-|--------|------|-------------|----|----|
-| input_bin | string `.*` | Text representation of input data. Allows you to use the `LIKE` operator: `?q=input_bin(~hello)` | + | |
-
-Notes:
-
-- (\*) - is always `null` for `mempool/transactions`
-- (\*\*) - is always equal to `null` if `type` = `synthetic_coinbase`
-- for the columns `id` and` hash` the increased efficiency at unloading of one record is applied
-- there is no possibility to search over `date` column, you can search like `?q=time(YYYY-MM-DD)` instead
-- search by fields that contain values in wei (`value`,` internal_value`) can be with some inaccuracies
-- the search over `input_hex` column can be done by the operator `^`, you can also use `~` for `input_bin` (however, the field `input_bin` will still not be included in output)
-- the difference between `value_total` and `internal_value_total`: e.g., a transaction itself sends 0 eth, but this transaction is a call of a contract that sends someone, let's say, 10 eth. Then `value` will be 0 eth, and `internal_value` - 10 eth
-- the default sort is - id DESC
-- possible types (`type`) of transactions:
-    * call - the transaction transfers the value, but there are no more calls (a simple ether sending, not in favor of a contract, or the call to a contract that does nothing)
-    * create - create a new contract
-    * call_tree - the transaction calls a contract that makes some other calls
-    * create_tree - create a new contract that create contracts or starts making calls
-    * synthetic_coinbase - a synthetic transaction for awarding a reward to the miner (block or uncle)
-
-#### <a name="link_ethereumcalls"></a> ethereum/calls
-
-Returns information about internal calls
-
-| Column | Type | Description | Q? | S? | 
-|--------|------|-------------|----|----|
-| block_id | int | Block id containing a call | + | + |
-| transaction_id | int | Transaction id containing the call | + | + |
-| transaction_hash (\*\*) | string `0x[0-9a-f]{64}` | Transaction hash (with 0x) containing the call | | |
-| index | string | Call index within the transaction (tree-like, e.g., "0.8.1") | + | + |
-| depth | int | Call depth within the call tree (starting at 0) | + | + |
-| date | string `YYYY-MM-DD` | Date of the block that contains the call (UTC) | | |
-| time | string `YYYY-MM-DD HH:ii:ss` | Time of the block that contains the call (UTC) | + | + |
-| failed | bool | Failed call or not | + | |
-| fail_reason | string `.*` or null | If failed, then the failure description, if not, then `null` | + | |
-| type | string (enum) | The call type, one of the following values: `call/delegatecall/staticcall/callcode/selfdesctruct/create/synthetic_coinbase` | + | |
-| sender (\*\*) | string `0x[0-9a-f]{40}` | Sender's address (with 0x) | + | |
-| recipient | string `0x[0-9a-f]{40}` | Recipient's address (with 0x) | + | |
-| child_call_count | int | Number of child calls | + | + |
-| value | numeric string | Call value in wei, hereinafter `numeric string` - is a numeric string passed as a string, because wei-values do not fit into uint64 | + | + |
-| value_usd | float | Call value in USD | + | + |
-| transferred | bool | Has ether been transferred? (`false` if `failed`, or if the type of transaction does not change the state, e.g., `staticcall` | + | |
-| input_hex (\*\*) | string `[0-9a-f]*` | Input call data | | |
-| output_hex (\*\*) | string `[0-9a-f]*` | Output call data | | |
-
-Notes:
-
-- (\*\*) - is always `null` if` type` = `synthetic_coinbase`
-- for the column `transaction_id` increased efficiency when uploading one record is applied
-- there is no possibility to search over `date` column, use searching `?q=time(YYYY-MM-DD)` instead
-- search by fields that contain values in wei (`value`,` internal_value`) can be with some inaccuracies
-- the default sort is transaction_id DESC
-- sorting by `index` is alphabetical (ie "0.2" goes after "0.11"), in some cases a switch to natural sorting is used (for example, when there is a filter for `transaction_id`)
-
-#### Notes
-
-- for unconfirmed transactions (and outputs in the case of bitcoin[-cash]), the following rules are applied:
-    - their `block_id` is equal to `-1`
-    - `date` and` time` indicate the time when the transaction was received by our node
-- when using `offset`, it is reasonable to add to the filters the maximum block number (`?q=block_id(..N)`), since it is very likely that during the iteration new rows will be added to the table. For convenience, you can take the value of `context.state` from the first result of any query containing the number of the latest block at the query time and use this result later on.
-
-### <a name="link_dashboardcalls"></a> Dashboard calls
+## [Blockchair.com](https://blockchair.com/) API v.2.0.38 Documentation
+
+```
+    ____  __           __        __          _     
+   / __ )/ /___  _____/ /_______/ /_  ____ _(_)____
+  / __  / / __ \/ ___/ //_/ ___/ __ \/ __ `/ / ___/
+ / /_/ / / /_/ / /__/ ,< / /__/ / / / /_/ / / /    
+/_____/_/\____/\___/_/|_|\___/_/ /_/\__,_/_/_/     
+                                                   
+```
+
+## Table of contents
+
++ [Introduction](#link_M0)
+  + [Supported blockchains and second layers](#link_M01)
+  + [Quick endpoint reference](#link_M02)
+  + [Basic API request](#link_M03)
+  + [Basic API response](#link_M04)
+  + [API rate limits, API keys, and Premium API](#link_M05)
+  + [API versioning](#link_M06)
++ [General stats endpoints](#link_M1) (Retrieve overall information about blockchains and tokens)
+    + [Stats on multiple blockchains at once](#link_000)
+    + [Bitcoin-like blockchain stats](#link_001)
+    + [Ethereum-like blockchain stats](#link_002)
+    + [Ripple-like blockchain stats](#link_003)
+    + [Omni Layer stats](#link_500)
+    + [Wormhole stats](#link_500)
+    + [ERC-20 stats](#link_509)
++ [Dashboard endpoints](#link_M2) (Retrieve information about various entities in a neat format from our databases)
+  + [Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, and Bitcoin Testnet](#link_M21)
+    + [Block](#link_100)
+    + [Transaction](#link_200)
+    + [Address and extended public key (xpub)](#link_300)
+  + [Ethereum](#link_M22)
+      - [Block](#link_103)
+      - [Uncle](#link_401)
+      - [Transaction](#link_204)
+      - [Address](#link_302)
+  + [Second layers](#link_M23)
+      - [Omni Layer property](#link_501)
+      - [Wormhole property](#link_501)
+      - [ERC-20 token](#link_503)
+      - [ERC-20 token holder](#link_504)
++ [Raw data endpoints](#link_M3) (Retrieve raw information about various entities directly from our full nodes)
+    - [Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, and Bitcoin Testnet](#link_M31)
+      - [Block](#link_101)
+      - [Transaction](#link_201)
+    - [Ethereum](#link_M32)
+      - [Block](#link_104)
+      - [Transaction](#link_205)
+    - [Ripple](#link_M33)
+      - [Ledger](#link_106)
+      - [Transaction](#link_207)
+      - [Account](#link_303)
++ [Infinitable endpoints (blockchain tables)](#link_05) (Filter, sort, and aggregate blockchain data)
+    + [Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, and Bitcoin Testnet](#link_M41)
+      + [Blocks](#link_102) (table)
+      + [Transactions](#link_203) (table)
+      + [Outputs](#link_400) (table)
+      + [Addresses](#link_301) (view)
+    + [Ethereum](#link_M42)
+      + [Blocks](#link_102) (table)
+      + [Uncles](#link_402) (table)
+      + [Transactions](#link_206) (table)
+      + [Calls](#link_403) (table)
+    + [Second layers](#link_M43)
+      + [Omni Layer properties](#link_502) (table)
+      + [Wormhole properties](#link_502) (table)
+      + [ERC-20 tokens](#link_505) (table)
+      + [ERC-20 transactions](#link_506) (table)
++ [Misc endpoints](#link_M5)
+    + [Broadcasting transactions](#link_202)
+    + [Nodes](#link_508)
+    + [State changes](#link_507)
+    + [Premium API endpoints](#link_M51)
+      + [Premium API usage stats](#link_600)
++ [Support](#link_M7)
+
+
+
+## <a name="link_M0"></a> Introduction
+
+Blockchair API provides developers with access to data contained in [9 different blockchains](#link_M01). Unlike other APIs, Blockchair also support numerous analytical queries like filtering, sorting, and aggregating blockchain data.
+
+Here are some examples of what you can build using our API:
+
+* A wallet supporting multiple blockchains (request transaction, address, xpub data, and also broadcast transactions)
+* An analytical service showing some blockchain stats and visualizations
+* A service tracking the integrity of your or your customers' cold wallets
+* A solid academic research
+* Some fun stuff like finding the first Bitcoin block over 1 megabyte in size
+
+For some tasks like extracting lots of blockchain data (e.g. all transactions over a 2 month period) it's better to use our Database dumps feature instead (see https://blockchair.com/dumps for documentation) — it's possible to download the entire database dumps in TSV format and insert the data onto your own database server (like Postgresql or whatever) to further analyze it.
+
+Almost every API endpoint description is accompanied with an example visualization of the data on our website (https://blockchair.com), and it's also worth it to note that the website is working completely using our API (yes, even the data for charts is pulled from one of our endpoints, and it's fully customizable).
+
+Blockchair cares about user privacy, we neither collect nor share with anyone your personal data rather than for statistical purposes. That includes using the API as well. Please refer to our Privacy policy: https://blockchair.com/privacy. Please also check out our Terms of service available here: https://blockchair.com/terms — by using our API, you are agreeing to these terms.
+
+We have a public tracker for bugs, issues, and questions available on GitHub: https://github.com/Blockchair/Blockchair.Support/issues — please use it or contact us by [any other means available](#M7).
+
+Our API is free to try under some limitations, and we have a variety of premium plans. Please check out the information about [the limits and plans](#M05).
+
+
+
+### <a name="link_M01"></a> Supported blockchains and second layers
+
+As of today, our API supports **9 blockchains** divided into 3 groups:
+* Bitcoin-like blockchains (Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin), also known as UTXO-based blockchains
+* Ethereum-like blockchains (Ethereum)
+* Ripple-like blockchains (Ripple)
+
+Within a group, there's no or little difference between the set of available endpoints and their output. 
+
+| Blokchain | Group | API path prefix | Support status |
+|-----------|------|----------|-------------|
+| Bitcoin | Bitcoin-like | `https://api.blockchair.com/bitcoin` | Full support |
+| Bitcoin Cash | Bitcoin-like | `https://api.blockchair.com/bitcoin-cash` | Full support |
+| Ethereum | Ethereum-like | `https://api.blockchair.com/ethereum` | Full support |
+| Litecoin | Bitcoin-like | `https://api.blockchair.com/litecoin` | Full support |
+| Bitcoin SV | Bitcoin-like | `https://api.blockchair.com/bitcoin-sv` | Full support |
+| Dogecoin | Bitcoin-like | `https://api.blockchair.com/dogecoin` | Full support |
+| Dash | Bitcoin-like | `https://api.blockchair.com/dash` | Full support |
+| Ripple | Ripple-like | `https://api.blockchair.com/ripple` | Alpha mode, possible compatibility-breaking changes |
+| Groestlcoin | Bitcoin-like | `https://api.blockchair.com/groestlcoin` | Full support, community-backed till June 18th, 2020 |
+
+There are also following testnets supported which are technically considered as separate blockchains:
+
+| Blokchain | Group | API path prefix | Support status |
+|-----------|------|----------|-------------|
+| Bitcoin Testnet | Bitcoin-like | `https://api.blockchair.com/bitcoin/testnet` | Full support |
+
+We aim to support more blockchains (and their testnets) in future to cover as many users as possible. We don't disclose which blockchains we'll add next and how we choose them, but our main markers are daily number of real transactions and market capitalization. If you're representing a coin community which would like to add its blockchain to our platform, we'd be happy to talk.
+
+As a general rule, if we add a blockchain to our platform, it means we'll support it and related functions indefinitely. However, there are some exceptions:
+
+* Since a blockchain system can be an unstable product, we may cease support in case the blockchain itself (or the node software we're using) stops to function or starts to function improperly;
+* If a blockchain hard-forks and that results in a new ruleset we can't support for technical or other reasons, we may either drop support for this blockchain, or don't accept the new ruleset;
+* If a blockchain is community-backed, we guarantee support till some specified date (this is reflected in the tables above). If its community decides not to prolong the agreement with Blockchair after that date, we may either continue to support that blockchain for free, or drop support for it;
+* If we see that a particular blockchain became unpopular on our platform, we may terminate its support with a 3 month notice.
+
+Blockchair API also supports **3 layer 2 solutions** (tokens) divided into 2 groups:
+
+* Omni-like tokens (Omni Layer on top of Bitcoin, Wormhole on top of Bitcoin Cash)
+* ERC-20-like tokens (ERC-20's on top of Ethereum)
+
+Like with blockchains, within a group, there's no or little difference between the available endpoints. 
+
+| Layer 2    | Group       | Parent blockchain | API path prefix                                    | Support status                                   |
+| ---------- | ----------- | ----------------- | -------------------------------------------------- | ------------------------------------------------ |
+| Omni Layer | Omni-like   | Bitcoin           | `https://api.blockchair.com/bitcoin/omni`          | Alpha support                                    |
+| Wormhole   | Omni-like   | Bitcoin Cash      | `https://api.blockchair.com/bitcoin-cash/wormhole` | Deprecated, alpha support till January 1st, 2020 |
+| ERC-20     | ERC-20-like | Ethereum          | `https://api.blockchair.com/ethereum/erc-20`       | Beta support                                     |
+
+We also plan to bring ERC-721 support in the near future. Please note that we'll be dropping support for Wormhole on January 1st, 2020 as it's not used by anyone anymore.
+
+
+
+### <a name="link_M02"></a> Quick endpoint reference
+
+This is the full list of available API endpoints.
+
+- `{:btc_chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, or `bitcoin/testnet`
+- `{:eth_chain}` can be only `ethereum`
+- `{:xrp_chain}` can be only `ripple`
+
+| API path                                        | Docs | Base request cost | Status |
+| ----------------------------------------------- | :----------------: | -----------------------------: | :---------------------------------------------: |
+| **General stats** | — | — | — |
+| `https://api.blockchair.com/stats`              | [👉](#link_000) | `1` | Stable |
+| `https://api.blockchair.com/{:btc_chain}/stats` | [👉](#link_001) | `1` | Stable |
+| `https://api.blockchair.com/{:eth_chain}/stats` | [👉](#link_002) | `1` | Stable |
+| `https://api.blockchair.com/{:xrp_chain}/stats` | [👉](#link_003) | `1` | Alpha |
+| **Block-related information** | — | — | — |
+| `https://api.blockchair.com/{:btc_chain}/dashboards/block/{:height}₀` | [👉](#link_100) | `1` | Stable |
+| `https://api.blockchair.com/{:btc_chain}/dashboards/block/{:hash}₀` | [👉](#link_100) | `1` | Stable |
+| `https://api.blockchair.com/{:btc_chain}/dashboards/blocks/{:height}₀,...,{:height}ᵩ` | [👉](#link_100) | `1 + 0.1*c` | Stable |
+| `https://api.blockchair.com/{:btc_chain}/dashboards/blocks/{:hash}₀,...,{:hash}ᵩ` | [👉](#link_100) | `1 + 0.1*c` | Stable |
+| `https://api.blockchair.com/{:btc_chain}/raw/block/{:height}₀` | [👉](#link_101) | `1` | Unstable |
+| `https://api.blockchair.com/{:btc_chain}/raw/block/{:hash}₀` | [👉](#link_101) | `1` | Unstable |
+| `https://api.blockchair.com/{:btc_chain}/blocks?{:query}` | [👉](#link_102) | `2` | Stable |
+| `https://api.blockchair.com/{:eth_chain}/dashboards/block/{:height}₀` | [👉](#link_103) | `1` | Stable |
+| `https://api.blockchair.com/{:eth_chain}/dashboards/block/{:hash}₀` | [👉](#link_103) | `1` | Stable |
+| `https://api.blockchair.com/{:eth_chain}/dashboards/blocks/{:height}₀,...,{:height}ᵩ` | [👉](#link_103) | `1 + 0.1*c` | Stable |
+| `https://api.blockchair.com/{:eth_chain}/dashboards/blocks/{:hash}₀,...,{:hash}ᵩ` | [👉](#link_103) | `1 + 0.1*c` | Stable |
+| `https://api.blockchair.com/{:eth_chain}/raw/block/{:height}₀` | [👉](#link_104) | `1` | Unstable |
+| `https://api.blockchair.com/{:eth_chain}/raw/block/{:hash}₀` | [👉](#link_104) | `1` | Unstable |
+| `https://api.blockchair.com/{:eth_chain}/blocks?{:query}` | [👉](#link_105) | `2` | Stable |
+| `https://api.blockchair.com/{:xrp_chain}/raw/ledger/{:height}₀` | [👉](#link_106) | `1` | Alpha |
+| `https://api.blockchair.com/{:xrp_chain}/raw/ledger/{:hash}₀` | [👉](#link_106) | `1` | Alpha |
+| **Transaction-related information and actions** | — | — | — |
+| `https://api.blockchair.com/{:btc_chain}/dashboards/transaction/{:hash}₀` | [👉](#link_200) | `1` | Stable |
+| `https://api.blockchair.com/{:btc_chain}/dashboards/transactions/{:hash}₀,...,{:hash}ᵩ` | [👉](#link_200) | `1 + 0.1*c` | Stable |
+| `https://api.blockchair.com/{:btc_chain}/raw/transaction/{:hash}₀` | [👉](#link_201) | `1` | Unstable |
+| `https://api.blockchair.com/{:btc_chain}/push/transaction` (`POST`) | [👉](#link_202) | `1` | Stable |
+| `https://api.blockchair.com/{:btc_chain}/transactions?{:query}` | [👉](#link_203) | `5` | Stable |
+| `https://api.blockchair.com/{:btc_chain}/mempool/transactions?{:query}` | [👉](#link_203) | `2` | Stable |
+| `https://api.blockchair.com/{:eth_chain}/dashboards/transaction/{:hash}₀` | [👉](#link_204) | `1` | Stable |
+| `https://api.blockchair.com/{:eth_chain}/dashboards/transactions/{:hash}₀,...,{:hash}ᵩ` | [👉](#link_204) | `1 + 0.1*c` | Stable |
+| `https://api.blockchair.com/{:eth_chain}/raw/transaction/{:hash}₀` | [👉](#link_205) | `1` | Unstable |
+| `https://api.blockchair.com/{:eth_chain}/push/transaction` (`POST`) | [👉](#link_202) | `1` | Stable |
+| `https://api.blockchair.com/{:eth_chain}/transactions?{:query}` | [👉](#link_206) | `5` | Stable |
+| `https://api.blockchair.com/{:eth_chain}/mempool/transactions?{:query}` | [👉](#link_206) | `2` | Stable |
+| `https://api.blockchair.com/{:xrp_chain}/raw/transaction/{:hash}₀` | [👉](#link_207) | `1` | Alpha |
+| **Address-related information** | — | — | — |
+| `https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀` | [👉](#link_300) | `1` | Stable |
+| `https://api.blockchair.com/{:btc_chain}/dashboards/addresses/{:address}₀,...,{:address}ᵩ` | [👉](#link_300) | `1 + 0.1*c` | Stable |
+| `https://api.blockchair.com/{:btc_chain}/dashboards/xpub/{:extended_key}` | [👉](#link_300) | `1 + 0.1*d` | Beta |
+| `https://api.blockchair.com/{:btc_chain}/addresses?{:query}` | [👉](#link_301) | `2` | Stable |
+| `https://api.blockchair.com/{:eth_chain}/dashboards/address/{:address}₀` | [👉](#link_302) | `1` | Stable |
+| `https://api.blockchair.com/{:xrp_chain}/raw/account/{:address}₀` | [👉](#link_303) | `1` | Alpha |
+| **Special entities** | — | — | — |
+| `https://api.blockchair.com/{:btc_chain}/outputs?{:query}` | [👉](#link_400) | `10` | Beta |
+| `https://api.blockchair.com/{:btc_chain}/mempool/outputs?{:query}` | [👉](#link_400) | `2` | Stable |
+| `https://api.blockchair.com/{:eth_chain}/dashboards/uncle/{:hash}₀` | [👉](#link_401) | `1` | Stable |
+| `https://api.blockchair.com/{:eth_chain}/dashboards/uncles/{:hash}₀,...,{:hash}ᵩ` | [👉](#link_401) | `1 + 0.1*c` | Stable |
+| `https://api.blockchair.com/{:eth_chain}/uncles?{:query}` | [👉](#link_402) | `2` | Stable |
+| `https://api.blockchair.com/{:eth_chain}/calls?{:query}` | [👉](#link_403) | `10` | Stable |
+| **Special second layer protocol endpoints (Omni Layer, Wormhole, ERC-20 tokens)** | — | — | — |
+| `https://api.blockchair.com/bitcoin/omni/stats` | [👉](#link_500) | `1` | Alpha |
+| `https://api.blockchair.com/bitcoin/omni/dashboards/property/{:prorerty_id}` | [👉](#link_501) | `1` | Alpha |
+| `https://api.blockchair.com/bitcoin/omni/properties` | [👉](#link_502) | `10` | Alpha |
+| `https://api.blockchair.com/bitcoin-cash/wormhole/stats` | [👉](#link_500) | `1` | Alpha |
+| `https://api.blockchair.com/bitcoin-cash/wormhole/dashboards/property/{:prorerty_id}` | [👉](#link_501) | `1` | Alpha |
+| `https://api.blockchair.com/bitcoin-cash/wormhole/properties` | [👉](#link_502) | `10` | Alpha |
+| `https://api.blockchair.com/ethereum/erc-20/{:token_address}/stats` | [👉](#link_503) | `1` | Beta |
+| `https://api.blockchair.com/ethereum/erc-20/{:token_address}/dashboards/address/{:address}` | [👉](#link_504) | `1` | Beta |
+| `https://api.blockchair.com/ethereum/erc-20/tokens?{:query}` | [👉](#link_505) | `2` | Beta |
+| `https://api.blockchair.com/ethereum/erc-20/transactions?{:query}` | [👉](#link_506) | `5` | Beta |
+| **State changes** | — | — | — |
+| `https://api.blockchair.com/{:btc_chain}/state/changes/block/{:block_id}` | [👉](#link_507) | `5` | Stable |
+| `https://api.blockchair.com/{:btc_chain}/state/changes/mempool` | [👉](#link_507) | `10` | Stable |
+| `https://api.blockchair.com/{:eth_chain}/state/changes/block/{:block_id}` | [👉](#link_507) | `5` | Stable |
+| **Network nodes** | — | — | — |
+| `https://api.blockchair.com/nodes` | [👉](#link_508) | `1` | Stable |
+| `https://api.blockchair.com/{:btc_chain}/nodes` | [👉](#link_508) | `1` | Stable |
+| **Special Premium API endpoints** | — | — | — |
+| `https://api.blockchair.com/premium/stats?key={:api_key}` | [👉](#link_600) | `0` | Stable |
+
+Please note there are some endpoints which aren't listed here (most of the times they have the `https://api.blockchair.com/internal` prefix), but used by our web interface — these endpoints aren't meant to be used by 3rd parties.
+
+The base request cost is used only if there are no additional parameters included in the request, and the default limits on the number of results are used. For example, if you're requesting info on ERC-20 tokens while getting data on an Ethereum address using a special parameter or increasing the number of latest transactions for this address, you may be charged additional request points. `c` in formulas means "number of requested entities". `d` means "depth" (applied to xpub lookups). Detailed cost formulas are available in the corresponding documentation sections.
+
+
+
+### <a name="link_M03"></a> Basic API request
+
+Requests to the API should be made through the HTTPS protocol by GET requests to the domain `api.blockchair.com`. Here's an example request URL: `https://api.blockchair.com/bitcoin/blocks?a=sum(generation)`
+
+```bash
+> curl 'https://api.blockchair.com/bitcoin/blocks?a=sum(generation)'
+{"data":[{"sum(generation)":1800957104497237}],"context":{"code":200,"source":"A","time":0.007825851440429688,"limit":10000,"offset":null,"rows":1,"pre_rows":1,"total_rows":1,"state":600767,"cache":{"live":true,"duration":60,"since":"2019-10-23 21:33:00","until":"2019-10-23 21:34:00","time":null},"api":{"version":"2.0.38","last_major_update":"2019-07-19 18:07:19","next_major_update":null,"tested_features":"omni-v.a1,whc-v.a1,aggregate-v.b5,xpub-v.b5,ripple-v.a1,ethgraph-v.a1,erc_20-v.a1","documentation":"https:\/\/github.com\/Blockchair\/Blockchair.Support\/blob\/master\/API.md","notice":"Beginning July 19th, 2019 all applications using Blockchair API on a constant basis should apply for an API key (mailto:info@blockchair.com)"}}}
+```
+
+Here are some considerations:
+
+* If you're building a web app, your users shouldn't make direct API requests from there. While we don't have any limitations in our CORS policy (API currently responds with a `Access-Control-Allow-Origin: *` header), that policy may be changed in the future without any warnings
+* Please don't use some random keys in your requests (e.g. `?random_key=random_value`) as this can result in a `400` error (though we don't force this rule at the moment for most of our endpoints)
+* If you're using the API with an API key, you should keep it in secret. In order to build an app for public use using our API, you should build a proxy, so the requrst flow will look like the following: `user → https://your-proxy/{:request_string} → http://api.blockchair.com/{:request_string}?key={:api_key}` — that way you won't disclose the key to your users
+* The only exception to the "requests should be made using GET" rule is the [Broadcasting transactions](#link_202) endpoint accepting POST requests
+
+
+
+### <a name="link_M04"></a> Basic API response
+
+API returns JSON-encoded data. Typically, the response is an array consisting of two subarrays:
+
+* `data` — contains the data you requested
+
+* `context` — contains some metadata, e.g. a status code, query execution time, used options, etc. Here are some of it (note that not all endpoints return all of the keys listed here):
+  * `context.code` — server response code (also included in HTTP headers), can return:
+    * `200` if the request succeeded
+    * `400` if there is a user error in the request
+    * `404` for some endpoints in case there's no results (this behavior is deprecated), also if you're requesting non-existing endpoint
+    * `402`, `429`, or `435` if any limit on the number or complexity of requests is exceeded (see [the list of limits](#link_M05), and please [contact us](#link_M05) if you'd like to increase them)
+    * `430`, `434`, or `503` if your IP address is temporarily blocked
+    * `500` or` 503` in case of a server error (it makes sense to wait and repeat the same request or open a ticket at https://github.com/Blockchair/Blockchair.Support/issues/new or write to <info@blockchair.com>)
+  * `context.error` — error description in the case there's an error
+  * `context.state` — number of the latest known block (e.g., for all requests to endpoints connected to the Bitcoin blockchain this will yield the latest block number for Bitcoin). For example, it may be useful to calculate the number of network сonfirmations, or correctly iterate trough the results using `?offset=`. Not returned if the request has failed.
+  * `context.state_layer_2` — the latest block number for which our engine has processed second layer (e.g. ERC-20) transactions. If it's less than the block id in your current environment (e.g. block id of a transaction you requested), it makes sense to repeat the request after some time to retrieve second layer data
+  * `context.results` — contains the number of found results (dashboard and raw endpoints)
+  * `context.limit` — applied limit to the number of results (the default one or user set in the `?limit=` query section)
+  * `context.offset` — applied offset (the default one or user set in the `?offset=` query section)
+  * `context.rows` — contains the number of shown rows returned from the database (infinitable endpoints) 
+  * `context.total_rows` — total number of rows meeting the request (infinitable endpoints)
+  * `context.api` — array of data on the status of the API:
+    * `context.api.version` — version of API
+    * `context.api.last_major_update` — timestamp of the last update, that somehow has broken backward compatibility for "stable" endpoints
+    * `context.api.next_major_update` — timestamp of the next scheduled update, that can break compatibility, or` null`, if there are no updates scheduled
+    * `context.api.documentation` — an URL to the latest version of documentation
+    * `context.api.notice` — just a text notice which, for example, may describe upcoming changes (this is an optional field)
+  * `context.cache` — array of info on whether the response comes from the cache or not
+    * `context.cache.live` — `false` if the response comes from the cache, `true` otherwise
+    * `context.cache.until` — cache expiry timestamp
+
+There are also some things which are the same across all endpoints:
+
+* All timestamps are in the UTC timezone, and have the following format: `YYYY-MM-DD hh:ii:ss` . If you require an ISO 8601 timestamp with the timezone, just replace the space with a `T`, and append `Z` to the timestamp (e.g. `2009-01-03 18:15:05` will then become `2009-01-03T18:15:05Z`)
+* There are some endpoints allowing you to request data in formats other than JSON (e.g. TSV or CSV). In that case, the API returns plain output data in the desired format without metadata
+* Most of the responses are cached for some amount of time. Bypassing cache is allowed in some of our [Premium API plans](#link_M05) (see the next documentation section)
+
+
+
+### <a name="link_M05"></a> API rate limits, API keys, and Premium API
+
+While we do allow to perform some amount of requests free of charge, generally our API is not free to use.
+
+Here's our policy:
+
+- If you use our API occasionally for personal use or testing up to 1440 requests a day (1 request a minute in average) — a key is not required
+- Non-commercial and academic projects which require up to 1440 requests a day — a key is not required
+- Non-commercial and academic projects requiring more than 1440 requests a day should apply for a Premium API key, and are a subject to a discount up to 50%
+- Non-commercial and academic projects requiring more than 1440 requests a day which are also Blockchair partners are a subject to a discount up to 100%
+- Commercial projects should apply for a key to Premium API not depending on the required number of requests
+- Commercial projects which are also Blockchair partners (e.g. linking to Blockchair from the app's interface) are a subject to a discount up to 10%
+
+|                                | Up to 1440 requests a day | More than 1440 requests a day        |
+| ------------------------------ | ------------------------- | ------------------------------------ |
+| **Personal or testing**        | Key is not needed         | Key is required                      |
+| **Non-commercial or academic** | Key is not needed         | Key is required, up to 100% discount |
+| **Commercial**                 | Key is required           | Key is required, up to 10% discount  |
+
+**Our Premium API plans are available here: https://blockchair.com/api/plans, please [contact us](#link_M7) if you're interested.**
+
+The daily request counter is reset at 00:00 UTC every day. 
+
+There's an additional hard limit of 30 requests per minute on the free plan.
+
+If you exceed the limit, an error `402` or `429` will be returned. On some of our Premium API plans it's possible to "borrow" requests from the next day if you hit the limit (if your daily limit is `n` and you hit it, `n` more requests will be added to the limit for 1 day, you will be notified, and your subscription period will shrink by 1 day) — this behavior is turned off by default.
+
+There's an additional soft limit of 5 requests per second on both free and paid plans. This limit is applied only if we experience a very high load on our servers, and it's turned on and off manually by our admins. In case you hit this limit, an error `435` will be returned.
+
+If you have exceeded the limit multiple times without using a key, an error `430`, `434`, or `503` may be returned meaning that you've been blocked. It's also possible to get automatically blocked without exceeding the limit in case we're seeing botnet usage in order to bypass the limit. If you've been blocked and you believe you haven't abused our API above the limit, please [contact us](#link_M7). If you're using a valid API key it's not possible to get blocked; if you've been previously blocked and starting to use a key, you'll get automatically unblocked.
+
+**Please note that some of API requests may "cost" more than 1 request.** Here's an example:
+
+* `https://api.blockchair.com/bitcoin/dashboard/block/0` — requesting information about one block via one request "costs" 1 request
+* `https://api.blockchair.com/bitcoin/dashboard/blocks/0,1,2,3,4,5,6,7,8,9` — requesting information about ten blocks via one request "costs" 1.9 requests
+
+Every API endpoint documentation has the "Request cost formula" section describing how the "cost" is calculated. For most API requests it's always 1. It's more than 1 in cases when you're requiring additional data (e.g. when you're requesting data on an Ethereum address, and you're also requesting its ERC-20 token balances).
+
+As a kindly reminder, there are tasks such as extracting lots of blockchain data (e.g. all transactions over a 2 month period) which require lots of requests done —  it may be better to use our Database dumps feature instead of the API (see https://blockchair.com/dumps for documentation)
+
+**In order to use an API key, you need to append `?key={:api_key}` or `&key={:api_key}` to the end of request URLs.** You should use `?` if there are no other parameters in the URL, and `&` otherwise. Here are three examples of correct URLs with a key:
+
+* `https://api.blockchair.com/bitcoin/dashboard/block/0?key=myfirstpasswordwas4321andifeltsmartaboutit`
+
+* `https://api.blockchair.com/bitcoin/dashboard/block/0?limit=0&key=myfirstpasswordwas4321andifeltsmartaboutit`
+
+* `https://api.blockchair.com/bitcoin/dashboard/block/0?key=myfirstpasswordwas4321andifeltsmartaboutit&limit=0`
+
+There's an extra API endpoint for those who have an API key allowing to [track the number of request made](#link_600).
+
+
+
+### <a name="link_M06"></a> API versioning
+
+As a reminder, there's the `context.api` array in every API response which contains the following data:
+
+- `context.api.version` — version of API
+- `context.api.last_major_update` — timestamp of the last update, that somehow has broken backward compatibility for "stable" endpoints
+- `context.api.next_major_update` — timestamp of the next scheduled update, that can break compatibility, or` null`, if there are no updates scheduled
+- `context.api.documentation` — an URL to the latest version of documentation
+- `context.api.notice` — just a text notice which, for example, may describe upcoming changes (this is an optional field)
+
+When we change something, or add new functions, we bump the API version number. Generally, we try as hard as possible not to bring any compatibility-breaking changes in API updates, but sometimes this is needed as some blockchains change their features themselves, we're fixing various bugs, etc. This doesn't apply, however, to changes to endpoints which are either marked as alpha- or beta-stage functions, or unstable in nature (e.g. all raw endpoints where the API returns data directly from our nodes, and the response may change as we upgrade the nodes). These marks are reflected in the [Quick endpoint reference](#link_M02).
+
+The changelog is available here: https://github.com/Blockchair/Blockchair.Support/blob/master/API.md
+
+It makes sense to check if `context.api.version` has increased and/or just whether `context.api.next_major_update` is not `null` or larger than the latest update date known to you. If that's the case — you can send yourself a notification and review the changelog to make your application compatible with the changes starting from `context.api.next_major_update`.
+
+
+
+## <a name="link_M1"></a> General stats endpoints
+
+
+
+### <a name="link_000"></a> Stats on multiple blockchains at once
+
+Allows to retrieve the most important stats on all blockchains we support via just one API request.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/stats`
+
+If you require data on just one blockchain, please use `https://api.blockchair.com/{:chain}/stats` instead.
+
+**Output:**
+
+`data` contains an array with stats on all 9 blockchains we support at once:
+
+- Bitcoin
+- Bitcoin Cash
+- Ethereum
+- Litecoin
+- Bitcoin SV
+- Dogecoin
+- Dash
+- Ripple
+- Groestlcoin
+
+Note that Bitcoin Testnet stats are not included in this output.
+
+Description of the fields is available in the next three sections of documentation.
+
+**Example output:**
+
+`https://api.blockchair.com/stats`:
+
+```json
+{
+  "data": {
+    "bitcoin": {
+      "data": {
+        "blocks": 599952,
+        ...
+      }
+    },
+    "bitcoin-cash": {
+      "data": {
+        "blocks": 605134,
+        ...
+      }
+    },
+    "bitcoin-sv": {
+      "data": {
+        "blocks": 604886,
+        ...
+      }
+    },
+    "ethereum": {
+      "data": {
+        "blocks": 8766052,
+        ...
+      }
+    },
+    "litecoin": {
+      "data": {
+        "blocks": 1721519,
+        ...
+      }
+    },
+    "dogecoin": {
+      "data": {
+        "blocks": 2941267,
+        ...
+      }
+    },
+    "dash": {
+      "data": {
+        "blocks": 1156197,
+        ...
+      }
+    },
+    "ripple": {
+      "data": {
+        "ledgers": 50795982,
+        ...
+      }
+    },
+    "groestlcoin": {
+      "data": {
+        "blocks": 2801282,
+        ...
+      }
+    }
+  },
+  "context": {
+    "code": 200,
+    ...
+    }
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/
+- https://blockchair.com/compare
+
+
+
+### <a name="link_001"></a> Bitcoin-like blockchain stats
+
+**Endpoints:**
+
+* `https://api.blockchair.com/bitcoin/stats`
+* `https://api.blockchair.com/bitcoin-cash/stats`
+* `https://api.blockchair.com/litecoin/stats`
+* `https://api.blockchair.com/bitcoin-sv/stats`
+* `https://api.blockchair.com/dogecoin/stats`
+* `https://api.blockchair.com/dash/stats`
+* `https://api.blockchair.com/groestlcoin/stats`
+* `https://api.blockchair.com/bitcoin/testnet/stats`
+
+**Output:**
+
+`data` contains an array with blockchain statistics:
+
+* `blocks` — total number of blocks (note that it's 1 more than the latest block number as there is block #0)
+* `transactions` — total number of transactions
+* `outputs` — total number of outputs (including spent)
+* `circulation` — number of coins in circulation (in satoshi)
+* `blockchain_size` — total size of all blocks in bytes (note: it's not the size of a full node, it's just bare blocks; nodes are bigger in size as they use database indexing, etc)
+* `nodes`— number of full network nodes (it's an approximate number and actually not a blockchain metric)
+* `difficulty` — current mining difficulty
+* `hashrate_24h` — approximated hashrate over the last 24 hours (returned as a string as it doesn't fit into an integer)
+* `next_retarget_time_estimate` — approximate timestamp of the next difficulty retarget
+* `next_difficulty_estimate` — approximate next difficulty value
+* `best_block_height` — the latest block height
+* `best_block_hash` — the latest block hash
+* `best_block_time` — the latest block time
+* `mempool_transactions` — number of transactions in the mempool
+* `mempool_size` — mempool size in bytes
+* `mempool_tps` — number of transactions per second added to the mempool
+* `mempool_total_fee_usd` — sum of transaction fees in the mempool, in USD
+* `blocks_24h` — number of blocks mined over the last 24 hours
+* `transactions_24h` — number of transactions confirmed over the last 24 hours
+* `volume_24h` — total monetary volume of transactions over the last 24 hours
+* `average_transaction_fee_24h` —  average transaction fee over the last 24 hours
+* `average_transaction_fee_usd_24h` — the same in USD
+* `median_transaction_fee_24h`— median transaction fee over the last 24 hours
+* `median_transaction_fee_usd_24h `— the same in USD
+* `inflation_24h`— number of new coins mined over the last 24 hours (in satoshi), this can be considered as the daily inflation
+* `inflation_usd_24h` — the same in USD
+* `cdd_24h`— total coindays destroyed over the last 24 hours
+* `largest_transaction_24h`:  array of `hash` and `value_usd` — biggest payment over the last 24 hours
+* `market_price_usd` — average market price of 1 coin in USD (market data source: CoinGecko)
+* `market_price_btc` — average market price of 1 coin in BTC (for Bitcoin it always returns 1)
+* `market_price_usd_change_24h_percentage` — market price change in percent for 24 hours
+* `market_cap_usd` — market capitalization (coins in circulation * price per coin in USD)
+* `market_dominance_percentage` — dominance index (how much % of the total cryptocurrency market is the market capitalization of the coin)
+* `countdowns` (optional) — an optional array of events ([`event`, `time_left`] format), where `time_left` is the number of seconds till the `event`
+* `suggested_transaction_fee_per_byte_sat` — suggests a proper transaction fee in satoshi per byte based on the latest block
+
+**Example output:**
+
+`https://api.blockchair.com/bitcoin/stats`:
+
+```json
+{
+  "data": {
+    "blocks": 586962,
+    "transactions": 438436033,
+    "outputs": 1175789668,
+    "circulation": 1783699604497237,
+    "blocks_24h": 133,
+    "transactions_24h": 302792,
+    "difficulty": 9013786945891.7,
+    "volume_24h": 203868415027354,
+    "mempool_transactions": 11206,
+    "mempool_size": 9700111,
+    "mempool_tps": 3.183333333333333,
+    "mempool_total_fee_usd": 17385.9233,
+    "best_block_height": 586961,
+    "best_block_hash": "0000000000000000000c0f21dffb88b43aaa38dc561c1744f8964c010ddeed5e",
+    "best_block_time": "2019-07-25 13:40:20",
+    "blockchain_size": 231910648585,
+    "average_transaction_fee_24h": 18150,
+    "inflation_24h": 166250000000,
+    "median_transaction_fee_24h": 9812,
+    "cdd_24h": 53734025.51903,
+    "largest_transaction_24h": {
+      "hash": "89037b97c0e8b7762c05c64ff89349e55433c7f2aaa5829dcf401774ad36d171",
+      "value_usd": 323700000
+    },
+    "nodes": 9287,
+    "hashrate_24h": "59651648914812891495",
+    "inflation_usd_24h": 16578450,
+    "average_transaction_fee_usd_24h": 1.8099929306260403,
+    "median_transaction_fee_usd_24h": 0.97845264,
+    "market_price_usd": 9972,
+    "market_price_btc": 1,
+    "market_price_usd_change_24h_percentage": 2.77893,
+    "market_cap_usd": 177983139916,
+    "market_dominance_percentage": 64.48,
+    "next_retarget_time_estimate": "2019-08-06 08:06:58",
+    "next_difficulty_estimate": 9154306812972,
+    "countdowns": [
+      {
+        "event": "Reward halving",
+        "time_left": 25822200
+      }
+    ],
+    "suggested_transaction_fee_per_byte_sat": 49
+  },
+  "context": {
+    "code": 200,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/bitcoin
+- https://blockchair.com/bitcoin-cash
+- https://blockchair.com/litecoin
+- https://blockchair.com/bitcoin-sv
+- https://blockchair.com/dogecoin
+- https://blockchair.com/dash
+- https://blockchair.com/groestlcoin
+
+
+
+### <a name="link_002"></a> Ethereum-like blockchain stats
+
+**Endpoint:**
+
+- `https://api.blockchair.com/ethereum/stats`
+
+**Output:**
+
+`data` contains an array with blockchain statistics:
+
+- `blocks` — total number of blocks (note that it's 1 more than the latest block number as there is block #0)
+- `uncles` — total number of uncles
+- `transactions` — total number of transactions
+- `calls` — total number of internal calls
+- `circulation_approximate` — number of coins in circulation (in wei)
+- `blockchain_size` — total size of all blocks in bytes (note: it's not the size of a full node, it's just bare blocks; nodes are bigger in size as they use database indexing, etc)
+- `difficulty` — current mining difficulty
+- `hashrate_24h` — approximated hashrate over the last 24 hours (returned as a string as it doesn't fit into an integer)
+- `best_block_height` — the latest block height
+- `best_block_hash` — the latest block hash
+- `best_block_time` — the latest block time
+- `mempool_transactions` — number of transactions in the mempool
+- `mempool_median_gas_price` — median gas price of transactions in the mempool
+- `mempool_tps` — number of transactions per second added to the mempool
+- `mempool_total_value_approximate` — sum of transaction amounts in the mempool, in wei
+- `blocks_24h` — number of blocks mined over the last 24 hours
+- `uncles_24h` — number of uncles over the last 24 hours
+- `transactions_24h` — number of transactions confirmed over the last 24 hours
+- `volume_24h_approximate` — total monetary volume of transactions over the last 24 hours
+- `average_transaction_fee_24h` —  average transaction fee over the last 24 hours
+- `average_transaction_fee_usd_24h` — the same in USD
+- `median_transaction_fee_24h`— median transaction fee over the last 24 hours
+- `median_transaction_fee_usd_24h `— the same in USD
+- `average_simple_transaction_fee_24h` —  average simple transfer (i.e. just sending ethers for 21.000 gas) fee over the last 24 hours
+- `average_simple_transaction_fee_usd_24h` — the same in USD
+- `median_simple_transaction_fee_24h`— median simple transfer fee over the last 24 hours
+- `median_simple_transaction_fee_usd_24h `— the same in USD
+- `inflation_24h`— number of new coins mined over the last 24 hours (in satoshi), this can be considered as the daily inflation
+- `inflation_usd_24h` — the same in USD
+- `largest_transaction_24h`:  array of `hash` and `value_usd` — biggest payment over the last 24 hours
+- `market_price_usd` — average market price of 1 coin in USD (market data source: CoinGecko)
+- `market_price_btc` — average market price of 1 coin in BTC (for Bitcoin it always returns 1)
+- `market_price_usd_change_24h_percentage` — market price change in percent for 24 hours
+- `market_cap_usd` — market capitalization (coins in circulation * price per coin in USD)
+- `market_dominance_percentage` — dominance index (how much % of the total cryptocurrency market is the market capitalization of the coin)
+- `countdowns` (optional) — an optional array of events ([`event`, `time_left`] format), where `time_left` is the number of seconds till the `event`
+- `layer_2.erc_20` — an array of stats on the ERC-20 token layer consisting of the following elements:
+  - `tokens` — total number of created ERC-20 tokens (which have at least 1 transaction)
+  - `transactions` — total number of ERC-20 transfers
+  - `tokens_24h` — number of tokens created over the last 24 hours
+  - `transactions_24h` — total number of ERC-20 transfers over the last 24 hours
+
+**Example output:**
+
+`https://api.blockchair.com/ethereum/stats`:
+
+```json
+{
+  "data": {
+    "blocks": 8765932,
+    "transactions": 563679664,
+    "blocks_24h": 6345,
+    "circulation_approximate": "108198544155730000000000000",
+    "transactions_24h": 732332,
+    "difficulty": 2384281079680802,
+    "volume_24h_approximate": "1942030242954258000000000",
+    "mempool_transactions": 34803,
+    "mempool_median_gas_price": 100000000,
+    "mempool_tps": 1.8333333333333333,
+    "mempool_total_value_approximate": "890993462756481300000",
+    "best_block_height": 8765929,
+    "best_block_hash": "18164bed364f1ceef954e98f2d0ee8af4b45ba2144baa74e203e882dbf4a32f6",
+    "best_block_time": "2019-10-18 16:27:20",
+    "uncles": 943033,
+    "uncles_24h": 353,
+    "blockchain_size": 106821332817,
+    "calls": 1416512303,
+    "average_transaction_fee_24h": "631689895242411",
+    "median_transaction_fee_24h": "315000000000000",
+    "inflation_24h": 13293.0625,
+    "average_simple_transaction_fee_24h": "319074939493396",
+    "median_simple_transaction_fee_24h": "210000000000000",
+    "largest_transaction_24h": {
+      "hash": "0x8cdda43621c13cd6f6f5001c39792aec8602c1bb1fe406558224201b0a79f465",
+      "value_usd": 17709550.4761
+    },
+    "hashrate_24h": "198690089973400",
+    "inflation_usd_24h": 2302358.425,
+    "average_transaction_fee_usd_24h": 0.10940868985598558,
+    "median_transaction_fee_usd_24h": 0.054557999999999995,
+    "average_simple_transaction_fee_usd_24h": 0.05526377952025618,
+    "median_simple_transaction_fee_usd_24h": 0.036372,
+    "market_price_usd": 173.2,
+    "market_price_btc": 0.021793263465708,
+    "market_price_usd_change_24h_percentage": -3.30365,
+    "market_cap_usd": 18739592599,
+    "market_dominance_percentage": 8.63,
+    "layer_2": {
+      "erc_20": {
+        "tokens": 120889,
+        "transactions": 273663782,
+        "tokens_24h": 164,
+        "transactions_24h": 495265
+      }
+    }
+  },
+  "context": {
+    "code": 200,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/ethereum
+
+
+
+### <a name="link_003"></a> Ripple-like blockchain stats
+
+**Endpoint:**
+
+- `https://api.blockchair.com/ripple/stats`
+
+**Output:**
+
+`data` contains an array with blockchain statistics:
+
+- `ledgers` — total number of ledgers
+- `circulation` — number of coins in circulation (in XRP)
+- `best_ledger_height` — the latest ledger number
+- `best_ledger_hash` — the latest ledger hash
+- `best_ledger_time` — the latest ledger time
+- `mempool_transactions` — number of unconfirmed transactions
+- `mempool_tps` — number of transactions per second added to the mempool
+- `mempool_total_fee_usd` — sum of transaction fees in the mempool, in USD
+- `ledgers_24h` — number of ledgers closed over the last 24 hours
+- `transactions_24h` — number of transactions confirmed over the last 24 hours
+- `volume_24h` — total monetary volume of transactions over the last 24 hours
+- `average_transaction_fee_24h` —  average transaction fee over the last 24 hours
+- `average_transaction_fee_usd_24h` — the same in USD
+- `median_transaction_fee_24h`— median transaction fee over the last 24 hours
+- `median_transaction_fee_usd_24h `— the same in USD
+- `inflation_24h`— number of new coins issued over the last 24 hours (can be negative in case more coins are destroyed than issued)
+- `inflation_usd_24h` — the same in USD
+- `largest_transaction_24h`:  array of `hash` and `value_usd` — biggest payment over the last 24 hours
+- `market_price_usd` — average market price of 1 coin in USD (market data source: CoinGecko)
+- `market_price_btc` — average market price of 1 coin in BTC (for Bitcoin it always returns 1)
+- `market_price_usd_change_24h_percentage` — market price change in percent for 24 hours
+- `market_cap_usd` — market capitalization (coins in circulation * price per coin in USD)
+- `market_dominance_percentage` — dominance index (how much % of the total cryptocurrency market is the market capitalization of the coin)
+- `countdowns` (optional) — an optional array of events ([`event`, `time_left`] format), where `time_left` is the number of seconds till the `event`
+
+**Example output:**
+
+`https://api.blockchair.com/ripple/stats`:
+
+```json
+{
+  "data": {
+    "market_price_usd": 0.290587,
+    "market_price_btc": 0.0000365637358586,
+    "market_price_usd_change_24h_percentage": -3.31938,
+    "market_cap_usd": 12543700763,
+    "market_dominance_percentage": 5.78,
+    "ledgers": 50795576,
+    "best_ledger_height": 50795575,
+    "best_ledger_hash": "07AFA06C63D6C24C31CBD83938A711C098D6C251EEAFC7AE65733CEA3D5EE32A",
+    "best_ledger_time": "2019-10-18 16:28:41",
+    "mempool_transactions": 43,
+    "mempool_total_fee_usd": 0.00024496484099999997,
+    "circulation": 99991318056632960,
+    "average_transaction_fee_24h": 874.9259920487995,
+    "median_transaction_fee_24h": 12,
+    "average_transaction_fee_usd_24h": 0.00025366991765268457,
+    "median_transaction_fee_usd_24h": 0.000003479196,
+    "ledgers_24h": 22359,
+    "transactions_24h": 864272,
+    "mempool_tps": 10.003148148148147,
+    "inflation_24h": -756174037,
+    "inflation_usd_24h": -219.239807069521,
+    "volume_24h": 712237245463407,
+    "largest_transaction_24h": {
+      "hash": "A773E7C3D07D76834280766AF7F90FE7E773E8D5AD77327A603BD6A5B1083611",
+      "value_usd": 14496650
+    }
+  },
+  "context": {
+    "code": 200,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/ripple
+
+
+
+### <a name="link_500"></a> Omni Layer and Wormhole stats
+
+Allows to retrieve the some basic stats on Omni Layer (Bitcoin) and Wormhole (Bitcoin Cash). Since Wormhole is based on Omni Layer, the output is the same for both. Note that this endpoint is in the Alpha stage, and Wormhole is deprecated on our platform.
+
+**Endpoints:**
+
+- `https://api.blockchair.com/bitcoin/omni/stats`
+- `https://api.blockchair.com/bitcoin-cash/wormhole/stats`
+
+**Output:**
+
+`data` contains an array with second layer statistics:
+
+- `properties` — total number of created properties
+- `properties_mainnet` — total number of "mainnet" properties
+- `properties_testnet` — total number of "testnet" properties
+- `transactions_approximate` — approximate number of transactions
+- `latest_transactions` — array of 10 latest transactions
+
+Note that the "mainnet" and "testnet" terms don't imply using Bitcoin Testnet (or Bitcoin Cash Testnet), the idea behind that is "testnet" properties still live on the Bitcoin Mainnet (or Bitcoin Cash Mainnet), but they have should have no monetary value, and their purpose is for testing only.
+
+**Example requests:**
+
+- `https://api.blockchair.com/bitcoin/omni/stats`
+- `https://api.blockchair.com/bitcoin-cash/wormhole/stats`
+
+**Example output:**
+
+`https://api.blockchair.com/bitcoin/omni/stats`:
+
+```json
+{
+  "data": {
+    "properties": 1187,
+    "properties_mainnet": 751,
+    "properties_testnet": 436,
+    "transactions_approximate": 14406305,
+    "latest_transactions": [
+      {
+        "property_id": 31,
+        "property_name": "TetherUS",
+        "type_id": 0,
+        "type": "Simple Send",
+        "sender": "1B4dCsH6MC9XoZ6ob2nngvJesYEfNNtMQS",
+        "recipient": "1FoWyxwPXuj4C6abqwhjDWdz6D4PZgYRjA",
+        "valid": false,
+        "amount": 960000,
+        "transaction_hash": "ee1f0401cae15e5ad35cc760c99aacc8c25f21814f234bd80038b99d0ec83d9c",
+        "time": "2019-10-18 19:34:28"
+      },
+      ...
+    ]
+  },
+  "context": {
+    "code": 200,
+    "state": 599972,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/bitcoin/omni
+- https://blockchair.com/bitcoin-cash/wormhole
+
+
+
+
+### <a name="link_509"></a> ERC-20 stats
+
+There's no separate endpoint to get ERC-20 stats, use `https://api.blockchair.com/ethereum/stats` instead which includes ERC-20 info. Description is available [here](#link_002)
+
+
+
+
+## <a name="link_M2"></a> Dashboard endpoints
+
+Retrieve information about various entities in a neat format from our databases
 
 The API supports a number of calls that produce some aggregated data, or data in a more convenient form for certain entities.
 
-#### <a name="link_block"></a> {chain}/dashboards/block/{A} and {chain}/dashboards/blocks/{A[,B,...]}
 
-`{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `dash`, `ethereum`, `groestlcoin`
 
-As the input data (`{A}`), it takes the height or hash of the block(s). `data` returns an array with block heights or block hashes used as keys, and arrays of elements as values:
-* `block` - information about the block in infinitable-format `(bitcoin[-cash]|ethereum)/blocks`
-* `transactions` - the array of all hashes of transactions included in the block
-* only for Ethereum - `synthetic_transactions` - array of internal ids of synthetic transactions (they do not have a hash) (`null` instead of the array until the block receives 6 confirmations)
-* only for Ethereum - `uncles` - the array of hashes of the block's uncles (`null` instead of the array until the block receives 6 confirmations, in case there are no uncles and more than 6 confirmations - an empty array (`[]`))
+### <a name="link_M21"></a> Dashboard endpoints for Bitcoin-like blockchains (Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Bitcoin Testnet)
 
-`context.results` contains the number of found blocks.
 
-#### <a name="link_uncle"></a> ethereum/dashboards/uncle/{A} and ethereum/dashboards/uncles/{A[,B,...]}
 
-As the input data (`{A}`), it takes an uncle hash(es). `data` returns an array with uncle hashes used as keys, and arrays of elements as values:
-* `uncle` - information about the block in infinitable-format `ethereum/uncles`
+#### <a name="link_100"></a> Block info
 
-`context.results` contains the number of found uncles.
+**Endpoints:**
 
-#### <a name="link_transaction"></a> {chain}/dashboards/transaction/{A} and {chain}/dashboards/transactions/{A[,B,...]}
+* `https://api.blockchair.com/{:btc_chain}/dashboards/block/{:height}₀`
+* `https://api.blockchair.com/{:btc_chain}/dashboards/block/{:hash}₀`
+* `https://api.blockchair.com/{:btc_chain}/dashboards/blocks/{:height}₀,...,{:height}ᵩ` (up to 10 blocks, comma-separated)
+* `https://api.blockchair.com/{:btc_chain}/dashboards/blocks/{:hash}₀,...,{:hash}ᵩ` (up to 10 blocks, comma-separated)
 
-`{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `dash`, `ethereum`, `groestlcoin`
+**Where:**
 
-At the input data, it takes an internal blockchair-id or a hash of a transaction (transactions). `data` returns an array with identifiers or hashes of transactions used as keys, and arrays of elements as keys:
-* `transaction` - transaction information in infinitable-format `bitcoin[-cash]/transactions`
-* (except ethereum) `inputs` - array of all transaction inputs, sorted by `spending_index` in infinitable-format `bitcoin[-cash]/outputs`
-* (except ethereum) `outputs` - array of all transaction outputs, sorted by `index` in infinitable-format `bitcoin[-cash]/outputs`
-* (only ethereum) `calls` - the array of all calls made during the execution of the transaction (always `null` for mempool transactions and the last 6 blocks)
+* `{:btc_chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `bitcoin/testnet`
+* `{:height}ᵢ` is the block height (integer value), also known as block id
+* `{:hash}ᵢ` is the block hash (regex: `/^[0-9a-f]{64}$/i`)
 
-`context.results` contains the number of found transactions.
+**Possible options:**
 
-#### <a name="link_priority"></a> {chain}/dashboards/transaction/{hash}/priority
+* `?limit={:limit}` limits the number of returned transaction hashes contained in the block. Default is `100`. Maximum is `10000`. In case of `0` returns an empty transaction hashes array
+* `?offset={:offset}` allows to paginate transaction hashes. Default is `0`. Maximum is `1000000`.
 
-`{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `dash`, `ethereum`, `groestlcoin`
+**Output:**
 
-For mempool transactions shows priority (`position`) (for Bitcoin - by `fee_per_kwu`, for Bitcoin Cash - by `fee_per_kb`, for Ethereum - by `gas_price`) over other transactions (`out_of` mempool transactions). It has the same structure as the `(bitcoin[-cash]|ethereum)/dashboards/transaction/{A}` call
+`data` contains an associative array where found block heights or block hashes used as keys:
+* `data.{:id}ᵢ.block` - information about the block (see [Bitcoin-like block object](#link_102) for the field descriptions)
+* `data.{:id}ᵢ.transactions` - the array of transaction hashes (sorted by position in the block ascending) included in the block (respecting the set limit and offset)
 
-#### <a name="link_bitcoinaddress"></a> {chain}/dashboards/address/{A}
+Where `{:id}ᵢ` is either `{:height}ᵢ` or `{:hash}ᵢ` from the query string. If there's no `{:id}ᵢ` has been found in the database, there won't be such key.
 
-`{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `dash`, `groestlcoin`
+Note that the total number of transactions in the block is contained in `data.{:id}ᵢ.block.transaction_count`
 
-Uses address as the input data. `data` returns an array with one element (if the address is found), in that case the address is the key, and the value is an array consisting of the following elements:
-* `address`
-    * `address.type` - address type (type of output is the same as `bitcoin[-cash].outputs.type`)
-    * `address.script_hex` - address script
-    * `address.balance` - address balance in satoshi (hereinafter - including unconfirmed outputs) - int
-    * `address.balance_usd` - address balance in USD - float
-    * `address.received` - total received in satoshi
-    * `address.received_usd` - total received in USD
-    * `address.spent` - total spent in satoshi
-    * `address.spent_usd` - total spent in USD
-    * `address.output_count` - the number of outputs this address received
-    * `address.unspent_output_count` - number of unspent outputs for this address (i.e. the number of inputs for an address can be calculated as `output_count`-`unspent_output_count`)
-    * `address.first_seen_receiving` - timestamp (UTC) when the first time this address received coins
-    * `address.last_seen_receiving` - timestamp (UTC) when the last time this address received coins
-    * `address.first_seen_spending` - timestamp (UTC) when the first time this address sent coins
-    * `address.last_seen_spending` - timestamp (UTC) when the last time this address sent coins
-    * `address.transaction_count` - number of unique transactions this address participating in
-* `transactions` - an array of the last 100 hashes the address is participating in
+**Context keys:**
 
-`context.results` contains the number of found addresses (0 or 1, until the `addresses` call is implemented).
+* `context.results` — number of found blocks
+* `context.limit` — applied limit
+* `context.offset` — applied offset
+* `context.state` — best block height on the `{:btc_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = data.{:id}ᵢ.block.id - context.state + 1`)
 
-To iterate `transactions`, `?offset=N` is supported.
+**Example requests:**
 
-#### <a name="link_ethereumaddress"></a> ethereum/dashboards/address/{A}
+* `https://api.blockchair.com/bitcoin/dashboards/block/0`
+* `https://api.blockchair.com/bitcoin/dashboards/block/000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f`
+* `https://api.blockchair.com/bitcoin/dashboards/blocks/0,1,2,3,4,5,6,7,8,9`
+* `https://api.blockchair.com/bitcoin-cash/dashboards/block/556045?limit=10000`
+* `https://api.blockchair.com/bitcoin-cash/dashboards/block/556045?limit=10000&offset=10000`
+* `https://api.blockchair.com/bitcoin/dashboards/block/9999999`
 
-Uses address as the input data. `data` returns an array with one element (if the address is found), in that case the address is the key, and the value is an array consisting of the following elements:
-* `address`
-    * `address.type` - address type (`account` - for an address, `contract` - for a contract)
-    * `address.contract_code_hex` -  hex code of the contract at the momemt of creation (for a contract), or null (for an address)
-    * `address.contract_created` - for a contract - if the contact was indeed created then true, if not (i.e. with a failed `create` call) - false, or null (for an address)
-    * `address.contract_destroyed` - for a contract - if the contact was successfully destroyed (SELFDESCTRUCT) then true, if not - false, or null (for an address)
-    * `address.balance` - exact address balance in wei (here and below for values in wei - numeric string)
-    * `address.balance_usd` - address balance in USD - float
-    * `address.received_approximate` - total received in wei (approximately) (\*)
-    * `address.received_usd` - total received in USD (approximately) (\*)
-    * `address.spent_approximate` - total spent in wei (approximately) (\*)
-    * `address.spent_usd` - total spent in USD (approximately) (\*)
-    * `address.fees_approximate` - total spent in transaction fees in wei (approximately) (\*)
-    * `address.fees_usd` - total spent in transaction fees in USD (approximately) (\*)
-    * `address.receiving_call_count` - number of calls in favor of this address, where  value transfer has occured (\*\*)
-    * `address.spending_call_count` -  number of calls that was made by this address, where  value transfer has occured (\*\*)
-    * `address.call_count` - total number of calls this address participating in (may be greater than` receiving_call_count` + `spending_call_count`, because it also takes into account failed calls)
-    * `address.transaction_count` - number of transactions this address participating in
-    * `address.first_seen_receiving` - timestamp (UTC) when this address received a successful incoming call for the first time 
-    * `address.last_seen_receiving` - timestamp (UTC) when this address received a successful incoming call for the last time
-    * `address.first_seen_spending` - timestamp (UTC) when this address sent a successful call for the first time
-    * `address.last_seen_spending` - timestamp (UTC) when this address sent a successful call for the last time
-* `calls` - an array of the last 100 calls with the address, each element of an array containing the following columns of `ethereum/calls`: `block_id`, `transaction_hash`,` index`, `time`,` sender`, `recipient`, `value`,` value_usd`, `transferred`
+**Example output:**
 
-`context.results` contains the number of found addresses  (0 or 1, until the `addresses` call is implemented).
+`https://api.blockchair.com/bitcoin/dashboards/block/0`:
 
-To iterate `calls`, `?offset=N` is supported.
+```json
+{
+  "data": {
+    0: {
+      "block": {
+        "id": 0,
+        "hash": "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
+        "date": "2009-01-03",
+        "time": "2009-01-03 18:15:05",
+        "median_time": "2009-01-03 18:15:05",
+        "size": 285,
+        "version": 1,
+        "version_hex": "1",
+        "version_bits": "000000000000000000000000000001",
+        "merkle_root": "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b",
+        "nonce": 2083236893,
+        "bits": 486604799,
+        "difficulty": 1,
+        "chainwork": "0000000000000000000000000000000000000000000000000000000100010001",
+        "coinbase_data_hex": "04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73",
+        "transaction_count": 1,
+        "input_count": 1,
+        "output_count": 1,
+        "input_total": 0,
+        "input_total_usd": 0,
+        "output_total": 5000000000,
+        "output_total_usd": 0,
+        "fee_total": 0,
+        "fee_total_usd": 0,
+        "fee_per_kb": 0,
+        "fee_per_kb_usd": 0,
+        "cdd_total": 0,
+        "generation": 5000000000,
+        "generation_usd": 0,
+        "reward": 5000000000,
+        "reward_usd": 0,
+        "guessed_miner": "Unknown"
+      },
+      "transactions": [
+        "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"
+      ]
+    }
+  ],
+  "context": {
+    "code": 200,
+    "limit": 100,
+    "offset": 0,
+    "results": 1,
+    "state": 555555,
+    ...
+    }
+  }
+}
+```
+
+**Request cost formula:**
+
+* `1` for `https://api.blockchair.com/{:btc_chain}/dashboards/block/{:height}₀` and `https://api.blockchair.com/{:btc_chain}/dashboards/block/{:hash}₀ `endpoints
+* `1 + (0.1 * (entity count - 1))`  for `https://api.blockchair.com/{:btc_chain}/dashboards/blocks/{:height}₀,...,{:height}ᵩ` and `https://api.blockchair.com/{:btc_chain}/dashboards/blocks/{:hash}₀,...,{:hash}ᵩ` endpoints (e.g. it's `1 + (0.1 * (10 - 1)) = 1.9` for requesting 10 blocks)
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/bitcoin/block/0
+- https://blockchair.com/bitcoin-cash/block/0
+- https://blockchair.com/litecoin/block/0
+- https://blockchair.com/bitcoin-sv/block/0
+- https://blockchair.com/dogecoin/block/0
+- https://blockchair.com/dash/block/0
+- https://blockchair.com/groestlcoin/block/0
+
+
+
+#### <a name="link_200"></a> Transaction info
+
+**Endpoints:**
+
+* `https://api.blockchair.com/{:chain}/dashboards/transaction/{:hash}₀`
+* `https://api.blockchair.com/{:chain}/dashboards/transactions/{:hash}₀,...,{:hash}ᵩ` (up to 10 transactions, comma-separated)
+
+**Where:**
+
+* `{:chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `bitcoin/testnet`
+* `{:hashᵢ}` is the transaction hash (regex: `/^[0-9a-f]{64}$/i`), also known as txid
+
+**Possible options:**
+
+- `?omni=true` (for `bitcoin` only; in alpha test mode) — shows information about Omni Layer token transfers in this transaction
+- `?wormhole=true` (for `bitcoin-cash` only; in alpha test mode) — shows information about Wormhole token transfers in this transaction
+
+**Output:**
+
+`data` contains an associative array where found transaction hashes are used as keys:
+
+* `data.{:hash}ᵢ.transaction` — information about the transaction (see [Bitcoin-like transaction object](#link_bitcointransaction))
+* `data.{:hash}ᵢ.inputs` — the array of transaction inputs (sorted by `spending_index` ascending), where each element is a [Bitcoin-like output object](#link_bitcointransaction) (inputs represented as spent outputs), or an empty array in case of coinbase transaction
+* `data.{:hash}ᵢ.outputs` — the array of transaction outputs (sorted by `index` ascending), where each element is a [Bitcoin-like output object](#link_bitcointransaction)
+
+Additional data:
+* `data.{:hash}ᵢ.layer_2.omni` (for `bitcoin` only; in alpha test mode) — Omni layer transaction data in case there's any
+* `data.{:hash}ᵢ.layer_2.wormhole` (for `bitcoin-cash` only; in alpha test mode) — Wormhole layer transaction data in case there's any
+
+In case transaction is confirmed on the blockchain, `data.{:hash}ᵢ.transaction.block_id` contains the block number it's included in. If the transaction is in the mempool, `data.{:hash}ᵢ.transaction.block_id` yields `-1`. If the transaction is neither present in the blockchain, nor in the mempool, there won't be `data.{:hash}ᵢ` key with data.
+
+**Context keys:**
+
+* `context.results` — number of found transactions
+* `context.state` — best block height on the `{:chain}` chain (tip: it's possible to calculate the number of confirmation transaction received using this formula: `confirmations = data.{:id}ᵢ.transaction.block_id - context.state + 1`, or if `data.{:id}ᵢ.transaction.block_id` is `-1` it's an unconfirmed transaction)
+
+**Example requests:**
+
+* `https://api.blockchair.com/bitcoin/dashboards/block/0`
+* `https://api.blockchair.com/bitcoin/dashboards/blocks/0,1,2,3,4,5,6,7,8,9`
+* `https://api.blockchair.com/bitcoin-cash/dashboards/block/556045?limit=10000`
+* `https://api.blockchair.com/bitcoin-cash/dashboards/block/556045?limit=10000&offset=10000`
+* `https://api.blockchair.com/bitcoin/dashboards/block/9999999`
+
+**Example output:**
+
+`https://api.blockchair.com/bitcoin/dashboards/transaction/f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16`:
+
+```json
+{
+  "data": {
+    "f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16": {
+      "transaction": {
+        "block_id": 170,
+        "id": 171,
+        "hash": "f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16",
+        "date": "2009-01-12",
+        "time": "2009-01-12 03:30:25",
+        "size": 275,
+        "weight": 1100,
+        "version": 1,
+        "lock_time": 0,
+        "is_coinbase": false,
+        "has_witness": false,
+        "input_count": 1,
+        "output_count": 2,
+        "input_total": 5000000000,
+        "input_total_usd": 0.5,
+        "output_total": 5000000000,
+        "output_total_usd": 0.5,
+        "fee": 0,
+        "fee_usd": 0,
+        "fee_per_kb": 0,
+        "fee_per_kb_usd": 0,
+        "fee_per_kwu": 0,
+        "fee_per_kwu_usd": 0,
+        "cdd_total": 149.15856481481
+      },
+      "inputs": [
+        {
+          "block_id": 9,
+          "transaction_id": 9,
+          "index": 0,
+          "transaction_hash": "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c9",
+          "date": "2009-01-09",
+          "time": "2009-01-09 03:54:39",
+          "value": 5000000000,
+          "value_usd": 0.5,
+          "recipient": "12cbQLTFMXRnSzktFkuoG3eHoMeFtpTu3S",
+          "type": "pubkey",
+          "script_hex": "410411db93e1dcdb8a016b49840f8c53bc1eb68a382e97b1482ecad7b148a6909a5cb2e0eaddfb84ccf9744464f82e160bfa9b8b64f9d4c03f999b8643f656b412a3ac",
+          "is_from_coinbase": true,
+          "is_spendable": true,
+          "is_spent": true,
+          "spending_block_id": 170,
+          "spending_transaction_id": 171,
+          "spending_index": 0,
+          "spending_transaction_hash": "f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16",
+          "spending_date": "2009-01-12",
+          "spending_time": "2009-01-12 03:30:25",
+          "spending_value_usd": 0.5,
+          "spending_sequence": 4294967295,
+          "spending_signature_hex": "47304402204e45e16932b8af514961a1d3a1a25fdf3f4f7732e9d624c6c61548ab5fb8cd410220181522ec8eca07de4860a4acdd12909d831cc56cbbac4622082221a8768d1d0901",
+          "spending_witness": "",
+          "lifespan": 257746,
+          "cdd": 149.158564814815
+        }
+      ],
+      "outputs": [
+        {
+          "block_id": 170,
+          "transaction_id": 171,
+          "index": 0,
+          "transaction_hash": "f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16",
+          "date": "2009-01-12",
+          "time": "2009-01-12 03:30:25",
+          "value": 1000000000,
+          "value_usd": 0.1,
+          "recipient": "1Q2TWHE3GMdB6BZKafqwxXtWAWgFt5Jvm3",
+          "type": "pubkey",
+          "script_hex": "4104ae1a62fe09c5f51b13905f07f06b99a2f7159b2225f374cd378d71302fa28414e7aab37397f554a7df5f142c21c1b7303b8a0626f1baded5c72a704f7e6cd84cac",
+          "is_from_coinbase": false,
+          "is_spendable": true,
+          "is_spent": true,
+          "spending_block_id": 92240,
+          "spending_transaction_id": 156741,
+          "spending_index": 0,
+          "spending_transaction_hash": "ea44e97271691990157559d0bdd9959e02790c34db6c006d779e82fa5aee708e",
+          "spending_date": "2010-11-16",
+          "spending_time": "2010-11-16 20:39:27",
+          "spending_value_usd": 2.7,
+          "spending_sequence": 4294967295,
+          "spending_signature_hex": "4730440220576497b7e6f9b553c0aba0d8929432550e092db9c130aae37b84b545e7f4a36c022066cb982ed80608372c139d7bb9af335423d5280350fe3e06bd510e695480914f01",
+          "spending_witness": "",
+          "lifespan": 58208942,
+          "cdd": 6737.14606481481
+        },
+        {
+          "block_id": 170,
+          "transaction_id": 171,
+          "index": 1,
+          "transaction_hash": "f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16",
+          "date": "2009-01-12",
+          "time": "2009-01-12 03:30:25",
+          "value": 4000000000,
+          "value_usd": 0.4,
+          "recipient": "12cbQLTFMXRnSzktFkuoG3eHoMeFtpTu3S",
+          "type": "pubkey",
+          "script_hex": "410411db93e1dcdb8a016b49840f8c53bc1eb68a382e97b1482ecad7b148a6909a5cb2e0eaddfb84ccf9744464f82e160bfa9b8b64f9d4c03f999b8643f656b412a3ac",
+          "is_from_coinbase": false,
+          "is_spendable": true,
+          "is_spent": true,
+          "spending_block_id": 181,
+          "spending_transaction_id": 183,
+          "spending_index": 0,
+          "spending_transaction_hash": "a16f3ce4dd5deb92d98ef5cf8afeaf0775ebca408f708b2146c4fb42b41e14be",
+          "spending_date": "2009-01-12",
+          "spending_time": "2009-01-12 06:02:13",
+          "spending_value_usd": 0.4,
+          "spending_sequence": 4294967295,
+          "spending_signature_hex": "473044022027542a94d6646c51240f23a76d33088d3dd8815b25e9ea18cac67d1171a3212e02203baf203c6e7b80ebd3e588628466ea28be572fe1aaa3f30947da4763dd3b3d2b01",
+          "spending_witness": "",
+          "lifespan": 9108,
+          "cdd": 4.21666666666667
+        }
+      ]
+    }
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 555555,
+    ...
+  }
+}
+```
+
+**Bonus endpoint:**
+
+- `https://api.blockchair.com/{:btc_chain}/dashboards/transaction/{:hash}₀/priority`
+
+For mempool transactions shows priority (`position`) — for chains supporting SegWit by `fee_per_kwu`,  for others by `fee_per_kb`— over other transactions (`out_of` mempool transactions). `position` is `null` if the transaction is not in the mempool. Cost: `1`.
+
+**Request cost formula:**
+
+- `1` for `https://api.blockchair.com/{:btc_chain}/dashboards/transaction/{:hash}₀` endpoint
+- `1 + (0.1 * (entity count - 1))`  for `https://api.blockchair.com/{:btc_chain}/dashboards/transactions/{:hash}₀,...,{:hash}ᵩ` endpoint (e.g. it's `1 + (0.1 * (10 - 1)) = 1.9` for requesting 10 transactions)
+- Using `?omni=true` or `?wormhole=true` adds `1` for each requested transaction
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/bitcoin/transaction/4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b
+
+
+
+#### <a name="link_300"></a> Address and extended public key (xpub) info
+
+**Endpoints:**
+
+* `https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀` (for a single address; further referred to as the `address` dashboard)
+* `https://api.blockchair.com/{:btc_chain}/dashboards/addresses/{:address}₀,...,{:address}ᵩ` (for a set of up to 100 addresses, comma-separated, further referred to as the `addresses` dashboard)
+* `https://api.blockchair.com/{:btc_chain}/dashboards/xpub/{:extended_key}` (info on `xpub`, `ypub`, or `zpub` extended key; further referred to as the `xpub` dashboard)
+
+**Where:**
+
+* `{:btc_chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `bitcoin/testnet`
+* `{:address}ᵢ` is the address, possible formats are:
+  
+    * `p2pk`/`p2pkh` format (supported for all blockchains, example for Bitcoin: `1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa`)
+    * `p2sh` format (supported for all blockchains, example for Bitcoin: `342ftSRCvFHfCeFFBuz4xwbeqnDw6BGUey`)
+    * Only for the `dashboards/address` endpoint Bitcoin Cash also supports `Legacy` address variant, and Bitcoin SV supports `CashAddr` variant for `p2pkh` and `p2sh` formats. It's also possible to use `bitcoincash:` prefix (examples: `qzyl04w3m99ddpqahzwghn3erallm3e7z5le4aqqmh` or `bitcoincash:qzyl04w3m99ddpqahzwghn3erallm3e7z5le4aqqmh` for both Bitcoin Cash and Bitcoin SV.
+    * `bech32` format (`witness_v0_keyhash`, `witness_v0_scripthash`, or `witness_unknown` — supported for Bitcoin, Litecoin, Groestlcoin, and Bitcoin Testnet only; example for Bitcoin: `bc1q34aq5drpuwy3wgl9lhup9892qp6svr8ldzyy7c`)
+    * Internal Blockchair format (for `multisig`. `nulldata`, and `nonstandard` output types)
+* `{:extended_key}` is the extended public key, possible formats are:
+    * `xpub` (supported for all blockchains, example for Bitcoin: `xpub6CUGRUonZSQ4TWtTMmzXdrXDtypWKiKrhko4egpiMZbpiaQL2jkwSB1icqYh2cfDfVxdx4df189oLKnC5fSwqPfgyP3hooxujYzAu3fDVmz`, yields `p2pkh` addresses)
+    * `ypub` (supported for Bitcoin, Litecoin, Groestlcoin, and Bitcoin Testnet only, example for Bitcoin: `ypub6XiW9nhToS1gjVsFKzgmtWZuqo6V1YY7xaCns37aR3oYhFyAsTehAqV1iW2UCNtgWFQFkz3aNSZZbkfe5d1tD8MzjZuFJQn2XnczsxtjoXr`, yields `p2sh` addresses)
+    * `zpub` (supported for Bitcoin, Litecoin, Groestlcoin, and Bitcoin Testnet only, example for Bitcoin: `ypub6XiW9nhToS1gjVsFKzgmtWZuqo6V1YY7xaCns37aR3oYhFyAsTehAqV1iW2UCNtgWFQFkz3aNSZZbkfe5d1tD8MzjZuFJQn2XnczsxtjoXr`, yields `witness_v0_keyhash` addresses)
+    
+  Note that custom xpub formats (e.g. `ltub` for Litecoin) are not supported.
+  
+
+**Possible options:**
+
+* `?limit={:transaction_limit},{:utxo_limit}` or a shorthand `?limit={:limit}`. `{:transaction_limit}` limits the number of returned latest transaction hashes (in the `transactions` array) for an address or an address set. Default is `100`. Maximum is `10000`. In case of `0` returns an empty transaction hashes array. `{:utxo_limit}` limits the number of returned latest UTXOs (in the `utxo` array) for an address or an address set. Default is `100`. Maximum is `10000`. In case of `0` returns an empty UTXO array. If only one limit is set, it applies to both `{:transaction_limit}` and `{:utxo_limit}` (e.g. `?limit=100` is an equivalent of `?limit=100,100`).
+* `?offset={:transaction_offset},{:utxo_offest}` or a shorthand `?offset={:offset}` allows to paginate transaction hashes and the UTXO array. The behaviour is similar to the `?limit=` section. Default for both offset is `0`, and the maximum is `1000000`.  
+* `?transaction_details=true` — returns detailed info on transactions instead of just hashes in the `transactions` array. Each element contains `block_id`, `transaction_hash`, `time`, and `balance_change` (shows how the transactions affected the balance of `{:address}`, i.e. it can be a negative value). At the moment, this option is available for the `address` endpoint only.
+* `?omni=true` (for `bitcoin` only; in alpha test mode) — shows information about Omni Layer token transfers in this transaction. At the moment, this option is available for the `address` endpoint only. The data is returned in the `layer_2.omni` array.
+* `?wormhole=true` (for `bitcoin-cash` only; in alpha test mode) — shows information about Wormhole token transfers in this transaction. At the moment, this option is available for the `address` endpoint only. The data is returned in the `layer_2.wormhole` array.
+
+**Output:**
+
+Please note that while the only difference between for example `transaction` and `transactions` dashboards is the number of elements in the `data` array, `address` and `addresses` differ semantically. `address` returns info on a single address with its recent transaction hashes and its UTXO set, while `addresses` and `xpub` return info on an address set (as well as some stats on separate addresses) where transaction hashes and the UTXO set are returned for the entire set (that's more useful for wallets as in most cases the task is, for example, to retrieve latest 10 transaction hashes for a set of addresses sorted by time descending, but not 10 transactions for each address as it's not clear how to sort them).
+
+Here's how these three dashboard calls structured (see more detailed examples below):
+
+`address` endpoint (single address):
+* `data`
+    * `{:address}₀`
+        * `address` — an associative array with address info (`balance`, `script_hex`, `transaction_count`, etc.)
+        * `transactions` — an array of latest transaction hashes where the address is a participant (either sender or recipient)
+        * `utxo` — the UTXO set for the address
+* `context` — some context info
+
+`addresses` endpoint (2 addresses for example):
+* `data`
+    * `set` — an associative array with info on the address set (`balance` yields the total balance of 2 addresses, `transaction_count` is for both, etc.)
+    * `addresses`
+        * `{:address}₀` — an associative array with the first address info (`balance`, `script_hex`, `output_count`, etc.)
+        * `{:address}₁` — an associative array with the second address info (`balance`, `script_hex`, `output_count`, etc.)
+    * `transactions` — an array of latest transaction hashes for the entire set
+    * `utxo` — the UTXO set for the address set
+* `context` — some context info
+
+`xpub` endpoint:
+* `data`
+    * `{:extended_key}`
+        * `xpub` — an associative array with xpub info (`balance` yields the total balance of all addresses derived from the xpub, `transaction_count`, etc.)
+    * `addresses`
+        * `{:address}₀` — an associative array with the first address info (`balance`, `script_hex`, `output_count`, etc.)
+        * `{:address}₁` — an associative array with the second address info (`balance`, `script_hex`, `output_count`, etc.)
+    * `transactions` — an array of latest transaction hashes for the entire set
+    * `utxo` — the UTXO set for the address set
+* `context` — some context info
+
+Note that currently the maximum depth for xpub address discovery is 250 (larger limits are available on Premium plans). According to BIP 32, our engine looks for 20 addresses at once, and if there's no transactions associated with this set, it stops looking.
+
+`data.addresses` for both the `addresses` and the `xpub` endpoints don't include addresses which don't participate in transactions.
+
+Address object specification:
+
+* `type` — address type (the same as `type` [here](#link_400), can be one of these: `pubkey`, `pubkeyhash`, `scripthash`, `multisig`, `nulldata`, `nonstandard`, `witness_v0_scripthash`, `witness_v0_keyhash`, `witness_unknown`)
+* `script_hex` — output script (in hex) corresponding to the address
+* `balance` — address balance in satoshi (hereinafter - including unconfirmed outputs)
+* `balance_usd` — address balance in USD
+* `received` — total received in satoshi
+* `received_usd` — total received in USD
+* `spent` — total spent in satoshi
+* `spent_usd` — total spent in USD
+* `output_count` — the number of outputs this address received
+* `unspent_output_count` — number of unspent outputs for this address (i.e. the number of inputs for an address can be calculated as `output_count`-`unspent_output_count`)
+* `first_seen_receiving` — timestamp (UTC) when the first time this address received coins
+* `last_seen_receiving` — timestamp (UTC) when the last time this address received coins
+* `first_seen_spending` — timestamp (UTC) when the first time this address sent coins
+* `last_seen_spending` — timestamp (UTC) when the last time this address sent coins
+* `transaction_count` — number of unique transactions this address participating in (available only in the `address` endpoint)
+* `path` — derived address path (available only in the `xpub` endpoint)
+
+**Context keys:**
+
+* `context.results` — number of found addresses
+* `context.limit` — applied limit
+* `context.offset` — applied offset
+* `context.state` — best block height on the `{:btc_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = data.{:id}ᵢ.block.id - context.state + 1`)
+* `context.checked` (for the `xpub` endpoint only) — lists the addresses checked by our engine with their paths
+
+**Example requests:**
+
+* `https://api.blockchair.com/bitcoin/dashboards/address/1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa`
+* `https://api.blockchair.com/bitcoin/dashboards/addresses/1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa,12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX`
+* `https://api.blockchair.com/bitcoin/dashboards/xpub/xpub6CUGRUonZSQ4TWtTMmzXdrXDtypWKiKrhko4egpiMZbpiaQL2jkwSB1icqYh2cfDfVxdx4df189oLKnC5fSwqPfgyP3hooxujYzAu3fDVmz`
+* `https://api.blockchair.com/bitcoin/dashboards/address/12cbQLTFMXRnSzktFkuoG3eHoMeFtpTu3S?transaction_details=true`
+* `https://api.blockchair.com/bitcoin/dashboards/address/1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa?limit=1&offset=1&transaction_details=true`
+
+**Example outputs:**
+
+`https://api.blockchair.com/bitcoin/dashboards/address/1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa?limit=1&offset=1&transaction_details=true`:
+
+```json
+{
+  "data": {
+    "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa": {
+      "address": {
+        "type": "pubkey",
+        "script_hex": "4104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac",
+        "balance": 6812392291,
+        "balance_usd": 508913.63494609314,
+        "received": 6812392291,
+        "received_usd": 15293.3019,
+        "spent": 0,
+        "spent_usd": 0,
+        "output_count": 1820,
+        "unspent_output_count": 1820,
+        "first_seen_receiving": "2009-01-03 18:15:05",
+        "last_seen_receiving": "2019-10-24 18:47:23",
+        "first_seen_spending": null,
+        "last_seen_spending": null,
+        "transaction_count": 1820
+      },
+      "transactions": [
+        {
+          "block_id": 600890,
+          "hash": "4db4d68b13bf667ad9a44f4222bad2239de318fa75555ef966e84315056374b5",
+          "time": "2019-10-24 18:47:23",
+          "balance_change": 267582
+        }
+      ],
+      "utxo": [
+        {
+          "block_id": 600890,
+          "transaction_hash": "4db4d68b13bf667ad9a44f4222bad2239de318fa75555ef966e84315056374b5",
+          "index": 1,
+          "value": 267582
+        }
+      ]
+    }
+  },
+  "context": {
+    "code": 200,
+    "limit": "1,1",
+    "offset": "1,1",
+    "results": 1,
+    "state": 600897,
+    ...
+  }
+}
+```
+
+`https://api.blockchair.com/bitcoin/dashboards/addresses/1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa,12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX?limit=1`:
+
+```json
+{
+  "data": {
+    "set": {
+      "address_count": 2,
+      "balance": 11846862777,
+      "balance_usd": 885009.2215792858,
+      "received": 11846862777,
+      "spent": 0,
+      "output_count": 1915,
+      "unspent_output_count": 1915,
+      "first_seen_receiving": "2009-01-03 18:15:05",
+      "last_seen_receiving": "2019-10-24 18:47:23",
+      "first_seen_spending": null,
+      "last_seen_spending": null,
+      "transaction_count": 1912
+    },
+    "addresses": {
+      "12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX": {
+        "type": "pubkeyhash",
+        "script_hex": "76a914119b098e2e980a229e139a9ed01a469e518e6f2688ac",
+        "balance": 5034470486,
+        "balance_usd": 376095.5866331926,
+        "received": 5034470486,
+        "received_usd": 1216.4402,
+        "spent": 0,
+        "spent_usd": 0,
+        "output_count": 95,
+        "unspent_output_count": 95,
+        "first_seen_receiving": "2009-01-09 02:54:25",
+        "last_seen_receiving": "2019-09-18 18:29:01",
+        "first_seen_spending": null,
+        "last_seen_spending": null
+      },
+      "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa": {
+        "type": "pubkeyhash",
+        "script_hex": "76a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac",
+        "balance": 6812392291,
+        "balance_usd": 508913.63494609314,
+        "received": 6812392291,
+        "received_usd": 15293.3019,
+        "spent": 0,
+        "spent_usd": 0,
+        "output_count": 1820,
+        "unspent_output_count": 1820,
+        "first_seen_receiving": "2009-01-03 18:15:05",
+        "last_seen_receiving": "2019-10-24 18:47:23",
+        "first_seen_spending": null,
+        "last_seen_spending": null
+      }
+    },
+    "transactions": [
+      "f16bcc481a8939bc1c2f1b7df061f89958e265894dc71df248dabaad8e0815ed"
+    ],
+    "utxo": [
+      {
+        "block_id": -1,
+        "transaction_hash": "f16bcc481a8939bc1c2f1b7df061f89958e265894dc71df248dabaad8e0815ed",
+        "index": 0,
+        "value": 558,
+        "address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+      }
+    ]
+  },
+  "context": {
+    "code": 200,
+    "limit": "1,1",
+    "offset": "0,0",
+    "results": 2,
+    "state": 600898,
+    ...
+  }
+}
+```
+
+`https://api.blockchair.com/bitcoin/dashboards/xpub/xpub6CUGRUonZSQ4TWtTMmzXdrXDtypWKiKrhko4egpiMZbpiaQL2jkwSB1icqYh2cfDfVxdx4df189oLKnC5fSwqPfgyP3hooxujYzAu3fDVmz?limit=1,2`:
+
+```json
+{
+  "data": {
+    "xpub6CUGRUonZSQ4TWtTMmzXdrXDtypWKiKrhko4egpiMZbpiaQL2jkwSB1icqYh2cfDfVxdx4df189oLKnC5fSwqPfgyP3hooxujYzAu3fDVmz": {
+      "xpub": {
+        "address_count": 11,
+        "balance": 491868,
+        "balance_usd": 36.744556258799996,
+        "received": 711868,
+        "spent": 220000,
+        "output_count": 11,
+        "unspent_output_count": 9,
+        "first_seen_receiving": "2014-12-22 17:42:10",
+        "last_seen_receiving": "2019-09-25 16:12:10",
+        "first_seen_spending": "2014-12-22 21:32:22",
+        "last_seen_spending": "2014-12-23 17:26:21",
+        "transaction_count": 13
+      },
+      "addresses": {
+        "1EfgV2Hr5CDjXPavHDpDMjmU33BA2veHy6": {
+          "path": "0/0",
+          "type": "pubkeyhash",
+          "script_hex": "76a91495ea668e0322bd99dac54ffdc9089d68e56c3aa188ac",
+          "balance": 0,
+          "balance_usd": 0,
+          "received": 100000,
+          "received_usd": 0.3255,
+          "spent": 100000,
+          "spent_usd": 0.3292,
+          "output_count": 1,
+          "unspent_output_count": 0,
+          "first_seen_receiving": "2014-12-22 17:42:10",
+          "last_seen_receiving": "2014-12-22 17:42:10",
+          "first_seen_spending": "2014-12-23 17:26:21",
+          "last_seen_spending": "2014-12-23 17:26:21"
+        },
+        "12iNxzdF6KFZ14UyRTYCRuptxkKSSVHzqF": {
+          "path": "0/1",
+          "type": "pubkeyhash",
+          "script_hex": "76a91412cb841986033f5ec9a4a1babe3a47339beac81c88ac",
+          "balance": 0,
+          "balance_usd": 0,
+          "received": 120000,
+          "received_usd": 0.3906,
+          "spent": 120000,
+          "spent_usd": 0.3906,
+          "output_count": 1,
+          "unspent_output_count": 0,
+          "first_seen_receiving": "2014-12-22 17:42:10",
+          "last_seen_receiving": "2014-12-22 17:42:10",
+          "first_seen_spending": "2014-12-22 21:32:22",
+          "last_seen_spending": "2014-12-22 21:32:22"
+        },
+        "1CcEugXu9Yf9Qw5cpB8gHUK4X9683WyghM": {
+          "path": "0/2",
+          "type": "pubkeyhash",
+          "script_hex": "76a9147f538d66e3745866949f1b98c72c00638f16c7a088ac",
+          "balance": 8747,
+          "balance_usd": 0.6534367627,
+          "received": 8747,
+          "received_usd": 0.0506,
+          "spent": 0,
+          "spent_usd": 0,
+          "output_count": 1,
+          "unspent_output_count": 1,
+          "first_seen_receiving": "2016-08-18 04:07:11",
+          "last_seen_receiving": "2016-08-18 04:07:11",
+          "first_seen_spending": null,
+          "last_seen_spending": null
+        },
+        "15xANZb5vJv5RGL263NFuh8UGgHT7noXeZ": {
+          "path": "0/3",
+          "type": "pubkeyhash",
+          "script_hex": "76a914364f34453e722af26f5f861aafbb7105176edcee88ac",
+          "balance": 100000,
+          "balance_usd": 7.47041,
+          "received": 100000,
+          "received_usd": 2.6486,
+          "spent": 0,
+          "spent_usd": 0,
+          "output_count": 1,
+          "unspent_output_count": 1,
+          "first_seen_receiving": "2017-06-21 03:01:22",
+          "last_seen_receiving": "2017-06-21 03:01:22",
+          "first_seen_spending": null,
+          "last_seen_spending": null
+        },
+        "1PJMBXKBYEBMRDmpAoBRbDff26gHJrawSp": {
+          "path": "0/4",
+          "type": "pubkeyhash",
+          "script_hex": "76a914f49aaf692e1aca7d9de273d5b5538ad69677c74d88ac",
+          "balance": 100000,
+          "balance_usd": 7.47041,
+          "received": 100000,
+          "received_usd": 2.4581,
+          "spent": 0,
+          "spent_usd": 0,
+          "output_count": 1,
+          "unspent_output_count": 1,
+          "first_seen_receiving": "2017-07-02 17:12:03",
+          "last_seen_receiving": "2017-07-02 17:12:03",
+          "first_seen_spending": null,
+          "last_seen_spending": null
+        },
+        "16ZBYSHkLkRFHAuZvyzosXYgU1UDJxRV1R": {
+          "path": "0/5",
+          "type": "pubkeyhash",
+          "script_hex": "76a9143ceebd5df25f739b5025d61fa4be2346fada97fd88ac",
+          "balance": 100000,
+          "balance_usd": 7.47041,
+          "received": 100000,
+          "received_usd": 2.4581,
+          "spent": 0,
+          "spent_usd": 0,
+          "output_count": 1,
+          "unspent_output_count": 1,
+          "first_seen_receiving": "2017-07-02 17:26:49",
+          "last_seen_receiving": "2017-07-02 17:26:49",
+          "first_seen_spending": null,
+          "last_seen_spending": null
+        },
+        "1EHeVKfjjq6FJpix86G2yzFeRbZ6RNg2Zm": {
+          "path": "0/6",
+          "type": "pubkeyhash",
+          "script_hex": "76a91491bf9590d5cf0412d5b3fec1284d7164b161c65088ac",
+          "balance": 100000,
+          "balance_usd": 7.47041,
+          "received": 100000,
+          "received_usd": 2.4581,
+          "spent": 0,
+          "spent_usd": 0,
+          "output_count": 1,
+          "unspent_output_count": 1,
+          "first_seen_receiving": "2017-07-02 18:11:17",
+          "last_seen_receiving": "2017-07-02 18:11:17",
+          "first_seen_spending": null,
+          "last_seen_spending": null
+        },
+        "1HqsYkwczwvkMXCobk5WPZmhj2S2TK613Z": {
+          "path": "0/8",
+          "type": "pubkeyhash",
+          "script_hex": "76a914b8c02c75c59f6320b729af2b0a5e0bff7efab95388ac",
+          "balance": 40161,
+          "balance_usd": 3.0001913601,
+          "received": 40161,
+          "received_usd": 2.6369,
+          "spent": 0,
+          "spent_usd": 0,
+          "output_count": 1,
+          "unspent_output_count": 1,
+          "first_seen_receiving": "2018-10-08 00:43:16",
+          "last_seen_receiving": "2018-10-08 00:43:16",
+          "first_seen_spending": null,
+          "last_seen_spending": null
+        },
+        "1687EJf5YEmeEtcscnuJPiV5b8HkM1o98q": {
+          "path": "0/9",
+          "type": "pubkeyhash",
+          "script_hex": "76a9143830bd9d4d16ecbfc7456c2668a5dfa2954ab64088ac",
+          "balance": 40160,
+          "balance_usd": 3.000116656,
+          "received": 40160,
+          "received_usd": 2.6369,
+          "spent": 0,
+          "spent_usd": 0,
+          "output_count": 1,
+          "unspent_output_count": 1,
+          "first_seen_receiving": "2018-10-08 00:43:16",
+          "last_seen_receiving": "2018-10-08 00:43:16",
+          "first_seen_spending": null,
+          "last_seen_spending": null
+        },
+        "1MS6eGqD4iUGyJPbEsjqmoNaRhApgtmF8J": {
+          "path": "0/10",
+          "type": "pubkeyhash",
+          "script_hex": "76a914e0219ffd268cf0a459d69c85557c68261b21026488ac",
+          "balance": 1800,
+          "balance_usd": 0.13446738,
+          "received": 1800,
+          "received_usd": 0.1157,
+          "spent": 0,
+          "spent_usd": 0,
+          "output_count": 1,
+          "unspent_output_count": 1,
+          "first_seen_receiving": "2018-11-07 17:26:45",
+          "last_seen_receiving": "2018-11-07 17:26:45",
+          "first_seen_spending": null,
+          "last_seen_spending": null
+        },
+        "1LDPJCMZhYZjTvTGYahdhMXLuMfjfi6Kua": {
+          "path": "0/29",
+          "type": "pubkeyhash",
+          "script_hex": "76a914d2c1fe5c55a1e9d818149750f2662ba57748247088ac",
+          "balance": 1000,
+          "balance_usd": 0.07470410000000001,
+          "received": 1000,
+          "received_usd": 0.0868,
+          "spent": 0,
+          "spent_usd": 0,
+          "output_count": 1,
+          "unspent_output_count": 1,
+          "first_seen_receiving": "2019-09-25 16:12:10",
+          "last_seen_receiving": "2019-09-25 16:12:10",
+          "first_seen_spending": null,
+          "last_seen_spending": null
+        }
+      },
+      "transactions": [
+        "a24445474a9a7c0698e8db221ad2cae06792a899e9bc7f5a590687c3c810c480"
+      ],
+      "utxo": [
+        {
+          "block_id": 596536,
+          "transaction_hash": "a24445474a9a7c0698e8db221ad2cae06792a899e9bc7f5a590687c3c810c480",
+          "index": 0,
+          "value": 1000,
+          "address": "1LDPJCMZhYZjTvTGYahdhMXLuMfjfi6Kua"
+        },
+        {
+          "block_id": 549163,
+          "transaction_hash": "0c9a0219a8f3ef4a7d00483a755a9a18a674340c547bdf573481c1c613898746",
+          "index": 0,
+          "value": 1800,
+          "address": "1MS6eGqD4iUGyJPbEsjqmoNaRhApgtmF8J"
+        }
+      ]
+    }
+  },
+  "context": {
+    "code": 200,
+    "limit": "1,2",
+    "offset": "0,0",
+    "results": 1,
+    "checked": [
+      "0/0: 1EfgV2Hr5CDjXPavHDpDMjmU33BA2veHy6",
+      "0/1: 12iNxzdF6KFZ14UyRTYCRuptxkKSSVHzqF",
+      "0/2: 1CcEugXu9Yf9Qw5cpB8gHUK4X9683WyghM",
+      "0/3: 15xANZb5vJv5RGL263NFuh8UGgHT7noXeZ",
+      "0/4: 1PJMBXKBYEBMRDmpAoBRbDff26gHJrawSp",
+      "0/5: 16ZBYSHkLkRFHAuZvyzosXYgU1UDJxRV1R",
+      "0/6: 1EHeVKfjjq6FJpix86G2yzFeRbZ6RNg2Zm",
+      "0/7: 17BvBPGypT4nt1xc5QpdSDkQb54xoUuQkD",
+      "0/8: 1HqsYkwczwvkMXCobk5WPZmhj2S2TK613Z",
+      "0/9: 1687EJf5YEmeEtcscnuJPiV5b8HkM1o98q",
+      "0/10: 1MS6eGqD4iUGyJPbEsjqmoNaRhApgtmF8J",
+      "0/11: 1JSAD9Z8cpcMkwv98eFNWRciAMDqrPYJTE",
+      "0/12: 18zBZa3GWoqxuJK9qgJnoVoYEJSpFGDn6x",
+      "0/13: 17DcBkPv4VwdzC4837535XyyoUPZDkKArf",
+      "0/14: 1DMZDJV5XgnTswpuP85Gnfk7p1473QmxuF",
+      "0/15: 1AWhq6hMWzwxEG1wGeR7Y9aTyoxEjw7Rjj",
+      "0/16: 1HxhnLyFE3b7CWxtcxRKjKQ9fcjHeweq8R",
+      "0/17: 1H4J9nwbyUTvZ527K9fqaTeT3vd7Q4fVNC",
+      "0/18: 1KWLBZNwdGVxWyVhSSYjScLNevvxrSm1ww",
+      "0/19: 1J3BmEZTgHSgPcZptEP9grBVg8crvYYPSk",
+      "0/20: 1deZJSgLcwqUm9gBoo7TMzC6CEBpeweJS",
+      "0/21: 14hLE4kcxsL2E9VHwiztVokubR2rFkDnVr",
+      "0/22: 17THvVGQF1kFyjQHWcW5AiwBxDvx7GRcLm",
+      "0/23: 15RE6yBUX351VyAAht4SESXdgqEFAgwLdS",
+      "0/24: 1DzbL4hx1BTKpuDKjeA2JxD598kDe1BVGz",
+      "0/25: 1JwMtErm8siMrGM2LXBUrWTy1aBRkku79t",
+      "0/26: 189tJnNzz9RP8ZRdrB8UTAoVkeNt7yJrGb",
+      "0/27: 14S1fPp686HvwcuG4oBPHvn1HXeDZSAwjD",
+      "0/28: 17JspALUGU9Kw5Ui3xX8VFnCx8JVjUj4zr",
+      "0/29: 1LDPJCMZhYZjTvTGYahdhMXLuMfjfi6Kua",
+      "0/30: 1AKP5BtANmebif9vNwYGNx5qcSxASJWSP9",
+      "0/31: 1PqivQQbGwMmmDypaqoNLbE8vpKppihavk",
+      "0/32: 1M1mGGEgtFZtcEjnmWzkWEJmTpr8dCLpaX",
+      "0/33: 13srT2gVpj4G8kDNJJicsw28Ecxt3gvz6E",
+      "0/34: 1NyEZ7zU8C2nEysVgHTYBjBgeCdmz4XSMX",
+      "0/35: 1PtAfTFFtJUvQJRsY6v8gyjNyH3cu4ueyJ",
+      "0/36: 1PLYcCvCkZCwgK9kq5T53fG5SRGkjieZve",
+      "0/37: 1DFaATuBZXs9nYwEsihBpadnN1oYXPCwsn",
+      "0/38: 1FnHfiGBb2ND6q8Q1Be5Sc9jwwFGsZzYcE",
+      "0/39: 1GFjXEtmkV9XpC2D4Lbjvrk2NYFjHQRfnr",
+      "0/40: 1MGAnDNvkDQvTGdJ9oZdSBtiTc9vuwRN2A",
+      "0/41: 1Hrf1TUUSNnhgCFsywvA9BX9YaTABo4zsP",
+      "0/42: 1CK4cQ85AAyB8s7FtENx3q7cCKTHqsCpD8",
+      "0/43: 1Md5gRHwHUkUUbaeGB2EoWgfPBg1ERUc9C",
+      "0/44: 16ubuUFzMQWzRpDFU39p9jBnJUqQBmq9hC",
+      "0/45: 1CrBcrqv4p9mC6Am9Zc5WmzDW9h4B7yifL",
+      "0/46: 14C3hQ3pHbg3mZw9cUsKVfVXkS5tYbx82i",
+      "0/47: 1EM5gi9sURngbxXszMhXweqDm7vW8fFHvY",
+      "0/48: 15NvG6YpVh2aUc3DroVttEcWa1Z99qhACP",
+      "0/49: 18UXoW2caqHyTpDueSDtFrJyekg7VBzRzt",
+      "0/50: 1P5chLKDSFVUJaf4ahwpZ1sJxUFoY2Ph1E",
+      "0/51: 1CnsHtMDDPpwwjDX1idaVmXoAkn5w5DUFo",
+      "0/52: 1DCP8fg3pCcTY3Voi5zf1em9ZFpjC8TZdE",
+      "0/53: 1CiDp9n9G5Jw4mrqEYeZf2hGou3Qxbubfd",
+      "0/54: 1DYMSL8EusREgBaSjuZ5BXyLgwsGFjQK4z",
+      "0/55: 18Zwy9C8qwzr1WNqETs7ghQbbP1GaY2o4F",
+      "0/56: 1GVFgnLwgEbxLi2gZXoScnGvnzefZNtvHw",
+      "0/57: 1JeTm8ps2mnZMnzhrxMz3N26jk9pnxWjWk",
+      "0/58: 14VecjHW9Mz7dwofxox1hRhBgitoXGvdtb",
+      "0/59: 13n3no297bTMqnYPmtHgMaE7dtmsEXDPAT",
+      "1/0: 1muF2Eq9iR4ttJKpc4zZkoTmu3E41Ab9v",
+      "1/1: 18RtYUqcNDRjvbB8gg2hwxCYkWwuFcURJp",
+      "1/2: 15LE2wxPfw54p3RYWtd7TiduPVqNWiRdFv",
+      "1/3: 1CjYeTqk2M4qfnJWyYmLiGmm9BrX9Vdn7f",
+      "1/4: 1NWaSHQZsedx3X5ySwkesL7SfDrfQ38TwZ",
+      "1/5: 1HwVbcCNyoej8oyRn5ayTaMJbUbh1XH17D",
+      "1/6: 1M2R4jSZHiJebjMZ6FEkE9kAFAF55SsNuf",
+      "1/7: 1N2PNkgCAfkshYL1R533Q7nsEdUBiu69ou",
+      "1/8: 1KaYtjPYwUaXKswMT6dVkjU1i3AaGRbwgc",
+      "1/9: 16C6Dns9gfUAJ9PXPQj9hxcLmJaUgvCztg",
+      "1/10: 14fXx1jkGk85izCGnhFUL1PfwNSEP5hrLj",
+      "1/11: 1LGf9DzHTQd1BwakvcrQnQbKom7mZRmTnX",
+      "1/12: 1Npzk7S3FdBqZUmCUFnpVAkbPZKcHEakd9",
+      "1/13: 154Xhii1fs4qqPJWFSgV7NoQqheKj24zB6",
+      "1/14: 16K7tqjnVEKqn9bS4mqmAv2ra4JnwoWFU3",
+      "1/15: 1CN1oU8YF9udAKratV33EHGxmgR54d4CwY",
+      "1/16: 1Ry5PG7hKm7H1Kvf7FTfoRt8n4kPtY6hL",
+      "1/17: 1PNKjpz35PaWyeJrinQab2E1a1vtWcfRdy",
+      "1/18: 16VwyBxQyJT5DUswUoyq7Ga6t6sY7Ua8aA",
+      "1/19: 1GMdnCiw1dgGjaMAWyWssToYvtcGA5ERaH"
+    ],
+    "state": 600898,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+- `1` for the `address` endpoint (add `1` for every of these options used: `?transaction_details=true`, `?omni=true`, `?wormhole=true`)
+- `1 + (0.1 * (entity count - 1))`  for the `addresses` endpoint (e.g. it's `1 + (0.1 * (100 - 1)) = 10.9` for requesting 100 addresses)
+- `1 + 2 * depth - 0.1` for the `xpub` endpoint, where `depth` is the number of 20-addresses iterations (BIP 32 standard). The minimum number of iterations is 1 (the cost would be `2.9` in that case), if there are 5 iterations required, 100 addresses will be checked in total (the cost would be `10.9`)
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/bitcoin/address/1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
+- https://blockchair.com/bitcoin/xpub/xpub6CUGRUonZSQ4TWtTMmzXdrXDtypWKiKrhko4egpiMZbpiaQL2jkwSB1icqYh2cfDfVxdx4df189oLKnC5fSwqPfgyP3hooxujYzAu3fDVmz
+
+
+
+### <a name="link_M22"></a> Dashboard endpoints for Ethereum
+
+
+
+#### <a name="link_103"></a> Block info
+
+**Endpoints:**
+
+- `https://api.blockchair.com/{:eth_chain}/dashboards/block/{:height}₀`
+- `https://api.blockchair.com/{:eth_chain}/dashboards/block/{:hash}₀`
+- `https://api.blockchair.com/{:eth_chain}/dashboards/blocks/{:height}₀,...,{:height}ᵩ` (up to 10 blocks, comma-separated)
+- `https://api.blockchair.com/{:eth_chain}/dashboards/blocks/{:hash}₀,...,{:hash}ᵩ` (up to 10 blocks, comma-separated)
+
+**Where:**
+
+- `{:eth_chain}` can only be: `ethereum`
+- `{:height}ᵢ` is the block height (integer value), also known as block id
+- `{:hash}ᵢ` is the block hash (regex: `/^0x[0-9a-f]{64}$/i`)
+
+**Possible options:**
+
+- `?limit={:limit}` limits the number of returned transaction hashes contained in the block. Default is `100`. Maximum is `10000`. In case of `0` returns an empty transaction hashes array
+- `?offset={:offset}` allows to paginate transaction hashes. Default is `0`. Maximum is `1000000`.
+
+**Output:**
+
+`data` contains an associative array where found block heights or block hashes used as keys:
+
+- `data.{:id}ᵢ.block` — information about the block (see [Ethereum-like block object](#link_105) for the field descriptions)
+- `data.{:id}ᵢ.transactions` — the array of transaction hashes (sorted by position in the block ascending) included in the block (respecting the set limit and offset)
+- `data.{:id}ᵢ.synthetic_transactions` — array of internal Blockchair ids of synthetic transactions. By synthetic transactions we understand state changes in the blockchain which don't have parental transaction entities, i.e. transferring miner reward (for blocks and uncles), coin generation in the genesis block, etc. This array is not iterable, and always yields the entire result set.
+- `data.{:id}ᵢ.uncles` — the array of hashes of the block's uncles (in case there are no uncles — an empty array). This array is not iterable as well, and always yields the entire result set.
+
+Where `{:id}ᵢ` is either `{:height}ᵢ` or `{:hash}ᵢ` from the query string.
+
+If there's no `{:id}ᵢ` has been found in the database, there won't be such key.
+
+Note that the total number of transactions in the block is contained in `data.{:id}ᵢ.block.transaction_count`, but that doesn't take synthetic transactions into account (use `data.{:id}ᵢ.block.synthetic_transaction_count` instead)
+
+**Context keys:**
+
+- `context.results` — number of found blocks
+- `context.limit` — applied limit
+- `context.offset` — applied offset
+- `context.state` — best block height on the `{:eth_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = data.{:id}ᵢ.block.id - context.state + 1`)
+
+**Example requests:**
+
+- `https://api.blockchair.com/ethereum/dashboards/block/2345678`
+- `https://api.blockchair.com/ethereum/dashboards/block/0xda214d1b1d458e7ae0e626b69a52a59d19762c51a53ff64813c4d31256282fdf`
+- `context.state`: best block height on the `{:eth_chain}` chain (tip: it's possible to calculate the number of confirmation transaction received using this formula: `confirmations = data.{:id}ᵢ.transaction.block_id - context.state + 1`, or if `data.{:id}ᵢ.transaction.block_id` is `-1` it's an unconfirmed transaction)
+- `https://api.blockchair.com/ethereum/dashboards/block/2345678?limit=2`
+- `https://api.blockchair.com/ethereum/dashboards/block/2345678?limit=2&offset=2`
+
+**Example output:**
+
+`https://api.blockchair.com/ethereum/dashboards/block/2345678`:
+
+```json
+{
+  "data": {
+    "2345678": {
+      "block": {
+        "id": 2345678,
+        "hash": "0xda214d1b1d458e7ae0e626b69a52a59d19762c51a53ff64813c4d31256282fdf",
+        "date": "2016-09-29",
+        "time": "2016-09-29 01:39:41",
+        "size": 1109,
+        "miner": "0x4bb96091ee9d802ed039c4d1a5f6216f90f81b01",
+        "extra_data_hex": "657468706f6f6c2e6f7267202845553129",
+        "difficulty": 81923183857781,
+        "gas_used": 105000,
+        "gas_limit": 1500000,
+        "logs_bloom": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "mix_hash": "f5b95f5b79cd8425db7f04d200d78d16c104c28d078d0b653ae1c24f31759662",
+        "nonce": "681508643254209570",
+        "receipts_root": "51a6952987f2c7ebf74fc1a4f644265aebb660b1d86a12c0f6e3001a2866331f",
+        "sha3_uncles": "1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+        "state_root": "4f6b1af13d99c75e0d644b226d57767a0d2f22921c529dfe3455bc63154b01e5",
+        "total_difficulty": "66939257372572274863",
+        "transactions_root": "dde4d2ce7556effca10c868f500f0e47fb09b5cb4a003d781080f1a06e582352",
+        "uncle_count": 0,
+        "transaction_count": 5,
+        "synthetic_transaction_count": 1,
+        "call_count": 5,
+        "synthetic_call_count": 1,
+        "value_total": "17966223975031638280",
+        "value_total_usd": 238.950782294711,
+        "internal_value_total": "17963073975031638280",
+        "internal_value_total_usd": 238.90888729411,
+        "generation": "5000000000000000000",
+        "generation_usd": 66.5000009536743,
+        "uncle_generation": "0",
+        "uncle_generation_usd": 0,
+        "fee_total": "3150000000000000",
+        "fee_total_usd": 0.0418950006008148,
+        "reward": "5003150000000000000",
+        "reward_usd": 66.5418959542751
+      },
+      "uncles": [],
+      "transactions": [
+        "0x4052841e7ff856e08e73245ed1fab5f41021d4bfe83202b6581870cb559b44c4",
+        "0xa1ed63865958a1b3abc8e259dc980bd76dd3f989f14577cce18b7e265cf9528e",
+        "0x1d6713c7e6be2a45e6b3d2a7dfc1af96443cfb65d4b51cd41ac21b7b840e77e0",
+        "0xffbcdcbef6c5341dd60a9b7f182b61cf0c468d63defcc2fa8c56e292d4bfc8d6",
+        "0x0c79e3ae36150eb36d6a631cc8d6250db4b9b832a82ac58ea356357f5987debe"
+      ],
+      "synthetic_transactions": [
+        2345678000005
+      ]
+    }
+  },
+  "context": {
+    "code": 200,
+    "limit": 100,
+    "offset": 0,
+    "results": 1,
+    "state": 8766187,
+    "state_layer_2": 8766186,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+- `1` for `https://api.blockchair.com/{:eth_chain}/dashboards/block/{:height}₀` and `https://api.blockchair.com/{:eth_chain}/dashboards/block/{:hash}₀ `endpoints
+- `1 + (0.1 * (entity count - 1))`  for `https://api.blockchair.com/{:eth_chain}/dashboards/blocks/{:height}₀,...,{:height}ᵩ` and `https://api.blockchair.com/{:eth_chain}/dashboards/blocks/{:hash}₀,...,{:hash}ᵩ` endpoints (e.g. it's `1 + (0.1 * (10 - 1)) = 1.9` for requesting 10 blocks)
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/ethereum/block/2345678
+
+
+
+#### <a name="link_401"></a> Uncle info
+
+**Endpoints:**
+
+- `https://api.blockchair.com/{:eth_chain}/dashboards/uncle/{:hash}₀`
+- `https://api.blockchair.com/{:eth_chain}/dashboards/uncle/{:hash}₀,...,{:hash}ᵩ` (up to 10 uncles, comma-separated)
+
+**Where:**
+
+- `{:eth_chain}` can only be: `ethereum`
+- `{:hash}ᵢ` is the uncle hash (regex: `/^0x[0-9a-f]{64}$/i`)
+
+**Output:**
+
+`data` contains an associative array where uncle hashes used as keys:
+
+- `data.{:hash}ᵢ.uncle` — information about the block (see [Ethereum-like uncle object](#link_402) for the field descriptions)
+
+If there's no `{:hash}ᵢ` has been found in the database, there won't be such key.
+
+**Context keys:**
+
+- `context.results`: number of found uncles
+- `context.limit`: applied limit
+- `context.offset`: applied offset
+- `context.state`: best block height on the `{:eth_chain}` chain
+
+**Example requests:**
+
+- `https://api.blockchair.com/ethereum/dashboards/uncle/0x5cd50096dbb856a6d1befa6de8f9c20decb299f375154427d90761dc0b101109`
+- ``https://api.blockchair.com/ethereum/dashboards/uncles/0x5cd50096dbb856a6d1befa6de8f9c20decb299f375154427d90761dc0b101109,0xedc7a92c2a8aa140b0afa26db4ce8e05994a67d6fc3d736ddd77210b0ba565bb`
+
+**Example output:**
+
+`https://api.blockchair.com/ethereum/dashboards/uncle/0x5cd50096dbb856a6d1befa6de8f9c20decb299f375154427d90761dc0b101109`:
+
+```json
+{
+  "data": {
+    "0x5cd50096dbb856a6d1befa6de8f9c20decb299f375154427d90761dc0b101109": {
+      "uncle": {
+        "parent_block_id": 3,
+        "index": 0,
+        "id": 1,
+        "hash": "0x5cd50096dbb856a6d1befa6de8f9c20decb299f375154427d90761dc0b101109",
+        "date": "2015-07-30",
+        "time": "2015-07-30 15:26:58",
+        "size": 538,
+        "miner": "0xc8ebccc5f5689fa8659d83713341e5ad19349448",
+        "extra_data_hex": "59617465732052616e64616c6c202d2045746865724e696e6a61",
+        "difficulty": 17171480576,
+        "gas_used": 0,
+        "gas_limit": 5000,
+        "logs_bloom": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "mix_hash": "f8c94dfe61cf26dcdf8cffeda337cf6a903d65c449d7691a022837f6e2d99459",
+        "nonce": "7545615996671392490",
+        "receipts_root": "56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+        "sha3_uncles": "1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+        "state_root": "1e6e030581fd1873b4784280859cd3b3c04aa85520f08c304cf5ee63d3935add",
+        "transactions_root": "56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+        "generation": "3750000000000000000",
+        "generation_usd": 3.75
+      }
+    }
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 8792290,
+    "state_layer_2": 8792279,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+- `1` for `https://api.blockchair.com/{:eth_chain}/dashboards/uncle/{:hash}₀ ` endpoint
+- `1 + (0.1 * (entity count - 1))`  for `https://api.blockchair.com/{:eth_chain}/dashboards/uncles/{:hash}₀,...,{:hash}ᵩ` endpoint (e.g. it's `1 + (0.1 * (10 - 1)) = 1.9` for requesting 10 uncles)
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/ethereum/uncle/0x5cd50096dbb856a6d1befa6de8f9c20decb299f375154427d90761dc0b101109
+
+
+
+#### <a name="link_204"></a> Transaction info
+
+**Endpoints:**
+
+- `https://api.blockchair.com/{:eth_chain}/dashboards/transaction/{:hash}₀`
+- `https://api.blockchair.com/{:eth_chain}/dashboards/transactions/{:hash}₀,...,{:hash}ᵩ` (up to 10 transactions, comma-separated)
+
+**Where:**
+
+- `{:eth_chain}` can only be: `ethereum`
+- `{:hashᵢ}` is the transaction hash (regex: `/^0x[0-9a-f]{64}$/i`), also known as txid
+
+**Possible options:**
+
+- `?erc_20=true` shows information about ERC-20 token transfers in this transaction
+
+**Output:**
+
+`data` contains an associative array where found transaction hashes are used as keys:
+
+- `data.{:hash}ᵢ.transaction` — information about the transaction (see [Ethereum-like transaction object](#link_206))
+- `data.{:hash}ᵢ.calls` —  the array of all calls made during the execution of the transaction (always `null` for mempool transactions and the last 6 blocks)
+
+Additional data:
+
+- `data.{:hash}ᵢ.layer_2.erc_20` (only if `?erc_20=true` is set) — the array of ERC-20 transfers (or an empty array if there are none), Each array element contains the following keys: `token_address`, `token_name`, `token_symbol`, `token_decimals`, `sender`, `recipient`, `value` — field descriptions are available [here](#link_506).
+
+In case transaction is confirmed on the blockchain, `data.{:hash}ᵢ.transaction.block_id` contains the block number it's included in. If the transaction is in the mempool, `data.{:hash}ᵢ.transaction.block_id` yields `-1`. If the transaction is neither present in the blockchain, nor in the mempool, there won't be `data.{:hash}ᵢ` key with data.
+
+**Context keys:**
+
+- `context.results` — number of found transactions
+- `context.state` — best block height on the `{:eth_chain}` chain (tip: it's possible to calculate the number of confirmation transaction received using this formula: `confirmations = data.{:id}ᵢ.transaction.block_id - context.state + 1`, or if `data.{:id}ᵢ.transaction.block_id` is `-1` it's an unconfirmed transaction)
+- `context.state_layer_2` — the latest block number for which our engine has processed second layer (e.g. ERC-20) transactions. If it's less than the block id in your current environment (e.g. block id of a transaction you requested), it makes sense to repeat the request after some time to retrieve second layer data
+
+**Example requests:**
+
+- `https://api.blockchair.com/ethereum/dashboards/transaction/0xc132a422513e39038269e091847319a14029feb42c66bd1424c57dfc0e4f8d08`
+- `https://api.blockchair.com/ethereum/dashboards/transactions/0xc132a422513e39038269e091847319a14029feb42c66bd1424c57dfc0e4f8d08,0x502bc6fe1f39738f0fd3223a2f125433b8ec7e80acd11ef514f6909536cc9e66`
+- `https://api.blockchair.com/ethereum/dashboards/transaction/0xc132a422513e39038269e091847319a14029feb42c66bd1424c57dfc0e4f8d08?erc_20=true`
+
+**Example output:**
+
+`https://api.blockchair.com/ethereum/dashboards/transaction/0xc132a422513e39038269e091847319a14029feb42c66bd1424c57dfc0e4f8d08?erc_20=true`:
+
+```json
+{
+  "data": {
+    "0xc132a422513e39038269e091847319a14029feb42c66bd1424c57dfc0e4f8d08": {
+      "transaction": {
+        "block_id": 5678901,
+        "id": 5678901000028,
+        "index": 28,
+        "hash": "0xc132a422513e39038269e091847319a14029feb42c66bd1424c57dfc0e4f8d08",
+        "date": "2018-05-26",
+        "time": "2018-05-26 08:06:16",
+        "failed": false,
+        "type": "call_tree",
+        "sender": "0xcd36cfb41b81cfbc97772e43fda1fab39e718869",
+        "recipient": "0x0ebe7487f60d3a4eb084a23152890a1a65b2ad65",
+        "call_count": 101,
+        "value": "0",
+        "value_usd": 0,
+        "internal_value": "0",
+        "internal_value_usd": 0,
+        "fee": "16821205000000000",
+        "fee_usd": 9.84774982859924,
+        "gas_used": 3364241,
+        "gas_limit": 4000000,
+        "gas_price": 5000000000,
+        "input_hex": "bb0a64b600000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000d00000000000000000000000000a68920f6d3c996ac3c232e4e93914e9d7615073500000000000000000000000000000000000000000000000000000000000000640000000000000000000000004cb04ab4dfc1963814cb2b1da8475e5ada6065f3000000000000000000000000459ed852d2f296942d82e0b88f678c01d3dda946000000000000000000000000c00dbc71bce389816763773fc4e5b757fce9b184...",
+        "nonce": "9092",
+        "v": "1c",
+        "r": "9b9a4da4aa5f0dfe141b6dad2ae6e41bcd63cab7f0ae9aef4f1752037b698526",
+        "s": "20acc42c4941a1077fa4bb8ccd707e6865a61c60f4a77d1b19f86d2e0525fcde"
+      },
+      "calls": [
+        {
+          "block_id": 5678901,
+          "transaction_id": 5678901000028,
+          "transaction_hash": "0xc132a422513e39038269e091847319a14029feb42c66bd1424c57dfc0e4f8d08",
+          "index": "0",
+          "depth": 0,
+          "date": "2018-05-26",
+          "time": "2018-05-26 08:06:16",
+          "failed": false,
+          "fail_reason": null,
+          "type": "call",
+          "sender": "0xcd36cfb41b81cfbc97772e43fda1fab39e718869",
+          "recipient": "0x0ebe7487f60d3a4eb084a23152890a1a65b2ad65",
+          "child_call_count": 100,
+          "value": "0",
+          "value_usd": 0,
+          "transferred": true,
+          "input_hex": "bb0a64b600000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000d00000000000000000000000000a68920f6d3c996ac3c232e4e93914e9d7615073500000000000000000000000000000000000000000000000000000000000000640000000000000000000000004cb04ab4dfc1963814cb2b1da8475e5ada6065f300...",
+          "output_hex": "0000000000000000000000000000000000000000000000000000000000000001"
+        },
+        {
+          "block_id": 5678901,
+          "transaction_id": 5678901000028,
+          "transaction_hash": "0xc132a422513e39038269e091847319a14029feb42c66bd1424c57dfc0e4f8d08",
+          "index": "0.0",
+          "depth": 1,
+          "date": "2018-05-26",
+          "time": "2018-05-26 08:06:16",
+          "failed": false,
+          "fail_reason": null,
+          "type": "call",
+          "sender": "0x0ebe7487f60d3a4eb084a23152890a1a65b2ad65",
+          "recipient": "0xa68920f6d3c996ac3c232e4e93914e9d76150735",
+          "child_call_count": 0,
+          "value": "0",
+          "value_usd": 0,
+          "transferred": true,
+          "input_hex": "a9059cbb0000000000000000000000004cb04ab4dfc1963814cb2b1da8475e5ada6065f30000000000000000000000000000000000000000000000056bc75e2d63100000",
+          "output_hex": ""
+        },
+        ...
+      ],
+      "layer_2": {
+        "erc_20": [
+          {
+            "token_address": "0xa68920f6d3c996ac3c232e4e93914e9d76150735",
+            "token_name": "",
+            "token_symbol": "MST",
+            "token_decimals": 18,
+            "sender": "0x0ebe7487f60d3a4eb084a23152890a1a65b2ad65",
+            "recipient": "0xa488cf9adcac170f28a046ba34a9885eb9f67033",
+            "value": "100000000000000000000"
+          },
+          {
+            "token_address": "0xa68920f6d3c996ac3c232e4e93914e9d76150735",
+            "token_name": "",
+            "token_symbol": "MST",
+            "token_decimals": 18,
+            "sender": "0x0ebe7487f60d3a4eb084a23152890a1a65b2ad65",
+            "recipient": "0x8cc1e8ffc3bf19c67c244e2bd8126fd29ec50e58",
+            "value": "100000000000000000000"
+          },
+          ...
+        ]
+      }
+    }
+  },
+  "context": {
+    "code": 200
+    "results": 1,
+    "state": 8791761,
+    "state_layer_2": 8791746,
+    ...
+  }
+}
+```
+
+**Bonus endpoint:**
+
+* `https://api.blockchair.com/{:eth_chain}/dashboards/transaction/{:hash}₀/priority`
+
+For mempool transactions shows priority (`position`) by `gas_price` over other transactions (`out_of` mempool transactions). `position` is `null` if the transaction is not in the mempool. Cost: `1`.
+
+**Request cost formula:**
+
+- `1` for `https://api.blockchair.com/{:eth_chain}/dashboards/transaction/{:hash}₀` endpoint
+- `1 + (0.1 * (entity count - 1))`  for `https://api.blockchair.com/{:eth_chain}/dashboards/transactions/{:hash}₀,...,{:hash}ᵩ` endpoint (e.g. it's `1 + (0.1 * (10 - 1)) = 1.9` for requesting 10 transactions)
+- Using `?erc_20=true` adds `1` for each requested transaction
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/ethereum/transaction/0xd628780ba231cefe6a4f6c3da3b683b16f6151dc9753afd8773d3c2d74ac10c8
+
+
+
+#### <a name="link_302"></a> Address info
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:eth_chain}/dashboards/address/{:address}₀`
+
+**Where:**
+
+- `{:eth_chain}` can only be: `ethereum`
+- `{:address}ᵢ` is an Ethereum address (either an account or a contract, the address should start with `0x`)
+
+**Possible options:**
+
+- `?limit={:call_limit}` — limits the number of returned latest calls associated with the address. Default is `100`. Maximum is `10000`.
+- `?offset={:call_offset}` — allows to paginate calls. Default is `0`, and the maximum is `1000000`.  
+- `?erc_20=true` — returns detailed info on transactions instead of just hashes in the `transactions` array. Each element contains `block_id`, `transaction_hash`, `time`, and `balance_change` (shows how the transactions affected the balance of `{:address}`, i.e. it can be a negative value). At the moment, this option is available for the `address` endpoint only.
+
+**Output:**
+
+In case the address has been found, `data.{:address}₀` returns an array consisting of the following elements:
+
+- `address`
+  - `address.type` — address type (`account` — for a simple address, `contract` — for a contract)
+  - `address.contract_code_hex` —  hex code of the contract at the moment of creation (for a contract), or `null` for an address
+  - `address.contract_created` — for contracts only — if the contact was indeed created then `true`, if not (i.e. with a failed `create` call) — `false`, for a simple address yields `null`
+  - `address.contract_destroyed` — for contracts only — if the contact was successfully destroyed (`SELFDESCTRUCT`) then `true`, if not — `false`; for a simple address yields `null`
+  - `address.balance` — exact address balance in wei (here and below values in wei returned as strings as they don't fit into integers)
+  - `address.balance_usd` — address balance in USD (float)
+  - `address.received_approximate` — total received in wei (approximately) †
+  - `address.received_usd` — total received in USD (approximately) †
+  - `address.spent_approximate` — total spent in wei (approximately) †
+  - `address.spent_usd` — total spent in USD (approximately) †
+  - `address.fees_approximate` — total spent in transaction fees in wei (approximately) †
+  - `address.fees_usd` — total spent in transaction fees in USD (approximately) †
+  - `address.receiving_call_count` — number of calls the address has received, where value transfer occured ‡
+  - `address.spending_call_count` —  number of calls that has been made by this address where value transfer occured ‡
+  - `address.call_count` —  total number of calls the address participated in (may be greater than` receiving_call_count` + `spending_call_count`, because it also takes failed calls into account)
+  - `address.transaction_count` — number of transactions the address participated in
+  - `address.first_seen_receiving` — timestamp (UTC) when the address received a successful incoming call for the first time 
+  - `address.last_seen_receiving` — timestamp (UTC) when the address received a successful incoming call for the last time
+  - `address.first_seen_spending` — timestamp (UTC) when the address sent a successful call for the first time
+  - `address.last_seen_spending` — timestamp (UTC) when the address sent a successful call for the last time
+- `calls` — an array of the latest address call, each element of an array containing the following elements: `block_id`, `transaction_hash`,` index`, `time`,` sender`, `recipient`, `value`,` value_usd`, `transferred` (see the description [here](#link_403))
+- `layer_2.erc_20` (only if `?erc_20=true` is set) — the array of ERC-20 token balances of the address, each element contains the following fields: `token_address`, `token_name`, `token_symbol`, `token_decimals`, `balance_approximate` (number of tokens), `balance` (exact number of tokens in the smallest denomination). Note that `balance ≈ balance_approximate * 10 ^ token_decimals`.
+
+Additional data:
+
+- `data.{:hash}ᵢ.layer_2.erc_20`  (or an empty array if there are none), Each array element contains the following keys: `token_address`, `token_name`, `token_symbol`, `token_decimals`, `sender`, `recipient`, `value` — field descriptions are available [here](#link_506).
+
+`context.results` contains the number of found addresses  (0 or 1).
 
 Notes:
-- (\*) - in these columns, the value in wei can be rounded. For a million of calls, the error can be more than 1 ether.
-- (\*\*) - counted only those calls that fit the following condition: ethereum/calls.transferred = true (see the `ethereum/calls` documentation), i.e. those calls as well as failed calls that do not change state (staticcall, etc.) are not considered
 
-#### <a name="link_chainstats"></a> {chain}/stats
+- † — for these fields the wei value can be rounded. For a million of calls, the rounding error can be more than 1 ether.
+- ‡ — only those calls are counted that fit the following condition: `transferred = true`, i.e. calls that do not change state (including `staticcall`, failed calls, etc.) are not taken into account
 
-`{chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `dash`, `ethereum`, `groestlcoin`
+**Context keys:**
 
-Returns an array with blockchain statistics:
-* `blocks` - total number of blocks
-* (only ethereum) `uncles` - total number of uncles
-* `transactions` - total number of transactions
-* (only ethereum) `calls` - total number of internal calls
-* `blocks_24h` - blocks for the last 24 hours
-* `circulation` for Bitcoin-like cryptos, `circulation_approximate` for Ethereum - number of coins in circulation (in Satoshi, or in wei for Ethereum - an approximate value)
-* `transactions_24h` - transactions for the last 24 hours
-* `difficulty` - current difficulty
-* `volume_24h` for Bitcoin-like cryptos, `volume_24h_approximate` for Ethereum - monetary volume of transactions for the last 24 hours (for ethereum - an approximate value)
-* `mempool_transactions` - number of transactions in the mempool
-* (only ethereum) `mempool_median_gas_price` - median gas price in the mempool
-* (except ethereum) `mempool_size` - the mempool size in bytes
-* `mempool_tps` - number of transactions per second added to the mempool
-* (except ethereum) `mempool_total_value_approximate` - mempool monetary value
-* (except ethereum) `mempool_total_fee_usd` - total mempool fee, in USD
-* `best_block_height` - the latest block height
-* `best_block_hash` - the latest block hash
-* `best_block_time` - the latest block time
-* (only ethereum) `uncles_24h` - number of uncles for the last 24 hours
-* (except ethereum) `nodes` - number of full nodes 
-* `hashrate_24h` - hashrate (hashes per second) in average for the last 24 hours
-* `market_price_usd` - average market price of 1 coin in USD (market data source: CoinGecko)
-* `market_price_btc` - average market price of 1 coin in BTC (for Bitcoin always returns 1)
-* `market_price_usd_change_24h_percentage` - market price change in percent for 24 hours
-* `market_cap_usd` - market capitalization (coins in circulation * price per coin in USD)
-* `market_dominance_percentage` - dominance index (how much % of the total cryptocurrency market is the market capitalization of the coin)
-... there's also some other self-explanatory keys
+- `context.results` — number of found addresses
+- `context.limit` — applied limit
+- `context.offset` — applied offset
+- `context.state` — best block height on the `{:eth_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = block_id - context.state + 1`)
+- `context.state_layer_2` — the latest block number for which our engine has processed second layer (e.g. ERC-20) transactions. If it's less than the block id in your current environment (e.g. block id of a transaction you requested), it makes sense to repeat the request after some time to retrieve second layer data
 
-#### <a name="link_stats"></a> stats
+**Example requests:**
 
-https://api.blockchair.com/stats
+- `https://api.blockchair.com/ethereum/dashboards/address/0x3282791d6fd713f1e94f4bfd565eaa78b3a0599d`
+- `https://api.blockchair.com/ethereum/dashboards/address/0x3282791d6fd713f1e94f4bfd565eaa78b3a0599d?limit=1&offset=0`
+- `https://api.blockchair.com/ethereum/dashboards/address/0x3282791d6fd713f1e94f4bfd565eaa78b3a0599d?erc_20=true`
 
-Returns data on seven calls:
-* `bitcoin/stats`
-* `bitcoin-cash/stats`
-* `ethereum/stats`
-* `litecoin/stats`
-* `bitcoin-sv/stats`
-* `dogecoin/stats`
-* `dash/stats`
-* `groestlcoin/stats`
+**Example output:**
 
-### <a name="link_examples"></a> API request examples
+`https://api.blockchair.com/ethereum/dashboards/address/0x3282791d6fd713f1e94f4bfd565eaa78b3a0599d?erc_20=true`:
 
-Suppose we would like to receive all the latest transactions from the Ethereum blockchain which amount to more than $1M USD. The following request should be done for this:
-* `https://api.blockchair.com/ethereum/transactions?q=internal_value_usd(10000000..)&s=id(desc)`
-
-In this request we refer to the blockhain (`ethereum`), a table (`transactions`), set up the amount condition (`q=internal_value_usd(10000000..)`), and sort in descending order (`&s=id(desc)`).
-
-Suppose, a script with this request to the API for some reason did not work for a while, or a huge amount of transactions worth more than $1 million appeared. With the standard limit of 10 results, the script skipped some transactions. Then firstly we should do the following:
-* `https://api.blockchair.com/ethereum/transactions?q=internal_value_usd(10000000..)&s=id(desc)`
-
-From its result we save `context.state`, put it in a variable `_S_`, and further to obtain the following results we apply `offset`:
-* `https://api.blockchair.com/ethereum/transactions?q=internal_value_usd(10000000..),block_id(.._S_)&s=id(desc)&offset=10`
-
-Increase offset value until getting a data set with the transaction that we already knew about.
-
-### <a name="link_broadcasting"></a> Broadcasting transactions
-
-In order to broadcast a transaction into the network, you should make a POST request to `https://api.blockchair.com/{:chain}/push/transaction` (where `{chain}` can be one of those: `bitcoin`, `bitcoin-cash`, `ethereum`, `litecoin`, `bitcoin-sv`, `dash`, `dogecoin`, `groestlcoin`) with `data` holding hex represenatation of a transaction (for Ethereum it should start with `0x`). An example:
-
+```json
+{
+  "data": {
+    "0x3282791d6fd713f1e94f4bfd565eaa78b3a0599d": {
+      "address": {
+        "type": "account",
+        "contract_code_hex": null,
+        "contract_created": null,
+        "contract_destroyed": null,
+        "balance": "1337000000000000001337",
+        "balance_usd": 217088.92828369106,
+        "received_approximate": "1337000000000000000000",
+        "received_usd": 1337,
+        "spent_approximate": "0",
+        "spent_usd": 0,
+        "fees_approximate": "0",
+        "fees_usd": 0,
+        "receiving_call_count": 2,
+        "spending_call_count": 0,
+        "call_count": 2,
+        "transaction_count": 2,
+        "first_seen_receiving": "2015-07-30 00:00:00",
+        "last_seen_receiving": "2018-11-16 00:52:45",
+        "first_seen_spending": null,
+        "last_seen_spending": null
+      },
+      "calls": [
+        {
+          "block_id": 6712155,
+          "transaction_hash": "0x0357352473d64df14fb987f33bbc9c3cd317fafe7c9498139c6a0529b551a017",
+          "index": "0",
+          "time": "2018-11-16 00:52:45",
+          "sender": "0x0f4b92e13cc618bb9ff2120aec2ccd19f0d97b68",
+          "recipient": "0x3282791d6fd713f1e94f4bfd565eaa78b3a0599d",
+          "value": 1337,
+          "value_usd": 0,
+          "transferred": true
+        },
+        {
+          "block_id": 0,
+          "transaction_hash": null,
+          "index": "0",
+          "time": "2015-07-30 00:00:00",
+          "sender": null,
+          "recipient": "0x3282791d6fd713f1e94f4bfd565eaa78b3a0599d",
+          "value": 1.337e+21,
+          "value_usd": 1337,
+          "transferred": true
+        }
+      ],
+      "layer_2": {
+        "erc_20": [
+          {
+            "token_address": "0x68e14bb5a45b9681327e16e528084b9d962c1a39",
+            "token_name": "en",
+            "token_symbol": "CAT",
+            "token_decimals": 18,
+            "balance_approximate": 5,
+            "balance": "5000000000000000000"
+          },
+          {
+            "token_address": "0xd49ff13661451313ca1553fd6954bd1d9b6e02b9",
+            "token_name": "ElectrifyAsia",
+            "token_symbol": "ELEC",
+            "token_decimals": 18,
+            "balance_approximate": 13.6553835383397,
+            "balance": "13655383538340000000"
+          },
+          ...
+        ]
+      }
+    }
+  },
+  "context": {
+    "code": 200,
+    "limit": 100,
+    "offset": 0,
+    "results": 1,
+    "state": 8805160,
+    "state_layer_2": 8805148,
+    ...
+  }
+}
 ```
-curl -v --data "data=01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0704ffff001d0104ffffffff0100f2052a0100000043410496b538e853519c726a2c91e61ec11600ae1390813a627c66fb8be7947be63c52da7589379515d4e0a604f8141781e62294721166bf621e73a82cbf2342c858eeac00000000" https://api.blockchair.com/bitcoin/push/transaction
+
+**Request cost formula:**
+
+- `1` or `2` if the `?erc_20=true` option is used
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/ethereum/address/0x3282791d6fd713f1e94f4bfd565eaa78b3a0599d
+
+
+
+### <a name="link_M23"></a> Dashboard endpoints for second layers
+
+
+
+#### <a name="link_501"></a> Omni Layer and Wormhole property info
+
+Allows to retrieve the some basic information on an Omni Layer (Bitcoin) or Wormhole (Bitcoin Cash) property (token). Since Wormhole is based on Omni Layer, the output is the same for both. Note that this endpoint is in the Alpha stage, and Wormhole is deprecated on our platform.
+
+**Endpoints:**
+
+* `https://api.blockchair.com/bitcoin/omni/dashboards/property/{:prorerty_id}`
+* `https://api.blockchair.com/bitcoin-cash/wormhole/dashboards/property/{:prorerty_id}`
+
+**Where:**
+
+- `{:prorerty_id}` is the property identifier (integer)
+
+**Output:**
+
+`data` contains information about the property, fields accord with Omni Layer specification (https://github.com/OmniLayer/spec)
+
+**Example requests:**
+
+- `https://api.blockchair.com/bitcoin/omni/dashboards/property/31`
+- `https://api.blockchair.com/bitcoin-cash/wormhole/stats/property/1`
+
+**Example output:**
+
+`https://api.blockchair.com/bitcoin/omni/dashboards/property/31`:
+
+```json
+{
+  "data": {
+    "id": 31,
+    "name": "TetherUS",
+    "category": "Financial and insurance activities",
+    "subcategory": "Activities auxiliary to financial service and insurance activities",
+    "description": "The next paradigm of money.",
+    "url": "https://tether.to",
+    "is_divisible": false,
+    "issuer": "32TLn1WLcu8LtfvweLzYUYU6ubc2YV9eZs",
+    "creation_transaction_hash": "5ed3694e8a4fa8d3ec5c75eb6789492c69e65511522b220e94ab51da2b6dd53f",
+    "creation_time": "2014-10-06 16:39:15",
+    "creation_block_id": 324140,
+    "is_issuance_fixed": false,
+    "is_issuance_managed": false,
+    "circulation": 2145000000,
+    "ecosystem": 1
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 599974,
+    ...
+  }
+}
 ```
 
-If the transaction has been successfully broadcast to the network, API will return a JSON response (code 200) containing `data` array with `transaction_hash` key holding the hash of the received transaction. In case of any error (wrong transaction format, spending already spent outputs, etc.) API returns status code 400.
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/bitcoin/omni/property/31
+- https://blockchair.com/bitcoin-cash/wormhole/property/1
+
+
+
+#### <a name="link_503"></a> ERC-20 token info
+
+Allows to retrieve the some basic information on an ERC-20 token. Note that this endpoint is in the Beta stage.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/ethereum/erc-20/{:token_address}/stats`
+
+**Where:**
+
+- `{:token_address}` is the token contract address (starting with `0x`)
+
+**Output:**
+
+`data` contains information about the token:
+
+* `name` — token name
+* `symbol` — token symbol (short name)
+* `decimals` — the number of decimal the token uses
+* `time` — timestamp (UTC) when the contract was created
+* `creating_block_id` — block id in which the token was created
+* `creating_transaction_hash` — transaction hash in which the token was created
+* `transactions` — total number of transfers associated with the token
+* `transactions_24h` — the same over the last 24 hours
+* `volume_24h_approximate` — transacted monetary volume in the number of tokens
+* `volume_24h` — the same in the token's smallest denomination (`volume_24h ≈ volume_24h_approximate * (10 ^ decimals )`)
+
+**Example requests:**
+
+- `https://api.blockchair.com/ethereum/erc-20/0xdac17f958d2ee523a2206206994597c13d831ec7/stats`
+
+**Example output:**
+
+`https://api.blockchair.com/ethereum/erc-20/0xdac17f958d2ee523a2206206994597c13d831ec7/stats`:
+
+```json
+{
+  "data": {
+    "name": "Tether USD",
+    "symbol": "USDT",
+    "decimals": 6,
+    "time": "2017-11-28 00:41:21",
+    "creating_block_id": 4634748,
+    "creating_transaction_hash": "0x2f1c5c2b44f771e942a8506148e256f94f1a464babc938ae0690c6e34cd79190",
+    "transactions": 8898558,
+    "transactions_24h": 95437,
+    "volume_24h_approximate": 507067165.4109063,
+    "volume_24h": "507067165410910"
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 8766954,
+    "state_layer_2": 8766944,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/ethereum/erc-20/token/0xdac17f958d2ee523a2206206994597c13d831ec7
+
+
+
+#### <a name="link_504"></a> ERC-20 token holder info
+
+**Endpoint:**
+
+- `https://api.blockchair.com/ethereum/erc-20/{:token_address}/dashboards/address/{:address}`
+
+**Where:**
+
+- `{:token_address}` is the token contract address (should start with `0x`)
+- `{:address}` is an Ethereum address (either an account or a contract, the address should start with `0x`)
+
+**Possible options:**
+
+- `?limit={:transaction_limit}` — limits the number of returned latest transactions associated with the address. Default is `100`. Maximum is `10000`.
+- `?offset={:transaction_offset}` — allows to paginate transactions. Default is `0`, and the maximum is `1000000`.  
+
+**Output:**
+
+The structure is similar to the [Ethereum address](#link_302) endpoint with the following differences:
+
+* It shows balances in tokens instead of ethers
+* Fields like `first_seen_receiving` mean "first seen receiving tokens" instead of "ethers"
+* Instead of the `calls` array, there's the `transactions` array with the latest token transactions (see [this](#link_506) for field descriptions). It's iterable using the `?offset=` section.
+
+**Context keys:**
+
+- `context.results` — number of found addresses
+- `context.limit` — applied limit
+- `context.offset` — applied offset
+- `context.state` — best block height on the `{:eth_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = block_id - context.state + 1`)
+- `context.state_layer_2` — the latest block number for which our engine has processed second layer (e.g. ERC-20) transactions. If it's less than the block id in your current environment (e.g. block id of a transaction you requested), it makes sense to repeat the request after some time to retrieve second layer data
+
+**Example request:**
+
+- `https://api.blockchair.com/ethereum/erc-20/0x68e14bb5a45b9681327e16e528084b9d962c1a39/dashboards/address/0x3282791d6fd713f1e94f4bfd565eaa78b3a0599d`
+
+**Example output:**
+
+`https://api.blockchair.com/ethereum/erc-20/0x68e14bb5a45b9681327e16e528084b9d962c1a39/dashboards/address/0x3282791d6fd713f1e94f4bfd565eaa78b3a0599d`:
+
+```json
+{
+  "data": {
+    "0x3282791d6fd713f1e94f4bfd565eaa78b3a0599d": {
+      "address": {
+        "balance": "5000000000000000000",
+        "balance_approximate": 5,
+        "received": "5000000000000000000",
+        "received_approximate": 5,
+        "spent": "0",
+        "spent_approximate": 0,
+        "receiving_transaction_count": 1,
+        "spending_transaction_count": 0,
+        "transaction_count": 1,
+        "first_seen_receiving": "2017-11-26 23:17:02",
+        "last_seen_receiving": "2017-11-26 23:17:02",
+        "first_seen_spending": null,
+        "last_seen_spending": null
+      },
+      "transactions": [
+        {
+          "block_id": 4628318,
+          "id": 17166097,
+          "transaction_hash": "0xd3aeac286c429f581f056388e523726e7b42caeba1d6a8df591ea2ec30daad48",
+          "time": "2017-11-26 23:17:02",
+          "token_address": "0x68e14bb5a45b9681327e16e528084b9d962c1a39",
+          "token_name": "en",
+          "token_symbol": "CAT",
+          "token_decimals": 18,
+          "sender": "0x9f89388141c632c4c6f36d1060d5f50604ee3abc",
+          "recipient": "0x3282791d6fd713f1e94f4bfd565eaa78b3a0599d",
+          "value": "5000000000000000000",
+          "value_approximate": 5
+        }
+      ]
+    }
+  },
+  "context": {
+    "code": 200,
+    "limit": 100,
+    "offset": 0,
+    "results": 1,
+    "state": 8805315,
+    "state_layer_2": 8805304,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+- Always `1`
+
+
+
+## <a name="link_M3"></a> Raw data endpoints
+
+Retrieve raw information about various entities directly from our full nodes
+
+
+
+### <a name="link_M31"></a> Raw data endpoints for Bitcoin-like blockchains (Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Bitcoin Testnet)
+
+
+
+#### <a name="link_101"></a> Raw block data
+
+Returns raw block data directly from our full node. If the block is larger than 10 megabytes in size, returns a `402` error.
+
+**Endpoints:**
+
+- `https://api.blockchair.com/{:btc_chain}/raw/block/{:height}₀`
+- `https://api.blockchair.com/{:btc_chain}/raw/block/{:hash}₀`
+
+**Where:**
+
+- `{:btc_chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `bitcoin/testnet`
+- `{:height}ᵢ` is the block height (integer value), also known as block id
+- `{:hash}ᵢ` is the block hash (regex: `/^[0-9a-f]{64}$/i`)
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:id}ᵢ.raw_block` — raw block represented as a hex string
+- `data.{:id}ᵢ.decoded_raw_block` — raw block encoded in JSON by our node. Please note that the structure of this JSON array may change as we upgrade our nodes, and this won't be reflected in our change logs. We don't provide field descriptions for raw endpoints, that information can be found on the Bitcoin Core website (all Bitcoin-like blockchains the same output structure).
+
+Where `{:id}ᵢ` is either `{:height}ᵢ` or `{:hash}ᵢ` from the query string. If there's no `{:id}ᵢ` has been found on the blockchain, returns an empty array.
+
+**Context keys:**
+
+- `context.state`: best block height on the `{:btc_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = data.{:id}ᵢ.block.id - context.state + 1`)
+
+**Example requests:**
+
+- `https://api.blockchair.com/bitcoin/raw/block/0`
+- `https://api.blockchair.com/bitcoin/raw/block/000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f`
+
+**Example output:**
+
+`https://api.blockchair.com/bitcoin/raw/block/000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f`:
+
+```json
+
+{
+  "data": {
+    "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f": {
+      "raw_block": "0100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4a29ab5f49ffff001d1dac2b7c0101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff4d04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000",
+      "decoded_raw_block": {
+        "hash": "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
+        "confirmations": 599952,
+        "strippedsize": 285,
+        "size": 285,
+        "weight": 1140,
+        "height": 0,
+        "version": 1,
+        "versionHex": "00000001",
+        "merkleroot": "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b",
+        "tx": [
+          "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"
+        ],
+        "time": 1231006505,
+        "mediantime": 1231006505,
+        "nonce": 2083236893,
+        "bits": "1d00ffff",
+        "difficulty": 1,
+        "chainwork": "0000000000000000000000000000000000000000000000000000000100010001",
+        "nTx": 1,
+        "nextblockhash": "00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048"
+      }
+    }
+  },
+  "context": {
+    "code": 200,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+
+
+#### <a name="link_201"></a> Raw transaction data
+
+Returns raw transaction data directly from our full node.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:btc_chain}/raw/transaction/{:hash}₀`
+
+**Where:**
+
+- `{:btc_chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `bitcoin/testnet`
+- `{:hash}ᵢ` is the transaction hash (regex: `/^[0-9a-f]{64}$/i`)
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:hash}ᵢ.raw_transaction` — raw transaction represented as a hex string
+- `data.{:hash}ᵢ.decoded_raw_transaction` — raw transaction encoded in JSON by our node. Please note that the structure of this JSON array may change as we upgrade our nodes, and this won't be reflected in our change logs. We don't provide field descriptions for raw endpoints, that information can be found on the Bitcoin Core website (all Bitcoin-like blockchains the same output structure).
+
+If there's no `{:hash}ᵢ` has been found on the blockchain, returns an empty array.
+
+**Context keys:**
+
+- `context.state`: best block height on the `{:btc_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = data.{:id}ᵢ.block.id - context.state + 1`)
+
+**Example requests:**
+
+- `https://api.blockchair.com/bitcoin/raw/transaction/f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16`
+
+**Example output:**
+
+`https://api.blockchair.com/bitcoin/raw/transaction/f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16`:
+
+```json
+{
+  "data": {
+    "f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16": {
+      "raw_transaction": "0100000001c997a5e56e104102fa209c6a852dd90660a20b2d9c352423edce25857fcd3704000000004847304402204e45e16932b8af514961a1d3a1a25fdf3f4f7732e9d624c6c61548ab5fb8cd410220181522ec8eca07de4860a4acdd12909d831cc56cbbac4622082221a8768d1d0901ffffffff0200ca9a3b00000000434104ae1a62fe09c5f51b13905f07f06b99a2f7159b2225f374cd378d71302fa28414e7aab37397f554a7df5f142c21c1b7303b8a0626f1baded5c72a704f7e6cd84cac00286bee0000000043410411db93e1dcdb8a016b49840f8c53bc1eb68a382e97b1482ecad7b148a6909a5cb2e0eaddfb84ccf9744464f82e160bfa9b8b64f9d4c03f999b8643f656b412a3ac00000000",
+      "decoded_raw_transaction": {
+        "txid": "f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16",
+        "hash": "f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16",
+        "version": 1,
+        "size": 275,
+        "vsize": 275,
+        "weight": 1100,
+        "locktime": 0,
+        "vin": [
+          {
+            "txid": "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c9",
+            "vout": 0,
+            "scriptSig": {
+              "asm": "304402204e45e16932b8af514961a1d3a1a25fdf3f4f7732e9d624c6c61548ab5fb8cd410220181522ec8eca07de4860a4acdd12909d831cc56cbbac4622082221a8768d1d09[ALL]",
+              "hex": "47304402204e45e16932b8af514961a1d3a1a25fdf3f4f7732e9d624c6c61548ab5fb8cd410220181522ec8eca07de4860a4acdd12909d831cc56cbbac4622082221a8768d1d0901"
+            },
+            "sequence": 4294967295
+          }
+        ],
+        "vout": [
+          {
+            "value": 10,
+            "n": 0,
+            "scriptPubKey": {
+              "asm": "04ae1a62fe09c5f51b13905f07f06b99a2f7159b2225f374cd378d71302fa28414e7aab37397f554a7df5f142c21c1b7303b8a0626f1baded5c72a704f7e6cd84c OP_CHECKSIG",
+              "hex": "4104ae1a62fe09c5f51b13905f07f06b99a2f7159b2225f374cd378d71302fa28414e7aab37397f554a7df5f142c21c1b7303b8a0626f1baded5c72a704f7e6cd84cac",
+              "reqSigs": 1,
+              "type": "pubkey",
+              "addresses": [
+                "1Q2TWHE3GMdB6BZKafqwxXtWAWgFt5Jvm3"
+              ]
+            }
+          },
+          {
+            "value": 40,
+            "n": 1,
+            "scriptPubKey": {
+              "asm": "0411db93e1dcdb8a016b49840f8c53bc1eb68a382e97b1482ecad7b148a6909a5cb2e0eaddfb84ccf9744464f82e160bfa9b8b64f9d4c03f999b8643f656b412a3 OP_CHECKSIG",
+              "hex": "410411db93e1dcdb8a016b49840f8c53bc1eb68a382e97b1482ecad7b148a6909a5cb2e0eaddfb84ccf9744464f82e160bfa9b8b64f9d4c03f999b8643f656b412a3ac",
+              "reqSigs": 1,
+              "type": "pubkey",
+              "addresses": [
+                "12cbQLTFMXRnSzktFkuoG3eHoMeFtpTu3S"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 599962,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+
+
+### <a name="link_M32"></a> Dashboard endpoints for Ethereum
+
+
+
+#### <a name="link_104"></a> Raw block data
+
+Returns raw block data directly from our full node.
+
+**Endpoints:**
+
+- `https://api.blockchair.com/{:eth_chain}/raw/block/{:height}₀`
+- `https://api.blockchair.com/{:eth_chain}/raw/block/{:hash}₀`
+
+**Where:**
+
+- `{:eth_chain}` can only be `ethereum`
+- `{:height}ᵢ` is the block height (integer value), also known as block id
+- `{:hash}ᵢ` is the block hash (regex: `/^0x[0-9a-f]{64}$/i`)
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:id}ᵢ.decoded_raw_block` — raw block encoded in JSON by our node. Please note that the structure of this JSON array may change as we upgrade our nodes, and this won't be reflected in our change logs. We don't provide field descriptions for raw endpoints, that information can be found on the geth implementation website.
+
+Where `{:id}ᵢ` is either `{:height}ᵢ` or `{:hash}ᵢ` from the query string. If there's no `{:id}ᵢ` has been found on the blockchain, returns an empty array.
+
+**Context keys:**
+
+- `context.state`: best block height on the `{:eth_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = data.{:id}ᵢ.block.id - context.state + 1`)
+
+**Example requests:**
+
+- `https://api.blockchair.com/ethereum/raw/block/2345678`
+- `https://api.blockchair.com/ethereum/raw/block/0xda214d1b1d458e7ae0e626b69a52a59d19762c51a53ff64813c4d31256282fdf`
+
+**Example output:**
+
+`https://api.blockchair.com/ethereum/raw/block/2345678`:
+
+```json
+{
+  "data": {
+    "2345678": {
+      "decoded_raw_block": {
+        "difficulty": "0x4a823a45d075",
+        "extraData": "0x657468706f6f6c2e6f7267202845553129",
+        "gasLimit": "0x16e360",
+        "gasUsed": "0x19a28",
+        "hash": "0xda214d1b1d458e7ae0e626b69a52a59d19762c51a53ff64813c4d31256282fdf",
+        "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "miner": "0x4bb96091ee9d802ed039c4d1a5f6216f90f81b01",
+        "mixHash": "0xf5b95f5b79cd8425db7f04d200d78d16c104c28d078d0b653ae1c24f31759662",
+        "nonce": "0x0975348010868c22",
+        "number": "0x23cace",
+        "parentHash": "0x4578cd622e7e738bfd8f2675aa58337b60cf337a59347c76f61f4ed74a9811f8",
+        "receiptsRoot": "0x51a6952987f2c7ebf74fc1a4f644265aebb660b1d86a12c0f6e3001a2866331f",
+        "sha3Uncles": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+        "size": "0x455",
+        "stateRoot": "0x4f6b1af13d99c75e0d644b226d57767a0d2f22921c529dfe3455bc63154b01e5",
+        "timestamp": "0x57ec70dd",
+        "totalDifficulty": "0x3a0f803ebc49e50af",
+        "transactions": [
+          "0x4052841e7ff856e08e73245ed1fab5f41021d4bfe83202b6581870cb559b44c4",
+          "0xa1ed63865958a1b3abc8e259dc980bd76dd3f989f14577cce18b7e265cf9528e",
+          "0x1d6713c7e6be2a45e6b3d2a7dfc1af96443cfb65d4b51cd41ac21b7b840e77e0",
+          "0xffbcdcbef6c5341dd60a9b7f182b61cf0c468d63defcc2fa8c56e292d4bfc8d6",
+          "0x0c79e3ae36150eb36d6a631cc8d6250db4b9b832a82ac58ea356357f5987debe"
+        ],
+        "transactionsRoot": "0xdde4d2ce7556effca10c868f500f0e47fb09b5cb4a003d781080f1a06e582352",
+        "uncles": []
+      }
+    }
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 8766206,
+    "state_layer_2": 8766195,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+
+
+#### <a name="link_205"></a> Raw transaction data
+
+Returns raw transaction data directly from our full node.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:eth_chain}/raw/transaction/{:hash}₀`
+
+**Where:**
+
+- `{:eth_chain}` can only be 'ethereum'
+- `{:hash}ᵢ` is the transaction hash (regex: `/^0x[0-9a-f]{64}$/i`)
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:hash}ᵢ.raw_transaction` — raw transaction represented as a hex string starting with `0x`
+
+If there's no `{:hash}ᵢ` has been found on the blockchain, returns an empty array.
+
+**Context keys:**
+
+- `context.state`: best block height on the `{:btc_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = data.{:id}ᵢ.block.id - context.state + 1`)
+
+**Example requests:**
+
+- `https://api.blockchair.com/ethereum/raw/transaction/0x93fa9a3ac6190022adc75d1d83e3d86e0a99ac1eb88f80fec59599f55931766e`
+
+**Example output:**
+
+`https://api.blockchair.com/ethereum/raw/transaction/0x93fa9a3ac6190022adc75d1d83e3d86e0a99ac1eb88f80fec59599f55931766e`:
+
+```json
+{
+  "data": {
+    "0x93fa9a3ac6190022adc75d1d83e3d86e0a99ac1eb88f80fec59599f55931766e": {
+      "raw_transaction": "0xf8697b843b9aca0082520894536a0a5293a4575dd351563c63774a623bf2b46b866eaddc096200801ca01bd6971ae88c70ab930b3405b6f14da553f8515dced42e080ddca5f968c5bd6ca06e3a623453d5e4d91b8785ef8066f2cf82ef299e987a595ec66b5917deeb7d38"
+    }
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 8767087,
+    "state_layer_2": 8767077,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+
+
+### <a name="link_M33"></a> Dashboard endpoints for Ripple
+
+
+
+#### <a name="link_106"></a> Raw ledger data
+
+Returns raw ledger data directly from our full node.
+
+**Endpoints:**
+
+- `https://api.blockchair.com/{:xrp_chain}/raw/ledger/{:height}₀`
+- `https://api.blockchair.com/{:xrp_chain}/raw/ledger/{:hash}₀`
+
+**Where:**
+
+- `{:xrp_chain}` can only be `ripple`
+- `{:height}ᵢ` is the ledger number (integer value)
+- `{:hash}ᵢ` is the ledger hash (regex: `/^[0-9a-f]{64}$/i`)
+
+**Possible options:**
+
+* `?transactions=true` displays transaction data
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:id}ᵢ.decoded_raw_ledger` — raw ledger encoded in JSON by our node. Please note that the structure of this JSON array may change as we upgrade our nodes, and this won't be reflected in our change logs. We don't provide field descriptions for raw endpoints, that information can be found on the Ripple website.
+
+Where `{:id}ᵢ` is either `{:height}ᵢ` or `{:hash}ᵢ` from the query string. If there's no `{:id}ᵢ` has been found on the blockchain, returns an empty array.
+
+**Context keys:**
+
+- `context.state`: best block height on the `{:btc_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = data.{:id}ᵢ.block.id - context.state + 1`)
+
+**Example requests:**
+
+- `https://api.blockchair.com/ripple/raw/ledger/50000000`
+- `https://api.blockchair.com/ripple/raw/ledger/0C073A753670E99C210264F7783FE5F7C3DEAEE3B1237C10B1584E6FBD2A6505`
+- `https://api.blockchair.com/ripple/raw/ledger/50000000?transactions=true`
+
+**Example output:**
+
+`https://api.blockchair.com/ripple/raw/ledger/50000000`:
+
+```json
+{
+  "data": {
+    "50000000": {
+      "decoded_raw_ledger": {
+        "accepted": true,
+        "account_hash": "191EA9DD67A3FDAA40293D762EB4F96AB852ACA499AA37F3851616EF449A63E1",
+        "close_flags": 0,
+        "close_time": 621665931,
+        "close_time_human": "2019-Sep-13 04:58:51.000000000",
+        "close_time_resolution": 10,
+        "closed": true,
+        "hash": "0C073A753670E99C210264F7783FE5F7C3DEAEE3B1237C10B1584E6FBD2A6505",
+        "ledger_hash": "0C073A753670E99C210264F7783FE5F7C3DEAEE3B1237C10B1584E6FBD2A6505",
+        "ledger_index": "50000000",
+        "parent_close_time": 621665930,
+        "parent_hash": "3B4431099292FC6DBF3875FB2FA1022B2FF06B765ABA163B09DF4F1383A3E30B",
+        "seqNum": "50000000",
+        "totalCoins": "99991346321080101",
+        "total_coins": "99991346321080101",
+        "transaction_hash": "8FD966C7D8DEAE695655B65E968FFE36521869D5278C4115BBDEB697D084A8AC"
+      },
+      "ledger_hash": "0C073A753670E99C210264F7783FE5F7C3DEAEE3B1237C10B1584E6FBD2A6505",
+      "ledger_index": 50000000,
+      "marker": "000003E6AFED1AADCC39AAE0727B354C2286F1503274F345FE661748F24366CE",
+      "state": null,
+      "status": "success",
+      "validated": true
+    }
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 50797264,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/ripple/ledger/50000000
+
+
+
+#### <a name="link_207"></a> Raw transaction data
+
+Returns raw transaction data directly from our full node.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:xrp_chain}/raw/transaction/{:hash}₀`
+
+**Where:**
+
+- `{:xrp_chain}` can only be 'ripple'
+- `{:hash}ᵢ` is the transaction hash (regex: `/^[0-9a-f]{64}$/i`)
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:hash}ᵢ.decoded_raw_transaction` — raw transaction encoded in JSON by our node. Please note that the structure of this JSON array may change as we upgrade our nodes, and this won't be reflected in our change logs. We don't provide field descriptions for raw endpoints, that information can be found on the Ripple website`
+
+If there's no `{:hash}ᵢ` has been found on the blockchain, returns an empty array.
+
+**Context keys:**
+
+- `context.state`: best ledger height on the `{:xrp_chain}` chain
+
+**Example requests:**
+
+- `https://api.blockchair.com/ripple/raw/transaction/0847A0062757E3490389069DBB3FBA8626EEEE07C126123660248CE1B32D34E3`
+
+**Example output:**
+
+`https://api.blockchair.com/ripple/raw/transaction/0847A0062757E3490389069DBB3FBA8626EEEE07C126123660248CE1B32D34E3`:
+
+```json
+{
+  "data": {
+    "0847A0062757E3490389069DBB3FBA8626EEEE07C126123660248CE1B32D34E3": {
+      "Account": "rKLpjpCoXgLQQYQyj13zgay73rsgmzNH13",
+      "Amount": {
+        "currency": "XCN",
+        "issuer": "rPFLkxQk6xUGdGYEykqe7PR25Gr7mLHDc8",
+        "value": "10000"
+      },
+      "Destination": "rKLpjpCoXgLQQYQyj13zgay73rsgmzNH13",
+      "Fee": "11",
+      "Flags": 2147942400,
+      "LastLedgerSequence": 50000001,
+      "Paths": [
+        [
+          {
+            "currency": "CNY",
+            "issuer": "rKiCet8SdvWxPXnAgYarFUXMh1zCPz432Y",
+            "type": 48,
+            "type_hex": "0000000000000030"
+          },
+          {
+            "currency": "USD",
+            "issuer": "rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq",
+            "type": 48,
+            "type_hex": "0000000000000030"
+          },
+          {
+            "currency": "XRP",
+            "type": 16,
+            "type_hex": "0000000000000010"
+          },
+          {
+            "currency": "XCN",
+            "issuer": "rPFLkxQk6xUGdGYEykqe7PR25Gr7mLHDc8",
+            "type": 48,
+            "type_hex": "0000000000000030"
+          }
+        ],
+        ...
+      ],
+      "SendMax": "10000000000",
+      "Sequence": 5435383,
+      "SigningPubKey": "030AC4F2BA6E1FF86BEB234B639918DAFDF0675032AE264D2B39641503822373FE",
+      "TransactionType": "Payment",
+      "TxnSignature": "30450221009533287ED1277DD0E8EDC49A75A6E1B2ADE5F4282915EF91C4466B7D21175E380220424535BDFB12F040516FC3E947BAEA5F40C5F03CA3B63C0375F1773C9FFC793E",
+      "date": 621665931,
+      "hash": "0847A0062757E3490389069DBB3FBA8626EEEE07C126123660248CE1B32D34E3",
+      "inLedger": 50000000,
+      "ledger_index": 50000000,
+      "status": "success"
+    }
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 50799948,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/ripple/transaction/18BC01124BC4FBA1D4CF8EAA934EBCDC9136FE987D0F7E1505A94C767465500C
+
+
+
+#### <a name="link_303"></a> Raw account data
+
+Returns raw account data directly from our full node.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:xrp_chain}/raw/account/{:account}`
+
+**Where:**
+
+- `{:xrp_chain}` can only be 'ripple'
+- `{:account}ᵢ` is the account address
+
+**Possible options:**
+
+- `?assets=true` returns information about account's assets
+- `?transactions=true` returns information about latest 10 transactions
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:account}ᵢ` — raw account data encoded in JSON by our node. Please note that the structure of this JSON array may change as we upgrade our nodes, and this won't be reflected in our change logs. We don't provide field descriptions for raw endpoints, that information can be found on the Ripple website
+
+If there's no `{:account}ᵢ` has been found on the blockchain, returns an empty array.
+
+**Context keys:**
+
+- `context.state`: best ledger height on the `{:xrp_chain}` chain
+
+**Example requests:**
+
+- `https://api.blockchair.com/ripple/dashboards/account/rh3VLyj1GbQjX7eA15BwUagEhSrPHmLkSR?assets=true&transactions=true`
+- `https://api.blockchair.com/ripple/dashboards/account/rh3VLyj1GbQjX7eA15BwUagEhSrPHmLkSR?assets=true&transactions=true`
+
+**Example output:**
+
+`https://api.blockchair.com/ripple/dashboards/account/rh3VLyj1GbQjX7eA15BwUagEhSrPHmLkSR?assets=true&transactions=true`:
+
+```json
+{
+  "data": {
+    "rh3VLyj1GbQjX7eA15BwUagEhSrPHmLkSR": {
+      "account": {
+        "account_data": {
+          "Account": "rh3VLyj1GbQjX7eA15BwUagEhSrPHmLkSR",
+          "Balance": "97894917",
+          "Flags": 0,
+          "LedgerEntryType": "AccountRoot",
+          "OwnerCount": 5,
+          "PreviousTxnID": "7F358F814D4E9FD7FB9E3E00CD00D1616458E7DBEC7F764C0E5F63949398B414",
+          "PreviousTxnLgrSeq": 50803417,
+          "Sequence": 14884800,
+          "index": "E0311EB450B6177F969B94DBDDA83E99B7A0576ACD9079573876F16C0C004F06"
+        },
+        "ledger_current_index": 50803418,
+        "status": "success",
+        "validated": false
+      },
+      "assets": {
+        "account": "rh3VLyj1GbQjX7eA15BwUagEhSrPHmLkSR",
+        "ledger_current_index": 50803418,
+        "lines": [
+          {
+            "account": "rJ1adrpGS3xsnQMb9Cw54tWJVFPuSdZHK",
+            "balance": "573982.6565030623",
+            "currency": "CNY",
+            "limit": "1000000000",
+            "limit_peer": "0",
+            "no_ripple": true,
+            "no_ripple_peer": true,
+            "quality_in": 0,
+            "quality_out": 0
+          }
+        ],
+        "status": "success",
+        "validated": false
+      },
+      "transactions": {
+        "account": "rh3VLyj1GbQjX7eA15BwUagEhSrPHmLkSR",
+        "ledger_index_max": 50803417,
+        "ledger_index_min": 50226369,
+        "limit": 10,
+        "marker": {
+          "ledger": 50803415,
+          "seq": 25
+        },
+        "status": "success",
+        "transactions": [
+          {
+            "meta": {
+              "AffectedNodes": [
+                {
+                  "CreatedNode": {
+                    "LedgerEntryType": "DirectoryNode",
+                    "LedgerIndex": "1AC09600F4B502C8F7F830F80B616DCB6F3970CB79AB70975A128D7E42783345",
+                    "NewFields": {
+                      "ExchangeRate": "5A128D7E42783345",
+                      "RootIndex": "1AC09600F4B502C8F7F830F80B616DCB6F3970CB79AB70975A128D7E42783345",
+                      "TakerGetsCurrency": "000000000000000000000000434E590000000000",
+                      "TakerGetsIssuer": "0360E3E0751BD9A566CD03FA6CAFC78118B82BA0"
+                    }
+                  }
+                },
+                {
+                  "DeletedNode": {
+                    "FinalFields": {
+                      "ExchangeRate": "5A128D7E427D2AA7",
+                      "Flags": 0,
+                      "RootIndex": "1AC09600F4B502C8F7F830F80B616DCB6F3970CB79AB70975A128D7E427D2AA7",
+                      "TakerGetsCurrency": "000000000000000000000000434E590000000000",
+                      "TakerGetsIssuer": "0360E3E0751BD9A566CD03FA6CAFC78118B82BA0",
+                      "TakerPaysCurrency": "0000000000000000000000000000000000000000",
+                      "TakerPaysIssuer": "0000000000000000000000000000000000000000"
+                    },
+                    "LedgerEntryType": "DirectoryNode",
+                    "LedgerIndex": "1AC09600F4B502C8F7F830F80B616DCB6F3970CB79AB70975A128D7E427D2AA7"
+                  }
+                },
+                {
+                  "CreatedNode": {
+                    "LedgerEntryType": "Offer",
+                    "LedgerIndex": "2E113BC264A73193A08038293E32D7D6474D0035EC21B5F9B559360046106385",
+                    "NewFields": {
+                      "Account": "rh3VLyj1GbQjX7eA15BwUagEhSrPHmLkSR",
+                      "BookDirectory": "1AC09600F4B502C8F7F830F80B616DCB6F3970CB79AB70975A128D7E42783345",
+                      "Sequence": 14884795,
+                      "TakerGets": {
+                        "currency": "CNY",
+                        "issuer": "rJ1adrpGS3xsnQMb9Cw54tWJVFPuSdZHK",
+                        "value": "13873.74225408225"
+                      },
+                      "TakerPays": "7245038854"
+                    }
+                  }
+                },
+                {
+                  "DeletedNode": {
+                    "FinalFields": {
+                      "Account": "rh3VLyj1GbQjX7eA15BwUagEhSrPHmLkSR",
+                      "BookDirectory": "1AC09600F4B502C8F7F830F80B616DCB6F3970CB79AB70975A128D7E427D2AA7",
+                      "BookNode": "0000000000000000",
+                      "Flags": 0,
+                      "OwnerNode": "0000000000000000",
+                      "PreviousTxnID": "9CD2DE1FDC90C8CC23687B7125CD9142B0404BD08E7D346A350C7DCB6DAECC0E",
+                      "PreviousTxnLgrSeq": 50803416,
+                      "Sequence": 14884791,
+                      "TakerGets": {
+                        "currency": "CNY",
+                        "issuer": "rJ1adrpGS3xsnQMb9Cw54tWJVFPuSdZHK",
+                        "value": "29217.47535833971"
+                      },
+                      "TakerPays": "15257725012"
+                    },
+                    "LedgerEntryType": "Offer",
+                    "LedgerIndex": "82729E243E07C4A691D01DEFC94BD86B3C5A4634A58054B479226E11C427ABCC"
+                  }
+                },
+                {
+                  "ModifiedNode": {
+                    "FinalFields": {
+                      "Flags": 0,
+                      "IndexNext": "0000000000000000",
+                      "IndexPrevious": "0000000000000000",
+                      "Owner": "rh3VLyj1GbQjX7eA15BwUagEhSrPHmLkSR",
+                      "RootIndex": "AEA3074F10FE15DAC592F8A0405C61FB7D4C98F588C2D55C84718FAFBBD2604A"
+                    },
+                    "LedgerEntryType": "DirectoryNode",
+                    "LedgerIndex": "AEA3074F10FE15DAC592F8A0405C61FB7D4C98F588C2D55C84718FAFBBD2604A"
+                  }
+                },
+                {
+                  "ModifiedNode": {
+                    "FinalFields": {
+                      "Account": "rh3VLyj1GbQjX7eA15BwUagEhSrPHmLkSR",
+                      "Balance": "97894965",
+                      "Flags": 0,
+                      "OwnerCount": 5,
+                      "Sequence": 14884796
+                    },
+                    "LedgerEntryType": "AccountRoot",
+                    "LedgerIndex": "E0311EB450B6177F969B94DBDDA83E99B7A0576ACD9079573876F16C0C004F06",
+                    "PreviousFields": {
+                      "Balance": "97894977",
+                      "Sequence": 14884795
+                    },
+                    "PreviousTxnID": "C8EE48118ACB84DF41168BEB7D991CD07C7D21EDB52F798AA0ED1C296EE7C4C0",
+                    "PreviousTxnLgrSeq": 50803417
+                  }
+                }
+              ],
+              "TransactionIndex": 8,
+              "TransactionResult": "tesSUCCESS"
+            },
+            "tx": {
+              "Account": "rh3VLyj1GbQjX7eA15BwUagEhSrPHmLkSR",
+              "Fee": "12",
+              "Flags": 0,
+              "LastLedgerSequence": 50803419,
+              "OfferSequence": 14884791,
+              "Sequence": 14884795,
+              "SigningPubKey": "022D40673B44C82DEE1DDB8B9BB53DCCE4F97B27404DB850F068DD91D685E337EA",
+              "TakerGets": {
+                "currency": "CNY",
+                "issuer": "rJ1adrpGS3xsnQMb9Cw54tWJVFPuSdZHK",
+                "value": "13873.74225408225"
+              },
+              "TakerPays": "7245038854",
+              "TransactionType": "OfferCreate",
+              "TxnSignature": "3044022032CDB56EB073D2BABAB4646F494478A6CAEE4B94BACB6D15124261FA04BFF80C022077D11F8EB991954F71F7712F92240F8D1DD393369E7DC37E855E00778ADAD64D",
+              "date": 624761581,
+              "hash": "7F358F814D4E9FD7FB9E3E00CD00D1616458E7DBEC7F764C0E5F63949398B414",
+              "inLedger": 50803417,
+              "ledger_index": 50803417
+            },
+            "validated": true
+          },
+          ...
+        ]
+      }
+    }
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 50803416,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/ripple/account/rKLpjpCoXgLQQYQyj13zgay73rsgmzNH13
+
+
+
+## <a name="link_05"></a> Infinitable endpoints (blockchain tables)
+
+These endpoints allow you to filter, sort, and aggregate blockchain data. The output is database rows. Unlike dashboard and raw endpoints, all infinitable endpoints listed in this section can be considered as just one endpoint as it has the same options and the same output structure across different blockchains and entities. Here it is: `https://api.blockchair.com/{:table}{:query}`.
+
+Just don't ask why do we call that `infinitables`… Infinite tables? Maybe.
+
+**List of tables (`{:table}`) our engine supports:**
+
+* `{:btc_chain}/blocks`
+* `{:btc_chain}/transactions`
+* `{:btc_chain}/mempool/transactions`
+* `{:btc_chain}/outputs`
+* `{:btc_chain}/mempool/outputs`
+* `{:btc_chain}/addresses`
+* `{:eth_chain}/blocks`
+* `{:eth_chain}/uncles`
+* `{:eth_chain}/transactions`
+* `{:eth_chain}/mempool/transactions`
+* `{:eth_chain}/calls`
+* `bitcoin/omni/properties`
+* `bitcoin-cash/wormhole/properties`
+* `ethereum/erc-20/tokens`
+* `ethereum/erc-20/transactions`
+
+Where:
+
+* `{:btc_chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, or `bitcoin/testnet`
+* `{:eth_chain}` can be only `ethereum`
+
+Note on mempool tables: to speed up some requests, our architecture have separate tables (`{:chain}/mempool/{:entity}`) for unconfirmed transactions. Unlike with dashboard endpoints which search entities like transactions in both the blockchain and the mempool, infinitable endpoints don't do that.
+
+The `{:query}` is optional; in case it's not included in the request, the default sorting applied to the table (for most of the tables it's descending by some id) and the 10 top results are returned.
+
+Here are some example queries without using `{:query}`:
+
+* `https://api.blockchair.com/bitcoin/blocks`
+* `https://api.blockchair.com/bitcoin-cash/mempool/transactions`
+
+**The output skeleton is the following:**
+
+```json
+{
+  "data": [
+    {
+      ... // row 1 data
+    },
+    ...
+    {
+      ... // row 10 data
+    },    
+  ],
+  "context": {
+    "limit": 10, // the default limit of 10 is applied
+    "offset": 0, // no offset has been set
+    "rows": 10, // the response contains 10 rows
+    "total_rows": N, // but there are N rows in the table matching {:query} (total number of rows if it's not set)
+    "state": S, // the latest block number on the blockchain
+    ...
+  }
+}
+```
+
+Further documentation sections describe fields returned for different tables. Some of the dashboard endpoints are using the same fields as well.
+
+**How to build a query**
+
+The process is somewhat similar to constructing an SQL query, but there are less possibilities of course.
+
+Here are the possible options:
+
+* Setting filters — the `?q=` section — allows you to set a number of filters (SQL "`WHERE`")
+* Setting sortings — the `?s=` section — allows you to sort the table (SQL "`ORDER BY` ")
+* Setting the limit — the `?limit=` section — limits the number of output results (SQL "`LIMIT`")
+* Setting the offset — the `?offset=` section — offsets the result  set (SQL "`OFFSET`")
+* Aggregating data — the `?a=` sections — allows to group by some columns and calculate using function (SQL "`GROUP BY`" and functions such as `count`, `max`, etc.)
+* The table (SQL "`FROM`") is set in the `{:table}` section of the API request
+
+The order of applying various sections is irrelevant.
+
+A quick example: `https://api.blockchair.com/bitcoin/blocks?q=time(2019-01),guessed_miner(AntPool)&s=size(desc)&limit=1`. This request:
+
+* Makes a query to the  `bitcoin/blocks` table
+* Filters the table by time (finds all blocks mined in January 2019) and miner (AntPool)
+* Sorts the table by block size descending
+* Limits the number of results to 1
+
+What this example does is finding the largest block mined by AntPool in January 2019.
+
+Another example using aggregation: `https://api.blockchair.com/bitcoin/blocks?q=time(2019-01-01..2019-01-31)&a=guessed_miner,count()&s=count()(desc)`. This request:
+
+* As the previous one, makes a query to the `bitcoin/blocks` table
+* Filters the table by time (in a bit different way, but it's an invariant of `time(2019-01)`)
+* Groups the table by miner, and calculating the number of rows for each miner using the `count()` function
+* Sorts the result set by the number of blocks each miner has found
+
+**The `?q=` section (filters)**
+
+You can use filters as follows: `?q=field(expression)[,field(expression)]...`, where `field` is the column which is going to be filtered, and `expression` is a filtering expression. These are possilble filtering expressions:
+
+- `equals` — equality — example: ` https://api.blockchair.com/bitcoin/blocks?q=id(0)` finds information about block 0
+- `left..` — non-strict inequality — example: `https://api.blockchair.com/bitcoin/blocks?q=id(1..)` finds information about block 1 and above
+- `left...` — strict inequality — example: `https://api.blockchair.com/bitcoin/blocks?q=id(1...)` finds information about block 2 and above
+- `..right` — non-strict inequality — example: `https://api.blockchair.com/bitcoin/blocks?q=id(..1)` finds information about blocks 0 and 1
+- `...right` — strict inequality — example: `https://api.blockchair.com/ bitcoin/blocks?q=id(...1)` finds information only about block 0
+- `left..right` — non-strict inequality — example: `https://api.blockchair.com/bitcoin/blocks?q=id(1..3)` finds information about blocks 1, 2 and 3
+- `left...right` — strict inequality — example: `https://api.blockchair.com/bitcoin/blocks?q=id(1...3)` finds information about block 2 only
+- `~like` — occurrence in a string (SQL `LIKE '%str%'` operator) — example: `https://api.blockchair.com/bitcoin/blocks?q=coinbase_data_bin(~hello)` finds all blocks which contain `hello` in `coinbase_data_bin` 
+- `^like` — occurrence at the beginning of a string (SQL `LIKE 'str%'` operator, also further mentioned as the `STARTS WITH` operator) — example: `https://api.blockchair.com/bitcoin/blocks?q=coinbase_data_hex(^00)` finds all blocks for which` coinbase_data_hex` begins with `00`
+
+For timestamp type fields, values can be specified in the following formats:
+
+- `YYYY-MM-DD HH:ii:ss`
+- `YYYY-MM-DD` (converted to the `YYYY-MM-DD 00:00:00..YYYY-MM-DD 23:59:59` range)
+- `YYYY-MM` (converted to the `YYYY-MM-01 00:00:00..YYYY-MM-31 23:59:59` range)
+
+Inequalities are also supported for timestamps, the left and right values must be in the same format, e.g.: `https://api.blockchair.com/bitcoin/blocks?q=time(2009-01-03..2009-01-31)`.
+
+Ordinarilly if there's `time` column in the table, there should also be `date`, but there won't be possible to search over the `date` column directly, but you can search by date using the `time` column as follows: `?q=time(YYYY-MM-DD)`
+
+If the left value in an inequality is larger than the right, they switch places.
+
+If you want to list several filters, you need to separate them using commas like this: `https://api.blockchair.com/bitcoin/blocks?q=id(500000..),coinbase_data_bin(~hello)`
+
+We're currently testing support for `NOT` and `OR` operators (this is an alpha test feature, so we don't guarantee there won't be sudden changes):
+
+* The `NOT` operator is added before the expression for it to be inverted, e.g., `https://api.blockchair.com/bitcoin/blocks?q=not,id(1..)` returns the block `0`
+* The `OR` operator can be put between two expressions and takes precedence (like it's when two expressions around `OR` are wrapped in parentheses), e.g., `https://api.blockchair.com/bitcoin/blocks?q=id(1),or,id(2)` returns information about blocks 1 and 2.
+
+Maximum guaranteed supported number of filters in one query: 5.
+
+**The `?s=` section (sortings)**
+
+Sorting can be used as follows: `?s=field(direction)[,field(direction)]...`, where `direction` can be either `asc` for sorting in ascending order, or `desc` for sorting in descending order.
+
+Here's a basic example: `https://api.blockchair.com/bitcoin/blocks?s=id(asc)` — sorts blocks by id ascending
+
+If you need to apply several sortings, you can list them separating with commas. The maximum guaranteed number of sortings is 2.
+
+**The `?limit=` section (limit)**
+
+Limit is used like this: `?limit=N`, where N is a natural number from 1 to 100. The default is 10. `context.limit` takes the value of the set limit. In some cases (when using some specific "increased efficiency" filters described below) `LIMIT` may be ignored, and in such cases the API returns the entire result set, and `context.limit` will be set to `NULL`.
+
+A basic example: `https://api.blockchair.com/bitcoin/blocks?limit=1` — returns the latest block data (as the default sorting for this table is by block height descending)
+
+Note that increasing the limit leads to an increase in the request cost (see the formula below).
+
+**The `?offset=` section (offset)**
+
+Offset can be used as a paginator, e.g., `?offset=10` returns the next 10 rows. `context.offset` takes the value of the set offset. The maximum value is 10000. If you need just the last page, it's easier and quicker to change the direction of the sorting to the opposite.
+
+**Important**: while iterating through the results, it is quite likely that the number of rows in the database will increase because new blocks had found while you were paginating. To avoid that, you may, for example, add an additional condition that limits the block id to the value obtained in `context.state` in the first query.
+
+Here's an example. Suppose we would like to receive all the latest transactions from the Bitcoin blockchain with amount more than $1M USD. The following request should be perfomed for this:
+
+- `https://api.blockchair.com/bitcoin/transactions?q=output_total_usd(10000000..)&s=id(desc)`
+
+Now, the script with this request to the API for some reason did not work for a while, or a huge amount of transactions worth more than $1 million appeared. With the standard limit of 10 results, the script skipped some transactions. Then firstly we should make the same request once again:
+
+- `https://api.blockchair.com/bitcoin/transactions?q=output_total_usd(10000000..)&s=id(desc)`
+
+From the response we put `context.state` in a variable `{:state}`, and further to obtain next results we apply `offset` and set a filter to "fix" the blockchain state:
+
+- `https://api.blockchair.com/bitcoin/transactions?q=output_total_usd(10000000..),block_id(..{:state})&s=id(desc)&offset=10`
+
+Next we increase the offset value until getting a data set with the transaction that we already knew about.
+
+**The `?a=` section (data aggregation)**
+
+*Warning*: data aggregation is currently in beta stage on our platform.
+
+To use aggregation, put the fields by which you'd like to group by (zero, one, or several), and fields (at least one) which you'd like to calculate using some aggregate function under the `?a=` section. You can also sort the results by one of the fields included in the `?a=` section (`asc` or `desc`) using the `?s=` section, and apply additional filters using the `?q=` section.
+
+Let's start with some examples:
+
+- `https://api.blockchair.com/bitcoin/blocks?a=year,count()` — get the total number of Bitcoin blocks by year
+- `https://api.blockchair.com/bitcoin/transactions?a=month,median(fee_usd)` — get the median Bitcoin transaction fees by month
+- `https://api.blockchair.com/ethereum/blocks?a=miner,sum(generation)&s=sum(generation)(desc)` — get the list of Ethereum miners (except uncle miners) and sort it by the total amount of coins minted
+- `https://api.blockchair.com/bitcoin-cash/blocks?a=sum(fee_total_usd)&q=id(478559..)` — calculate how much miners have collected in fees since the fork
+
+In case the table you're aggregating over has a `time` column, it's always possible to group by the following virtual columns:
+
+- `date`
+- `week` (yields `YYYY-MM-DD` corresponding to Mondays)
+- `month` (yields `YYYY-MM` )
+- `year` (yields `YYYY` )
+
+Supported functions:
+
+* `avg({:field})`
+* `median({:field})`
+* `min({:field})`
+* `max({:field})`
+* `sum({:field})`
+* `count()`
+
+There are also two special functions:
+
+* `price({:ticker1}_{:ticker2})`— yields the price; works only if you group by `date` (or one of: `week`, `month`, `year`). For example, it makes it possible to build a chart showing correlation between price and transaction count: `https://api.blockchair.com/bitcoin/blocks?a=month,sum(transaction_count),price(btc_usd)`. Supported tickers: `usd`, `btc`, `bch`, `eth`, `ltc`, `bsv`, `doge`, `dash`, `grs`
+* `f({:expression})` where `{:expression}` is `{:function_1}{:operator}{:function_2}`, where `{:function_1}` and `{:function_2}` are the supported functions from the above list, and `{:operator}` is one of the following: `+`, `-`, `/`, `*` (basic math operators). It's useful to calculate percentages. Example: `https://api.blockchair.com/bitcoin/blocks?a=date,f(sum(witness_count)/sum(transaction_count))&q=time(2017-08-24..)` — calculates SegWit adoption (by dividing the SegWit transaction count by the total transaction count)
+
+There's also a special `?aq=` section which have the following format: `?aq={:i}:{:j}` — it applies `i`th filter to `j`th function (special functions don't count); after that `i`th filter has no effect on filtering the table. It's possible to have multiple conditions by separating them with a `;`. Here's an example: `https://api.blockchair.com/bitcoin/outputs?a=date,f(count()/count())&q=type(nulldata),time(2019-01)&aq=0:0` — calculates the percentage of nulldata outputs in January 2019 by day. The 0th condition (`type(nulldata)`) is applied to the 0th function (`count()`) and removed afterwards.
+
+If you use the `?a=` section, the default limit is 10000 instead of 10.
+
+It's possible to export aggregated data to TSV or CSV format using `&export=tsv` or `&export=csv` accordingly. Example: `https://api.blockchair.com/bitcoin/transactions?a=date,avg(fee_usd)&q=time(2019-01-01..2019-04-01)&export=tsv`. This feature is available on Premium API plans with export functions only. Unlike when not using aggragating, this doesn't require listing the fields to export.
+
+*Warning*: the `f({:expression})` special function, the `?aq=` section, and TSV/CSV export are currently in alpha stage on our platform. Special function `price({:ticker1}_{:ticker2})` can't be used within special function `f({:expression})`. There are some known issues when sorting if `f({:expression})` is present. There are some known issues when applying the `?aq=` section to inequality filters. 
+
+**Fun example**
+
+The following requests return the same result:
+
+* `https://api.blockchair.com/bitcoin/blocks?a=sum(reward)`
+* `https://api.blockchair.com/bitcoin/transactions?a=sum(output_total)&q=is_coinbase(true)`
+* `https://api.blockchair.com/bitcoin/outputs?a=sum(value)&q=is_from_coinbase(true)`
+
+**Export data to TSV or CSV**
+
+Some of our Premium API plans support export to TSV and CSV formats ignoring `?limit=` and `?offset=` sections (along with the max limit of 100 rows). In order to export, you should
+
+* Apply `&export=tsv` or `&export=csv` to the request
+* List the necessary fields in `&fields=` separating them with commas
+
+Here's an example: `https://api.blockchair.com/bitcoin/blocks?q=time(2019-01)&export=tsv&fields=id,hash` — responds with a TSV file containing ids and hashes for blocks mined in January 2019 (4525 rows in total)
+
+To test this functionality, on the free plan we allow to export from `blocks` tables across the blockchains we support up to 1 million cells (rows * columns) at once.
+
+If you'd like to export entire tables without using filters — it's better to use our Database dumps feature instead of the API (see https://blockchair.com/dumps for documentation)
+
+*Warning*: this functionality is in beta stage.
+
+**Request cost formula for infinitables**
+
+Cost is calculated by summing up the following values:
+
+* The base cost for the table (see the table below): `2`, `5`, or `10`
+* Applying a filter costs `1`
+* Applying a sorting costs `0`
+* Applying an offset costs `0`
+* Applying an aggregation costs `10`
+
+Applying a limit over the default multiplies the summed cost by `1 + 0.01 * number_of_rows_over_the_default_limit`. If the defaut limit is 10 and the base cost is 2, requesting 100 rows will cost `2 * (1 + 0.01 * 90) = 3.8`.
+
+| Table                               | Base cost |
+| ----------------------------------- | --------- |
+| `{:btc_chain}/blocks`               | `2`       |
+| `{:btc_chain}/transactions`         | `5`       |
+| `{:btc_chain}/mempool/transactions` | `2`       |
+| `{:btc_chain}/outputs`              | `10`      |
+| `{:btc_chain}/mempool/outputs`      | `2`       |
+| `{:btc_chain}/addresses`            | `2`       |
+| `{:eth_chain}/blocks`               | `2`       |
+| `{:eth_chain}/uncles`               | `2`       |
+| `{:eth_chain}/transactions`         | `5`       |
+| `{:eth_chain}/mempool/transactions` | `2`       |
+| `{:eth_chain}/calls`                | `10`      |
+| `bitcoin/omni/properties`           | `10`      |
+| `bitcoin-cash/wormhole/properties`  | `10`      |
+| `ethereum/erc-20/tokens`            | `2`       |
+| `ethereum/erc-20/transactions`      | `5`       |
+
+**Table descriptions**
+
+Further in documentations are table descriptions. Each documentation section contains a general description, and a table describing the table columns (fields) in the following format:
+
+| Column        | Type          | Description          | Q?                                         | S?                                       | A?                                        | C?                                                           |
+| ------------- | ------------- | -------------------- | ------------------------------------------ | ---------------------------------------- | ----------------------------------------- | ------------------------------------------------------------ |
+| *Column name* | *Column type* | *Column description* | *Is it possible to filter by this column?* | *Is it possible to sort by this column?* | *Is it possible to group by this column?* | *Is it possible to apply aggregation functions (like `sum` to this column)?* |
+
+The following marks are possible for the `Q?` column:
+
+* `=` — possible to use equalities only
+* `*` — possible to use both equalities and inequalities
+* `⌘` — possible to use special format (applies to timestamp fields)
+* `~` — possible to use the `LIKE` operator
+* `^` — possible to use the `STARTS WITH` operator
+* `*≈` — possible to use both equalities and inequalities, may return some results which are a bit out of the set range (this is used to swiftly search over  the Ethereum blockchain that uses too long wei numbers for transfer amounts)
+
+For the `S?`, `A?`, and `C?` columns it's either `+` (which means "yes") or nothing. `⌘` means some additional options may be available (in case of aggregation it may either mean additional fields like `year` are available, or in case of functions — only `min` and `max` are available).
+
+There can also be synthetic columns which aren't shown in the response, but you can still filter or sort by them. If there are any, they will be listed in a separate table.
+
+
+
+### <a name="link_M41"></a> Inifinitable endpoints for Bitcoin-like blockchains (Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Bitcoin Testnet)
+
+
+
+#### <a name="link_102"></a> `blocks` table
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:btc_chain}/blocks?{:query}`
+
+**Where:**
+
+- `{:btc_chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `bitcoin/testnet`
+- `{:query}` is the query against the table ([how to build a query](#link_05))
+
+**Output:**
+
+`data` contains an array of database rows. Each row is in the following format:
+
+| Column            | Type                         | Description                                                  | Q?   | S?   | A?   | C?   |
+| ----------------- | ---------------------------- | ------------------------------------------------------------ | ---- | ---- | ---- | ---- |
+| id                | int                          | Block height                                                 | `*`  | `+`  |      | `⌘`  |
+| hash              | string `[0-9a-f]{64}`        | Block hash                                                   | `=`  | `+`  |      |      |
+| date              | string `YYYY-MM-DD`          | Block date (UTC)                                             |      |      | `⌘`  |      |
+| time              | string `YYYY-MM-DD HH:ii:ss` | Block time (UTC)                                             | `⌘`  | `+`  |      |      |
+| median_time       | string `YYYY-MM-DD HH:ii:ss` | Block median time (UTC)                                      |      | `+`  |      |      |
+| size              | int                          | Block size in bytes                                          | `*`  | `+`  |      | `+`  |
+| stripped_size †   | int                          | Block size in bytes without taking witness information into account | `*`  | `+`  |      | `+`  |
+| weight †          | int                          | Block weight in weight units                                 | `*`  | `+`  |      | `+`  |
+| version           | int                          | Version field                                                | `*`  | `+`  | `+`  |      |
+| version_hex       | string `[0-9a-f]*`           | Version field in hex                                         |      |      |      |      |
+| version_bits      | string `[01]{30}`            | Version field in binary format                               |      |      |      |      |
+| merkle_root       | `[0-9a-f]{64}`               | Merkle root hash                                             |      |      |      |      |
+| nonce             | int                          | Nonce value                                                  | `*`  | `+`  |      |      |
+| bits              | int                          | Bits field                                                   | `*`  | `+`  |      |      |
+| difficulty        | float                        | Difficulty                                                   | `*`  | `+`  |      | `+`  |
+| chainwork         | string `[0-9a-f]{64}`        | Chainwork field                                              |      |      |      |      |
+| coinbase_data_hex | string `[0-9a-f]*`           | Hex information contained in the input of the coinbase transaction | `^`  |      |      |      |
+| transaction_count | int                          | Number of transactions in the block                          | `*`  | `+`  |      | `+`  |
+| witness_count †   | int                          | Number of transactions in the block containing witness information | `*`  | `+`  |      | `+`  |
+| input_count       | int                          | Number of inputs in all block transactions                   | `*`  | `+`  |      | `+`  |
+| output_count      | int                          | Number of outputs in all block transactions                  | `*`  | `+`  |      | `+`  |
+| input_total       | int                          | Sum of inputs in satoshi                                     | `*`  | `+`  |      | `+`  |
+| input_total_usd   | float                        | Sum of outputs in USD                                        | `*`  | `+`  |      | `+`  |
+| output_total      | int                          | Sum of outputs in satoshi                                    | `*`  | `+`  |      | `+`  |
+| output_total_usd  | float                        | Sum of outputs in USD                                        | `*`  | `+`  |      | `+`  |
+| fee_total         | int                          | Total fee in Satoshi                                         | `*`  | `+`  |      | `+`  |
+| fee_total_usd     | float                        | Total fee in USD                                             | `*`  | `+`  |      | `+`  |
+| fee_per_kb        | float                        | Fee per kilobyte (1000 bytes of data) in satoshi             | `*`  | `+`  |      | `+`  |
+| fee_per_kb_usd    | float                        | Fee for kilobyte of data in USD                              | `*`  | `+`  |      | `+`  |
+| fee_per_kwu †     | float                        | Fee for 1000 weight units of data in satoshi                 | `*`  | `+`  |      | `+`  |
+| fee_per_kwu_usd † | float                        | Fee for 1000 weight units of data in USD                     | `*`  | `+`  |      | `+`  |
+| cdd_total         | float                        | Number of coindays destroyed by all transactions of the block | `*`  | `+`  |      | `+`  |
+| generation        | int                          | Miner reward for the block in satoshi                        | `*`  | `+`  |      | `+`  |
+| generation_usd    | float                        | Miner reward for the block in USD                            | `*`  | `+`  |      | `+`  |
+| reward            | int                          | Miner total reward (reward + total fee) in satoshi           | `*`  | `+`  |      | `+`  |
+| reward_usd        | float                        | Miner total reward  (reward + total fee) in USD              | `*`  | `+`  |      | `+`  |
+| guessed_miner     | string `.*`                  | The supposed name of the miner who found the block (the heuristic is based on `coinbase_data_bin` and the addresses to which the reward goes) | `=`  | `+`  | `+`  |      |
+| is_aux ‡          | boolean                      | Whether a block was mined using AuxPoW                       | `=`  |      | `+`  |      |
+| cbtx ※            | string `.*`                  | Coinbase transaction data (encoded JSON)                     |      |      |      |      |
+
+Additional synthetic columns
+
+| Column            | Type        | Description                                                  | Q?   | S?   | A?   | C?   |
+| ----------------- | ----------- | ------------------------------------------------------------ | ---- | ---- | ---- | ---- |
+| coinbase_data_bin | string `.*` | Text (UTF-8) representation of coinbase data. Allows you to use the `LIKE` operator: `?q=coinbase_data_bin(~hello)` | `~`  |      |      |      |
+
+Notes:
+
+- `increased efficiency` method applies if querying `id` and ` hash` columns using the `equals` operator
+- † — only for Bitcoin, Litecoin, Groestlcoin, and Bitcoin Testnet (SegWit data)
+- ‡ — only for Dogecoin
+- ※ — only for Dash
+- The default sorting — `id DESC`
+
+**Example output:**
+
+`https://api.blockchair.com/bitcoin/blocks?limit=1`:
+
+```json
+{
+  "data": [
+    {
+      "id": 599954,
+      "hash": "0000000000000000000a405e0eb599136580eed78682bfe6648c5f7b6f81a9cb",
+      "date": "2019-10-18",
+      "time": "2019-10-18 17:16:18",
+      "median_time": "2019-10-18 16:41:08",
+      "size": 1291891,
+      "stripped_size": 900520,
+      "weight": 3993451,
+      "version": 536870912,
+      "version_hex": "20000000",
+      "version_bits": "100000000000000000000000000000",
+      "merkle_root": "800c37c217eb0b53f8e5144602b8605876e12939f85d350e3d677fe89b8da476",
+      "nonce": 318379413,
+      "bits": 387294044,
+      "difficulty": 13008091666972,
+      "chainwork": "0000000000000000000000000000000000000000096007e2e467d315afd86f91",
+      "coinbase_data_hex": "039227090452f3a95d2f706f6f6c696e2e636f6d2ffabe6d6d95254907ac051f810232ebdb4865ce204353bc59bbd533e40fb1cd3d29b8e06701000000000000007570ce1586aa43da2aabdab74791c8cd10d4473db1006158555400000000",
+      "transaction_count": 2157,
+      "witness_count": 1320,
+      "input_count": 6564,
+      "output_count": 4969,
+      "input_total": 255590274198,
+      "input_total_usd": 20610300,
+      "output_total": 256840274198,
+      "output_total_usd": 20711100,
+      "fee_total": 14959404,
+      "fee_total_usd": 1206.3,
+      "fee_per_kb": 11583,
+      "fee_per_kb_usd": 0.93403,
+      "fee_per_kwu": 3744.56,
+      "fee_per_kwu_usd": 0.301955,
+      "cdd_total": 7884.6687017888,
+      "generation": 1250000000,
+      "generation_usd": 100798,
+      "reward": 1264959404,
+      "reward_usd": 102004,
+      "guessed_miner": "Poolin"
+    }
+  ],
+  "context": {
+    "code": 200,
+    "limit": 1,
+    "offset": 0,
+    "rows": 1,
+    "total_rows": 599955,
+    "state": 599954,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+See [request costs for infinitables](#link_05)
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/bitcoin/blocks
+- https://blockchair.com/bitcoin-cash/blocks
+- https://blockchair.com/litecoin/blocks
+- https://blockchair.com/bitcoin-sv/blocks
+- https://blockchair.com/dogecoin/blocks
+- https://blockchair.com/dash/blocks
+- https://blockchair.com/groestlcoin/blocks
+- https://blockchair.com/bitcoin/testnet/blocks
+
+
+
+#### <a name="link_203"></a> `transactions` table
+
+**Endpoints:**
+
+- `https://api.blockchair.com/{:btc_chain}/transactions?{:query}` (for blockchain transactions)
+- `https://api.blockchair.com/{:btc_chain}/mempool/transactions?{:query}` (for mempool transactions)
+
+**Where:**
+
+- `{:btc_chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `bitcoin/testnet`
+- `{:query}` is the query against the table ([how to build a query](#link_05))
+
+**Output:**
+
+`data` contains an array of database rows. Each row is in the following format:
+
+| Column            | Type                         | Description                                                  | Q?   | S?   | A?   | C?   |
+| ----------------- | ---------------------------- | ------------------------------------------------------------ | ---- | ---- | ---- | ---- |
+| block_id          | int                          | The height (id) of the block containing the transaction      | `*`  | `+`  | `+`  |      |
+| id                | int                          | Internal Blockchair transaction id (not related to the blockchain, used for internal purposes) | `*`  | `+`  |      |      |
+| hash              | string `[0-9a-f]{64}`        | Transaction hash                                             | `=`  |      |      |      |
+| date              | string `YYYY-MM-DD`          | The date of the block containing the transaction (UTC)       |      |      | `⌘`  |      |
+| time              | string `YYYY-MM-DD HH:ii:ss` | Timestamp of the block containing the transaction (UTC)      | `⌘`  | `+`  |      |      |
+| size              | int                          | Transaction size in bytes                                    | `*`  | `+`  |      | `+`  |
+| weight †          | int                          | Weight of transaction in weight units                        | `*`  | `+`  |      | `+`  |
+| version           | int                          | Transaction version field                                    | `*`  | `+`  | `+`  |      |
+| lock_time         | int                          | Lock time — can be either a block height, or a unix timestamp | `*`  | `+`  |      |      |
+| is_coinbase       | boolean                      | Is it a coinbase (generating new coins) transaction? (For such a transaction `input_count` is equal to` 1` and means there's a synthetic coinbase input) | `=`  |      | `+`  |      |
+| has_witness †     | boolean                      | Is there a witness part in the transaction (using SegWit)?   | `=`  |      | `+`  |      |
+| input_count       | int                          | Number of inputs                                             | `*`  | `+`  | `+`  | `+`  |
+| output_count      | int                          | Number of outputs                                            | `*`  | `+`  | `+`  | `+`  |
+| input_total       | int                          | Input value in satoshi                                       | `*`  | `+`  |      | `+`  |
+| input_total_usd   | float                        | Input value in USD                                           | `*`  | `+`  |      | `+`  |
+| output_total      | int                          | Output value in satoshi                                      | `*`  | `+`  |      | `+`  |
+| output_total_usd  | float                        | Total output value in USD                                    | `*`  | `+`  |      | `+`  |
+| fee               | int                          | Fee in satoshi                                               | `*`  | `+`  |      | `+`  |
+| fee_usd           | float                        | Fee in USD                                                   | `*`  | `+`  |      | `+`  |
+| fee_per_kb        | float                        | Fee per kilobyte (1000 bytes) of data in satoshi             | `*`  | `+`  |      | `+`  |
+| fee_per_kb_usd    | float                        | Fee for kilobyte of data in USD                              | `*`  | `+`  |      | `+`  |
+| fee_per_kwu †     | float                        | Fee for 1000 weight units of data in satoshi                 | `*`  | `+`  |      | `+`  |
+| fee_per_kwu_usd † | float                        | Fee for 1000 weight units of data in USD                     | `*`  | `+`  |      | `+`  |
+| cdd_total         | float                        | The number of destroyed coindays                             | `*`  | `+`  |      | `+`  |
+
+Additional Dash-specific columns:
+
+| Column            | Type          | Description                                                  | Q?   | S?   | A?   | C?   |
+| ----------------- | ------------- | ------------------------------------------------------------ | ---- | ---- | ---- | ---- |
+| type ※            | string (enum) | Transaction type, one of the following: `simple`, `proregtx`, `proupservtx`, `proupregtx`, `prouprevtx`, `cbtx`, `qctx`, `subtxregister`, `subtxtopup`, `subtxresetkey`, `subtxcloseaccount` | `=`  |      | `+`  |      |
+| is_instant_lock ※ | boolean       | Is instant lock?                                             | `=`  |      |      |      |
+| is_special ※      | boolean       | `true` for all transaction types except `simple`             | `=`  |      |      |      |
+| special_json ※    | string `.*`   | Special transaction data (encoded JSON string)               |      |      |      |      |
+
+Notes:
+
+- `increased efficiency` method applies if querying `id` and ` hash` columns using the `equals` operator
+- † — only for Bitcoin, Litecoin, Groestlcoin, and Bitcoin Testnet (SegWit data)
+- ※ — only for Dash
+- The default sorting — `id DESC`
+- `block_id` for mempool transactions is `-1`
+
+**Example output:**
+
+`https://api.blockchair.com/bitcoin/transactions?limit=1`:
+
+```json
+{
+  "data": [
+    {
+      "block_id": 600573,
+      "id": 467508697,
+      "hash": "ee13104d4331cad2fff5ab6cd249a9fec940d64df442a6de5f51ea63c34ef8ff",
+      "date": "2019-10-22",
+      "time": "2019-10-22 19:09:34",
+      "size": 250,
+      "weight": 672,
+      "version": 1,
+      "lock_time": 0,
+      "is_coinbase": false,
+      "has_witness": true,
+      "input_count": 1,
+      "output_count": 2,
+      "input_total": 29340442,
+      "input_total_usd": 2408.9,
+      "output_total": 29340274,
+      "output_total_usd": 2408.89,
+      "fee": 168,
+      "fee_usd": 0.0137931,
+      "fee_per_kb": 672,
+      "fee_per_kb_usd": 0.0551723,
+      "fee_per_kwu": 250,
+      "fee_per_kwu_usd": 0.0205254,
+      "cdd_total": 29.154456198211
+    }
+  ],
+  "context": {
+    "code": 200,
+    "limit": 1,
+    "offset": 0,
+    "rows": 1,
+    "total_rows": 467508698,
+    "state": 600573,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+See [request costs for infinitables](#link_05)
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/bitcoin/transactions
+- https://blockchair.com/bitcoin-cash/transactions
+- https://blockchair.com/litecoin/transactions
+- https://blockchair.com/bitcoin-sv/transactions
+- https://blockchair.com/dogecoin/transactions
+- https://blockchair.com/dash/transactions
+- https://blockchair.com/groestlcoin/transactions
+- https://blockchair.com/bitcoin/testnet/transactions
+- https://blockchair.com/bitcoin/mempool/transactions
+- https://blockchair.com/bitcoin-cash/mempool/transactions
+- https://blockchair.com/litecoin/mempool/transactions
+- https://blockchair.com/bitcoin-sv/mempool/transactions
+- https://blockchair.com/dogecoin/mempool/transactions
+- https://blockchair.com/dash/mempool/transactions
+- https://blockchair.com/groestlcoin/mempool/transactions
+- https://blockchair.com/bitcoin/testnet/mempool/transactions
+
+
+
+
+#### <a name="link_400"></a> `outputs` table
+
+**Endpoints:**
+
+- `https://api.blockchair.com/{:btc_chain}/outputs?{:query}` (input and output data for blockchain transactions)
+- `https://api.blockchair.com/{:btc_chain}/mempool/outputs?{:query}` (input and output data for mempool transactions)
+
+**Where:**
+
+- `{:btc_chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `bitcoin/testnet`
+- `{:query}` is the query against the table ([how to build a query](#link_05))
+
+**Output:**
+
+`data` contains an array of database rows. Rows represent transaction outputs (that also become transaction inputs when they are spent). Each row is in the following format:
+
+| Column                    | Type                                 | Description                                                  | Q?   | S?   | A?   | C?   |
+| ------------------------- | ------------------------------------ | ------------------------------------------------------------ | ---- | ---- | ---- | ---- |
+| block_id                  | int                                  | Id of the block containing the transaction cointaining the output | `*`  | `+`  | `+`  |      |
+| transaction_id            | int                                  | Internal Blockchair transaction id (not related to the blockchain, used for internal purposes) | `*`  | `+`  |      |      |
+| index                     | int                                  | Output index in the transaction (from 0)                     | `*`  | `+`  |      |      |
+| transaction_hash          | string `[0-9a-f]{64}`                | Transaction hash                                             |      |      |      |      |
+| date                      | string `YYYY-MM-DD`                  | Date of the block containing the output (UTC)                |      |      |      |      |
+| time                      | string `YYYY-MM-DD HH:ii:ss`         | Timestamp of the block containing the output (UTC)           | `⌘`  | `+`  |      |      |
+| value                     | int                                  | Monetary value of the output                                 | `*`  | `+`  |      | `+`  |
+| value_usd                 | float                                | Monetary value of the output in USD                          | `*`  | `+`  |      | `+`  |
+| recipient                 | string `[0-9a-zA-Z\-]*`              | Address or synthetic address of the output recipient (see [address types description](#link_300)) | `=`  | `+`  | `+`  |      |
+| type                      | string (enum)                        | Output type, one of the following: `pubkey`, `pubkeyhash`, `scripthash`, `multisig`, `nulldata`, `nonstandard`, `witness_v0_scripthash`, `witness_v0_keyhash`, `witness_unknown` | `=`  | `+`  | `+`  |      |
+| script_hex                | string `[0-9a-f]*`                   | Hex value of the output script. Filtering using the `STARTS WITH` operator is performed for `nulldata` outputs only. | `^`  |      |      |      |
+| is_from_coinbase          | boolean                              | Is it a coinbase transaction output?                         | `=`  |      | `+`  |      |
+| is_spendable              | null or boolean                      | Is it theoretically possible to spend this output? For `pubkey` and` multisig` outputs, the existence of the corresponding private key is tested, in that case `true` and `false` are the possible values depending on the result of the check. For `nulldata` outputs it is always `false`. For other types it is impossible to check trivially, in that case `null` is yielded. | `=`  |      | `+`  |      |
+| is_spent                  | boolean                              | Has this output been spent? **(`spending_*` fields below yield `null` if it is not)** | `=`  |      | `+`  |      |
+| spending_block_id         | null or int                          | Id of the block containing the spending transaction          | `*`  | `+`  | `+`  |      |
+| spending_transaction_id   | null or int                          | Internal Blockchair transaction id where the output was spent | `*`  | `+`  |      |      |
+| spending_index            | null or int                          | Input index in the spending transaction (from 0)             | `*`  | `+`  |      |      |
+| spending_transaction_hash | null or string `[0-9a-f]{64}`        | Spending transaction hash                                    |      |      |      |      |
+| spending_date             | null or string `YYYY-MM-DD`          | Date of the block, in which the output was spent             |      |      | `⌘`  |      |
+| spending_time             | null or string `YYYY-MM-DD HH:ii:ss` | Timestamp of the block in which the output was spent         | `⌘`  | `+`  |      |      |
+| spending_value_usd        | null or float                        | Monetary value of the output in USD at the time of `spending_date` | `*`  | `+`  |      | `+`  |
+| spending_sequence         | null or int                          | Sequence field                                               | `*`  | `+`  |      |      |
+| spending_signature_hex    | null or string `[0-9a-f]*`           | Hex value of the spending script (signature)                 |      |      |      |      |
+| spending_witness †        | null or string (JSONB)               | Witness information in the escaped JSONB format              |      |      |      |      |
+| lifespan                  | null or int                          | The number of seconds from the time of the output creation (`time`) to its spending (`spending_time`), `null` if the output hasn't been spent | `*`  | `+`  |      | `+`  |
+| cdd                       | null or float                        | The number of coindays destroyed spending the output, `null` if the output hasn't been spent | `*`  | `+`  |      | `+`  |
+
+Additional synthetic columns
+
+| Column     | Type        | Description                                                  | Q?   | S?   | A?   | C?   |
+| ---------- | ----------- | ------------------------------------------------------------ | ---- | ---- | ---- | ---- |
+| script_bin | string `.*` | Text (UTF-8) representation of `script_hex`. Allows you to use the `LIKE` operator: `?q=script_bin(~hello)`. Filtering using the  `LIKE` operator is performed for `nulldata` outputs only. | `~`  |      |      |      |
+
+Notes:
+
+- `increased efficiency` method applies if querying `transaction_id` and  `spending_transaction_id` columns using the `equals` operator
+- † — only for Bitcoin, Litecoin, Groestlcoin, and Bitcoin Testnet (SegWit data)
+- The default sorting — `transaction_id DESC`
+- `spending_*` columns yield `null` for outputs that haven't been spent yet
+- `block_id` for mempool transactions is `-1`
+- `spending_block_id` is `-1` for outputs being spent by an unconfirmed transaction
+- This particular table is in beta test mode on our platform. It's possible to receive duplicate rows for outputs which have just been spent. Sometimes duplicates are removed automatically, but in that case the number of rows may be less than the set limit on the number of rows. There's an additional context key `context.pre_rows` which contains the number of rows that should've been returned before the duplicate removal process.
+
+**Example outputs:**
+
+`https://api.blockchair.com/bitcoin/outputs?q=is_spent(true)&limit=1` (example of a spent output created in `transaction_hash` transaction and spent in `spending_transaction_hash` transaction :
+
+```json
+{
+  "data": [
+    {
+      "block_id": 600573,
+      "transaction_id": 467508619,
+      "index": 1,
+      "transaction_hash": "a3c43b4bdc245e0675812e2779703ef5cf2c0e15df8b46d99e6e085a6bbedbe7",
+      "date": "2019-10-22",
+      "time": "2019-10-22 19:09:34",
+      "value": 14638337,
+      "value_usd": 1201.83,
+      "recipient": "3FdhDDr42mMXX4tpG6dPkHuoCrPTJk3yjH",
+      "type": "scripthash",
+      "script_hex": "a91498f0e489f60c3971fa304290257374d7ea92292b87",
+      "is_from_coinbase": false,
+      "is_spendable": null,
+      "is_spent": true,
+      "spending_block_id": 600573,
+      "spending_transaction_id": 467508620,
+      "spending_index": 0,
+      "spending_transaction_hash": "6350ac986bd8974fafbf3fc8c498a923dc1b8c6fa40f6569227f343aa6a50ce1",
+      "spending_date": "2019-10-22",
+      "spending_time": "2019-10-22 19:09:34",
+      "spending_value_usd": 1201.83,
+      "spending_sequence": 4294967294,
+      "spending_signature_hex": "16001433f44aa318c7cac6703f0d09f2dc4314dd68d769",
+      "spending_witness": "304402204fe6a8c36d400f64975f7a08119f7e311b75d32b358a48bfe65fb355a40fd1230220122ed99fc4024290a82efd0d94707f23eeac513978a211f6f4893e11af3b9c3301,027f502e7a018afa8d50dd17c459d987e7754486b46f131bfe1b0e2841f3afbb64",
+      "lifespan": 0,
+      "cdd": 0
+    }
+  ],
+  "context": {
+    "code": 200,
+    "limit": 1,
+    "offset": 0,
+    "rows": 1,
+    "pre_rows": 1,
+    "total_rows": 1150457958,
+    "state": 600573,
+    ...
+  }
+}
+```
+
+`https://api.blockchair.com/bitcoin/outputs?q=is_spent(false)&limit=1` (example of an uspent output):
+
+```json
+{
+  "data": [
+    {
+      "block_id": 600573,
+      "transaction_id": 467508697,
+      "index": 1,
+      "transaction_hash": "ee13104d4331cad2fff5ab6cd249a9fec940d64df442a6de5f51ea63c34ef8ff",
+      "date": "2019-10-22",
+      "time": "2019-10-22 19:09:34",
+      "value": 23725010,
+      "value_usd": 1947.86,
+      "recipient": "3P8771VCWU2tyFj7gPS1ZuV4JzJrJWjn3K",
+      "type": "scripthash",
+      "script_hex": "a914eb195d6b2b50fc134078f65b72741d4c37e821de87",
+      "is_from_coinbase": false,
+      "is_spendable": null,
+      "is_spent": false,
+      "spending_block_id": null,
+      "spending_transaction_id": null,
+      "spending_index": null,
+      "spending_transaction_hash": null,
+      "spending_date": null,
+      "spending_time": null,
+      "spending_value_usd": null,
+      "spending_sequence": null,
+      "spending_signature_hex": null,
+      "spending_witness": null,
+      "lifespan": null,
+      "cdd": null
+    }
+  ],
+  "context": {
+    "code": 200,
+    "limit": 1,
+    "offset": 0,
+    "rows": 1,
+    "pre_rows": 1,
+    "total_rows": 99482704,
+    "state": 600573,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+See [request costs for infinitables](#link_05)
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/bitcoin/transactions
+- https://blockchair.com/bitcoin-cash/transactions
+- https://blockchair.com/litecoin/transactions
+- https://blockchair.com/bitcoin-sv/transactions
+- https://blockchair.com/dogecoin/transactions
+- https://blockchair.com/dash/transactions
+- https://blockchair.com/groestlcoin/transactions
+- https://blockchair.com/bitcoin/testnet/transactions
+- https://blockchair.com/bitcoin/mempool/transactions
+- https://blockchair.com/bitcoin-cash/mempool/transactions
+- https://blockchair.com/litecoin/mempool/transactions
+- https://blockchair.com/bitcoin-sv/mempool/transactions
+- https://blockchair.com/dogecoin/mempool/transactions
+- https://blockchair.com/dash/mempool/transactions
+- https://blockchair.com/groestlcoin/mempool/transactions
+- https://blockchair.com/bitcoin/testnet/mempool/transactions
+
+
+
+
+#### <a name="link_301"></a> `addresses` view
+
+**Endpoints:**
+
+- `https://api.blockchair.com/{:btc_chain}/addresses?{:query}`
+
+**Where:**
+
+- `{:btc_chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `bitcoin/testnet`
+- `{:query}` is the query against the table ([how to build a query](#link_05))
+
+**Output:**
+
+The `addresses` view contains the list of all addresses and their confirmed balances. Unlike other infinitables (`blocks`, `transactions`, `outputs`) this table isn't live, it's automatically updated every 5 minutes with new data, thus we classify it as a "view". `data` contains an array of database rows. Each row is in the following format:
+
+| Column  | Type                    | Description                          | Q?   | S?   | A?   | C?   |
+| ------- | ----------------------- | ------------------------------------ | ---- | ---- | ---- | ---- |
+| address | string `[0-9a-zA-Z\-]*` | Bitcoin address or synthetic address |      |      |      |      |
+| balance | int                     | Its confirmed balance                | `*`  | `+`  |      | `+`  |
+
+Notes:
+
+- the default sorting — `balance DESC`
+
+**Example outputs:**
+
+`https://api.blockchair.com/bitcoin/addresses`:
+
+```json
+{
+  "data": [
+    {
+      "address": "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo",
+      "balance": 16625913046297
+    },
+    {
+      "address": "35hK24tcLEWcgNA4JxpvbkNkoAcDGqQPsP",
+      "balance": 15100013129630
+    },
+    {
+      "address": "385cR5DM96n1HvBDMzLHPYcw89fZAXULJP",
+      "balance": 11730490887099
+    },
+    {
+      "address": "3CgKHXR17eh2xCj2RGnHJHTDjPpqaNDgyT",
+      "balance": 11185824580401
+    },
+    {
+      "address": "37XuVSEpWW4trkfmvWzegTHQt7BdktSKUs",
+      "balance": 9450576862072
+    },
+    {
+      "address": "183hmJGRuTEi2YDCWy5iozY8rZtFwVgahM",
+      "balance": 8594734898577
+    },
+    {
+      "address": "1FeexV6bAHb8ybZjqQMjJrcCrHGW9sb6uF",
+      "balance": 7995720088144
+    },
+    {
+      "address": "3D2oetdNuZUqQHPJmcMDDHYoqkyNVsFk9r",
+      "balance": 7689310178244
+    },
+    {
+      "address": "1HQ3Go3ggs8pFnXuHVHRytPCq5fGG8Hbhx",
+      "balance": 6937013094817
+    },
+    {
+      "address": "3E35SFZkfLMGo4qX5aVs1bBDSnAuGgBH33",
+      "balance": 6507708194519
+    }
+  ],
+  "context": {
+    "code": 200,
+    "limit": 10,
+    "offset": 0,
+    "rows": 10,
+    "total_rows": 27908261,
+    "state": 600568,
+    ...
+  }
+}
+```
+
+`https://api.blockchair.com/bitcoin/addresses?a=sum(balance)` (total balance of all addresses should be the same as the total number of coins minted):
+
+```json
+{
+  "data": [
+    {
+      "sum(balance)": 1800708303344571
+    }
+  ],
+  "context": {
+    "code": 200,
+    "limit": 10000,
+    "offset": null,
+    "rows": 1,
+    "total_rows": 1,
+    "state": 600568,
+    ...
+  }
+}
+```
+
+`https://api.blockchair.com/bitcoin/addresses?a=count()&q=balance(1..10)` (shows the number of addresses holding [1..10] satoshi):
+
+```json
+{
+  "data": [
+    {
+      "count()": 574591
+    }
+  ],
+  "context": {
+    "code": 200,
+    "limit": 10000,
+    "offset": null,
+    "rows": 1,
+    "total_rows": 1,
+    "state": 600568,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+See [request costs for infinitables](#link_05)
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/bitcoin/addresses
+- https://blockchair.com/bitcoin-cash/addresses
+- https://blockchair.com/litecoin/addresses
+- https://blockchair.com/bitcoin-sv/addresses
+- https://blockchair.com/dogecoin/addresses
+- https://blockchair.com/dash/addresses
+- https://blockchair.com/groestlcoin/addresses
+- https://blockchair.com/bitcoin/testnet/addresses
+
+
+
+### <a name="link_M42"></a> Inifinitable endpoints for Ethereum
+
+Please note that unlike with Bitcoin-like chains, where we populate our databases synchronically (block after block as there's the UTXO model used), for Ethereum we use asynchronous process, thus it's possible that for some brief period of time there will be information about block `n`, but there may not be for block `n-1` and further.
+
+
+
+#### <a name="link_105"></a> `blocks` table
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:eth_chain}/blocks?{:query}`
+
+**Where:**
+
+- `{:eth_chain}` can only be `ethereum`
+- `{:query}` is the query against the table ([how to build a query](#link_05))
+
+**Output:**
+
+`data` contains an array of database rows. Each row is in the following format:
+
+| Column                      | Type                         | Description                                                  | Q?   | S?   | A?   | C?   |
+| --------------------------- | ---------------------------- | ------------------------------------------------------------ | ---- | ---- | ---- | ---- |
+| id                          | int                          | Block id                                                     | `*`  | `+`  |      | `⌘`  |
+| hash                        | string `0x[0-9a-f]{64}`      | Block hash                                                   | `=`  |      |      |      |
+| date                        | string `YYYY-MM-DD`          | Block date (UTC)                                             |      |      | `⌘`  |      |
+| time                        | string `YYYY-MM-DD HH:ii:ss` | Block time (UTC)                                             | `⌘`  | `+`  |      |      |
+| size                        | int                          | Block size in bytes                                          | `*`  | `+`  |      | `+`  |
+| miner                       | string `0x[0-9a-f]{40}`      | Address the miner who found the block                        | `=`  |      | `+`  |      |
+| extra_data_hex              | string `[0-9a-f]*`           | Additional data included by the miner                        | `^`  |      |      |      |
+| difficulty                  | int                          | Difficulty                                                   | `*`  | `+`  |      | `+`  |
+| gas_used                    | int                          | Gas amount used by block transactions                        | `*`  | `+`  |      | `+`  |
+| gas_limit                   | int                          | Gas limit for the block set by the miner                     | `*`  | `+`  |      | `+`  |
+| logs_bloom                  | string `[0-9a-f]*`           | Logs bloom field                                             |      |      |      |      |
+| mix_hash                    | string `[0-9a-f] {64}`       | Mix hash                                                     |      |      |      |      |
+| nonce                       | string `[0-9a-f]*`           | Nonce value                                                  |      |      |      |      |
+| receipts_root               | string `[0-9a-f] {64}`       | Receipts root                                                |      |      |      |      |
+| sha3_uncles                 | string `[0-9a-f] {64}`       | SHA3 Uncles                                                  |      |      |      |      |
+| state_root                  | string `[0-9a-f] {64}`       | State root                                                   |      |      |      |      |
+| total_difficulty            | numeric string               | Total difficulty at the `id` point                           |      |      |      |      |
+| transactions_root           | string `[0-9a-f] {64}`       | Transactions root                                            |      |      |      |      |
+| uncle_count                 | int                          | Number of block uncles                                       | `*`  | `+`  |      | `+`  |
+| transaction_count           | int                          | Number of transactions in the block                          | `*`  | `+`  |      | `+`  |
+| synthetic_transaction_count | int                          | Number of synthetic transactions (they do not exist as separate transactions on the blockchain, but they change the state, e.g., genesis block transactions, miner rewards, DAO-fork transactions, etc.) | `*`  | `+`  |      | `+`  |
+| call_count                  | int                          | Total number of calls spawned by transactions                | `*`  | `+`  |      | `+`  |
+| synthetic_call_count        | int                          | Number of synthetic calls (same as synthetic transactions)   | `*`  | `+`  |      | `+`  |
+| value_total                 | numeric string               | Monetary value of all block transactions in wei, hereinafter `numeric string` - numeric (integer or float in some cases) value passed as a string, as values in wei do not fit into integer | `*≈` | `+`  |      | `+`  |
+| value_total_usd             | float                        | Monetary value of all block transactions in USD              | `*`  | `+`  |      | `+`  |
+| internal_value_total        | numeric string               | Monetary value of all internal calls in the block in wei     | `*≈` | `+`  |      | `+`  |
+| internal_value_total_usd    | float                        | Monetary value of all internal calls in a block in USD       | `*`  | `+`  |      | `+`  |
+| generation                  | numeric string               | The reward of a miner for the block generation in wei        | `*≈` | `+`  |      | `+`  |
+| generation_usd              | float                        | The reward of a miner for the block generation in USD        | `*`  | `+`  |      | `+`  |
+| uncle_generation            | numeric string               | Total reward of uncle miners in wei                          | `*≈` | `+`  |      | `+`  |
+| uncle_generation_usd        | float                        | Total reward of uncle miners in USD                          | `*`  | `+`  |      | `+`  |
+| fee_total                   | numeric string               | Total fee in wei                                             | `*≈` | `+`  |      | `+`  |
+| fee_total_usd               | float                        | Total fee in USD                                             | `*`  | `+`  |      | `+`  |
+| reward                      | numeric string               | Total reward of the miner in the wei (reward for finding the block + fees) | `*≈` | `+`  |      | `+`  |
+| reward_usd                  | float                        | Total reward of the miner in USD                             | `*`  | `+`  |      | `+`  |
+
+Additional synthetic columns
+
+| Column         | Type        | Description                                                  | Q?   | S?   | A?   | C?   |
+| -------------- | ----------- | ------------------------------------------------------------ | ---- | ---- | ---- | ---- |
+| extra_data_bin | string `.*` | Text representation (UTF-8) of extra data. Allows you to use the `LIKE` operator: `?q=extra_data_bin(~hello)` | `~`  |      |      |      |
+
+Notes:
+
+- `increased efficiency` method applies if querying `id` and ` hash` columns using the `equals` operator
+- Search by fields that contain values in wei (`value_total`,` internal_value_total`, `generation`,` uncle_generation`, `fee_total`,` reward`) may be with some inaccuracies
+- The difference between `value_total` and `internal_value_total`: e.g., a transaction itself sends 0 eth, but this transaction is a call of a contract that sends someone, let's say, 10 eth. Then `value` will be 0 eth, and `internal_value` - 10 eth
+- The default sorting is `id DESC`
+
+**Example output:**
+
+`https://api.blockchair.com/ethereum/blocks?limit=1`:
+
+```json
+{
+  "data": [
+    {
+      "id": 8766253,
+      "hash": "0xf36522b1f6ee2350c322a309ebdffe9afadc7d68713ad5b3a064657c81607ab7",
+      "date": "2019-10-18",
+      "time": "2019-10-18 17:39:40",
+      "size": 32170,
+      "miner": "0x52bc44d5378309ee2abf1539bf71de1b7d7be3b5",
+      "extra_data_hex": "50505945206e616e6f706f6f6c2e6f7267",
+      "difficulty": 2408192424049377,
+      "gas_used": 9895313,
+      "gas_limit": 9920736,
+      "logs_bloom": "2e8e09c1046d3063207c00c2440098ac0824d0ca0818d201500a1987588a284b001315981c227c86010880300083629c802895bb1608860a02a818a2202d405002a6140281390b00d880610822005011440244527f24b80e3200a405848034043c3028c99218304b8040180210401c005008924d1925c11a004100b14e1270980d21146d4c1a1029130024a0801400350858088c03000061421007b866a8d60c0a0cb142100028e0c39002b010c0320082a49000040fe870022c0080024e1120a0d21ac23289060221c390080800ab442c244130cea8102c2c20404e188468430c52aa20143110200706e642c52f4008080ac71910932415a02108020d910780",
+      "mix_hash": "65f9fe3204d652ce2f82adface45e8c32cfacb0b80a3d1acaff8969457911342",
+      "nonce": "13915815879145322367",
+      "receipts_root": "cfba6974cf3257f2c2cf674a4e2f422b9623646120364ce7be84040d7d2b9578",
+      "sha3_uncles": "1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+      "state_root": "270dca9a521aa1b900cd0749a1a1c1413328cdaff1ccc7f9bcfe6e06751f0781",
+      "total_difficulty": "12439420564755992111056",
+      "transactions_root": "62523508847380a506452289abe504fdef7b5e9e96cbfd166f0fd359a4837f92",
+      "uncle_count": 0,
+      "transaction_count": 172,
+      "synthetic_transaction_count": 1,
+      "call_count": 333,
+      "synthetic_call_count": 1,
+      "value_total": "14324135521180578322",
+      "value_total_usd": 2536.74001038483,
+      "internal_value_total": "15524135521180578322",
+      "internal_value_total_usd": 2749.25461609772,
+      "generation": "2000000000000000000",
+      "generation_usd": 354.191009521484,
+      "uncle_generation": "0",
+      "uncle_generation_usd": 0,
+      "fee_total": "29252299880000000",
+      "fee_total_usd": 5.1804508126612,
+      "reward": "2029252299880000000",
+      "reward_usd": 359.371460334146
+    }
+  ],
+  "context": {
+    "code": 200,
+    "limit": 1,
+    "offset": 0,
+    "rows": 1,
+    "total_rows": 8766254,
+    "state": 8766260,
+    "state_layer_2": 8766249,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+See [request costs for infinitables](#link_05)
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/ethereum/blocks
+
+
+
+#### <a name="link_402"></a> `uncles` table
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:eth_chain}/uncles?{:query}`
+
+**Where:**
+
+- `{:eth_chain}` can only be `ethereum`
+- `{:query}` is the query against the table ([how to build a query](#link_05))
+
+**Output:**
+
+Returns information about uncles. `data` contains an array of database rows. Each row is in the following format:
+
+| Column            | Type                         | Description                                             | Q?   | S?   | A?   | C?   |
+| ----------------- | ---------------------------- | ------------------------------------------------------- | ---- | ---- | ---- | ---- |
+| parent_block_id   | int                          | Parent block id                                         | `*`  | `+`  | `+`  |      |
+| index             | int                          | Uncle index in the block                                | `*`  | `+`  |      |      |
+| id                | int                          | Uncle id                                                | `*`  | `+`  |      |      |
+| hash              | string `0x[0-9a-f]{64}`      | Uncle hash (with 0x)                                    | `=`  |      |      |      |
+| date              | string `YYYY-MM-DD`          | Date of generation (UTC)                                |      |      | `⌘`  |      |
+| time              | string `YYYY-MM-DD HH:ii:ss` | Timestamp of generation (UTC)                           | `⌘`  | `+`  |      |      |
+| size              | int                          | Uncle size in bytes                                     | `*`  | `+`  |      | `+`  |
+| miner             | string `0x[0-9a-f]{40}`      | Address of the rewarded miner (with 0x)                 | `=`  |      | `+`  |      |
+| extra_data_hex    | string `[0-9a-f]*`           | Additional data included by the miner                   | `^`  |      |      |      |
+| difficulty        | int                          | Difficulty                                              | `*`  | `+`  |      | `+`  |
+| gas_used          | int                          | Amount of gas used by transactions                      | `*`  | `+`  |      | `+`  |
+| gas_limit         | int                          | Gas limit for the block set up by the miner             | `*`  | `+`  |      | `+`  |
+| logs_bloom        | string `[0-9a-f]*`           | Logs bloom field                                        |      |      |      |      |
+| mix_hash          | string `[0-9a-f]{64}`        | Hash mix                                                |      |      |      |      |
+| nonce             | string `[0-9a-f]*`           | Nonce value                                             |      |      |      |      |
+| receipts_root     | string `[0-9a-f]{64}`        | Receipts root                                           |      |      |      |      |
+| sha3_uncles       | string `[0-9a-f]{64}`        | Uncles hash                                             |      |      |      |      |
+| state_root        | string `[0-9a-f]{64}`        | State root                                              |      |      |      |      |
+| transactions_root | string `[0-9a-f]{64}`        | Transactions root                                       |      |      |      |      |
+| generation        | numeric string               | The reward of the miner who generated the uncle, in wei | `*≈` | `+`  |      | `+`  |
+| generation_usd    | float                        | The award of the miner who generated uncle, in USD      | `*`  | `+`  |      | `+`  |
+
+Additional synthetic columns
+
+| Column         | Type        | Description                                                  | Q?   | S?   | A?   | C?   |
+| -------------- | ----------- | ------------------------------------------------------------ | ---- | ---- | ---- | ---- |
+| extra_data_bin | string `.*` | Text (UTF-8) representation of extra data. Allows you to use the `LIKE` operator:`?Q=extra_data_bin(~hello)` | `~`  |      |      |      |
+
+Notes:
+
+- `increased efficiency` method applies if querying `parent_block_id` and ` hash` columns using the `equals` operator
+- Search by fields that contain values in wei (`generation`) may be with some inaccuracies
+- The difference between `value_total` and `internal_value_total`: a transaction itself may send, say, 0 eth, but this transaction may call a contract which sends someone 10 eth. In that case `value` will be 0 eth, and `internal_value` will be 10 eth
+- The default sorting is `parent_block_id DESC`
+
+**Example output:**
+
+`https://api.blockchair.com/ethereum/uncles?limit=1`:
+
+```json
+{
+  "data": [
+    {
+      "parent_block_id": 8792054,
+      "index": 0,
+      "id": 8792051,
+      "hash": "0x41a4d3a79644ada10207cd41f8027a3d4e506d4cbde58750a98d3ec2afce402d",
+      "date": "2019-10-22",
+      "time": "2019-10-22 19:10:41",
+      "size": 526,
+      "miner": "0xb2930b35844a230f00e51431acae96fe543a0347",
+      "extra_data_hex": "73696e6733",
+      "difficulty": 2374634862657186,
+      "gas_used": 9979194,
+      "gas_limit": 9989371,
+      "logs_bloom": "945c08608049b629008740f22070128c0602c50010d012952a08280b22022b608cc4507918e00962a4a049440320251192429006194812fb587ad87421e4a8002a0401c405658b208898920f828646517f206444b10ec162024807418380a10ac510840006258023002c008c66c52d220e683a2400c643600101a2720a0108446102112d41a0900105000005a212240e1012e1c17502492000c00a84823d1404030894051690f2304e484190028201b280840044a50c0830205403801835151110e354e2288184002073d908070a44e03cb809019308738c211b4100118064a080f1a60003881a880d1144c02100c00c1200488230d91841c02e5884d4b00401",
+      "mix_hash": "3e26a6c8520bdb3afc6ff13d46f8906a508787fc3c8021656f0fe74834728538",
+      "nonce": "2551618406869966062",
+      "receipts_root": "fdcb14f98b77953add5ad2115b74291c1aeeab91e5027e30a888db72ac55d2c1",
+      "sha3_uncles": "1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+      "state_root": "8aab503534b41e0fa32d242829fb5ac1cae3e034db1c22a61cf15be2e2b8ca3f",
+      "transactions_root": "f47354e86bd38e6d7cbd54cd2556fce97221a0f760c518ee226f3f5472432950",
+      "generation": "1250000000000000000",
+      "generation_usd": 217.484378814697
+    }
+  ],
+  "context": {
+    "code": 200,
+    "limit": 1,
+    "offset": 0,
+    "rows": 1,
+    "total_rows": 944557,
+    "state": 8792093,
+    "state_layer_2": 8792080,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+See [request costs for infinitables](#link_05)
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/ethereum/uncles
+
+
+
+#### <a name="link_206"></a> `transactions` table
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:eth_chain}/transactions?{:query}` (for blockchain transactions)
+- `https://api.blockchair.com/{:eth_chain}/mempool/transactions?{:query}` (for mempool transactions)
+
+**Where:**
+
+- `{:eth_chain}` can only be `ethereum`
+- `{:query}` is the query against the table ([how to build a query](#link_05))
+
+**Output:**
+
+`data` contains an array of database rows. Each row is in the following format:
+
+| Column               | Type                         | Description                                                  | Q?   | S?   | A?   | C?   |
+| -------------------- | ---------------------------- | ------------------------------------------------------------ | ---- | ---- | ---- | ---- |
+| block_id             | int                          | Id of the block containing the transaction                   | `*`  | `+`  | `+`  |      |
+| id                   | int                          | Internal Blockchair transaction id (not related to the blockchain, used for internal purposes) | `*`  | `+`  |      |      |
+| index †‡             | int                          | The transaction index number in the block                    | `*`  | `+`  |      |      |
+| hash ‡               | string `0x[0-9a-f]{64}`      | Transaction hash                                             | `=`  |      |      |      |
+| date                 | string `YYYY-MM-DD`          | Date of the block containing the transaction (UTC)           |      |      | `⌘`  |      |
+| time                 | string `YYYY-MM-DD HH:ii:ss` | Time of the block containing the transaction (UTC)           | `⌘`  | `+`  |      |      |
+| failed †             | bool                         | Failed transaction or not?                                   | `=`  |      | `+`  |      |
+| type †               | string (enum)                | Transaction type with one of the following values: `call`, `create`, `call_tree`, `create_tree`, `synthetic_coinbase`. Description in the note below. | `=`  | `+`  | `+`  |      |
+| sender ‡             | string `0x[0-9a-f]{40}`      | Address of the transaction sender                            | `=`  |      |      |      |
+| recipient            | string `0x[0-9a-f]{40}`      | Address of the transaction recipient                         | `=`  |      |      |      |
+| call_count †         | int                          | Number of calls in the transaction                           | `*`  | `+`  |      | `+`  |
+| value                | numeric string               | Monetary value of transaction in wei                         | `*≈` | `+`  |      | `+`  |
+| value_usd            | float                        | Value of transaction in USD                                  | `*`  | `+`  |      | `+`  |
+| internal_value †     | numeric string               | Value of all internal calls in the transaction in wei        | `*≈` | `+`  |      | `+`  |
+| internal_value_usd † | float                        | Value of all internal calls in the transaction in USD        | `*`  | `+`  |      | `+`  |
+| fee †‡               | numeric string               | Fee in wei                                                   | `*≈` | `+`  |      | `+`  |
+| fee_usd †‡           | float                        | Fee in USD                                                   | `*`  | `+`  |      | `+`  |
+| gas_used †‡          | int                          | Amount of gas used by a transaction                          | `*`  | `+`  |      | `+`  |
+| gas_limit ‡          | int                          | Gas limit for transaction set by the sender                  | `*`  | `+`  |      | `+`  |
+| gas_price ‡          | int                          | Price for gas set by the sender                              | `*`  | `+`  |      | `+`  |
+| input_hex ‡          | string `[0-9a-f]*`           | Transaction input data (hex)                                 | `^`  |      |      |      |
+| nonce ‡              | string `[0-9a-f]*`           | Nonce value                                                  |      |      |      |      |
+| v ‡                  | string `[0-9a-f]*`           | V value                                                      |      |      |      |      |
+| r ‡                  | string `[0-9a-f]*`           | R value                                                      |      |      |      |      |
+| s ‡                  | string `[0-9a-f]*`           | S value                                                      |      |      |      |      |
+
+Additional synthetic columns
+
+| Column    | Type        | Description                                                  | Q?   | S?   | A?   | C?   |
+| --------- | ----------- | ------------------------------------------------------------ | ---- | ---- | ---- | ---- |
+| input_bin | string `.*` | Text (UTF-8) representation of input data. Allows you to use the `LIKE` operator: `?q=input_bin(~hello)` | `~`  |      |      |      |
+
+Possible types (`type`) of transactions:
+- `call` — the transaction transfers the value, but there are no more calls (a simple ether sending, not in favor of a contract, or the call to a contract that does nothing)
+- `create` — create a new contract
+- `call_tree` — the transaction calls a contract that makes some other calls
+- `create_tree` — create a new contract that create contracts or starts making calls
+- `synthetic_coinbase` — a synthetic transaction for awarding a reward to the miner (block or uncle)
+
+Notes:
+
+- `increased efficiency` method applies if querying `id` and ` hash` columns using the `equals` operator
+- † — value is `null` for transactions in the mempool
+- ‡ — value is `null` if `type` is `synthetic_coinbase`
+- Search by fields that contain values in wei (`value_total`,` internal_value_total`, `generation`,` uncle_generation`, `fee_total`,` reward`) may be with some inaccuracies
+- The difference between `value_total` and `internal_value_total`: e.g., a transaction itself sends 0 eth, but this transaction is a call of a contract that sends someone, let's say, 10 eth. Then `value` will be 0 eth, and `internal_value` - 10 eth
+- The default sorting — `id DESC`
+- `block_id` for mempool transactions is `-1`
+
+**Example output:**
+
+`https://api.blockchair.com/ethereum/transactions?q=block_id(46147)`:
+
+```json
+{
+  "data": [
+    {
+      "block_id": 46147,
+      "id": 46147000001,
+      "index": null,
+      "hash": null,
+      "date": "2015-08-07",
+      "time": "2015-08-07 03:30:33",
+      "failed": false,
+      "type": "synthetic_coinbase",
+      "sender": null,
+      "recipient": "0xe6a7a1d47ff21b6321162aea7c6cb457d5476bca",
+      "call_count": 1,
+      "value": "6050000000000000000",
+      "value_usd": 6.05,
+      "internal_value": "6050000000000000000",
+      "internal_value_usd": 6.05,
+      "fee": null,
+      "fee_usd": null,
+      "gas_used": null,
+      "gas_limit": null,
+      "gas_price": null,
+      "input_hex": null,
+      "nonce": null,
+      "v": null,
+      "r": null,
+      "s": null
+    },
+    {
+      "block_id": 46147,
+      "id": 46147000000,
+      "index": 0,
+      "hash": "0x5c504ed432cb51138bcf09aa5e8a410dd4a1e204ef84bfed1be16dfba1b22060",
+      "date": "2015-08-07",
+      "time": "2015-08-07 03:30:33",
+      "failed": false,
+      "type": "call",
+      "sender": "0xa1e4380a3b1f749673e270229993ee55f35663b4",
+      "recipient": "0x5df9b87991262f6ba471f09758cde1c0fc1de734",
+      "call_count": 1,
+      "value": "31337",
+      "value_usd": 3.1337e-14,
+      "internal_value": "31337",
+      "internal_value_usd": 3.1337e-14,
+      "fee": "1050000000000000000",
+      "fee_usd": 1.05,
+      "gas_used": 21000,
+      "gas_limit": 21000,
+      "gas_price": 50000000000000,
+      "input_hex": "",
+      "nonce": "0",
+      "v": "1c",
+      "r": "88ff6cf0fefd94db46111149ae4bfc179e9b94721fffd821d38d16464b3f71d0",
+      "s": "45e0aff800961cfce805daef7016b9b675c137a6a41a548f7b60a3484c06a33a"
+    }
+  ],
+  "context": {
+    "code": 200,
+    "limit": 10,
+    "offset": 0,
+    "rows": 2,
+    "total_rows": 2,
+    "state": 8791945,
+    "state_layer_2": 8791935,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+See [request costs for infinitables](#link_05)
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/ethereum/transactions
+- https://blockchair.com/ethereum/mempool/transactions
+
+
+
+#### <a name="link_403"></a> `calls` table
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:eth_chain}/calls?{:query}`
+
+**Where:**
+
+- `{:eth_chain}` can only be `ethereum`
+- `{:query}` is the query against the table ([how to build a query](#link_05))
+
+**Output:**
+
+Returns information about internal transaction calls. `data` contains an array of database rows. Each row is in the following format:
+
+| Column             | Type                         | Description                                                  | Q?   | S?   | A?   | C?   |
+| ------------------ | ---------------------------- | ------------------------------------------------------------ | ---- | ---- | ---- | ---- |
+| block_id           | int                          | Block id containing a call                                   | `*`  | `+`  | `+`  |      |
+| transaction_id     | int                          | Transaction id containing the call                           | `*`  | `+`  |      |      |
+| transaction_hash † | string `0x[0-9a-f]{64}`      | Transaction hash (with 0x) containing the call               | `=`  |      |      |      |
+| index              | string                       | Call index within the transaction (tree-like, e.g., "0.8.1") | `=`  | `+`  |      |      |
+| depth              | int                          | Call depth within the call tree (starting at 0)              | `*`  | `+`  |      |      |
+| date               | string `YYYY-MM-DD`          | Date of the block that contains the call (UTC)               |      |      | `⌘`  |      |
+| time               | string `YYYY-MM-DD HH:ii:ss` | Time of the block that contains the call (UTC)               | `⌘`  | `+`  |      |      |
+| failed             | bool                         | Failed call or not                                           | `=`  |      | `+`  |      |
+| fail_reason        | string `.*` or null          | If failed, then the failure description, if not, then `null` | `~`  |      | `+`  |      |
+| type               | string (enum)                | The call type, one of the following values: `call`, `delegatecall`, `staticcall`, `callcode`, `selfdestruct`, `create`, `synthetic_coinbase`, `create2` | `=`  | `+`  | `+`  |      |
+| sender †           | string `0x[0-9a-f]{40}`      | Sender's address (with 0x)                                   | `=`  |      |      |      |
+| recipient          | string `0x[0-9a-f]{40}`      | Recipient's address (with 0x)                                | `=`  |      |      |      |
+| child_call_count   | int                          | Number of child calls                                        | `*`  | `+`  |      | `+`  |
+| value              | numeric string               | Call value in wei, hereinafter `numeric string` - is a numeric string passed as a string, because wei-values do not fit into uint64 | `*≈` | `+`  |      | `+`  |
+| value_usd          | float                        | Call value in USD                                            | `*`  | `+`  |      | `+`  |
+| transferred        | bool                         | Has ether been transferred? (`false` if `failed`, or if the type of transaction does not change the state, e.g., `staticcall` | `=`  |      | `+`  |      |
+| input_hex †        | string `[0-9a-f]*`           | Input call data                                              |      |      |      |      |
+| output_hex †       | string `[0-9a-f]*`           | Output call data                                             |      |      |      |      |
+
+Notes:
+
+- `increased efficiency` method applies if querying `transction_id` column using the `equals` operator
+- †  — value is `null` if `type` is `synthetic_coinbase`
+- Search by fields that contain values in wei (`value`) may be with some inaccuracies
+- The default sorting is `transaction_id DESC`
+- sorting by `index` respects the tree structure (i.e. "0.2" comes before "0.11") instead of being alphabetical
+
+**Example output:**
+
+`https://api.blockchair.com/ethereum/calls?q=not,type(synthetic_coinbase)&limit=1`:
+
+```json
+{
+  "data": [
+    {
+      "block_id": 8792132,
+      "transaction_id": 8792132000050,
+      "transaction_hash": "0x9e3a13bfc5313245de7142b7ec13b80123188d9ae4cce797a44b9b426864d1ca",
+      "index": "0",
+      "depth": 0,
+      "date": "2019-10-22",
+      "time": "2019-10-22 19:30:03",
+      "failed": false,
+      "fail_reason": null,
+      "type": "call",
+      "sender": "0xe475e906b74806c333fbb1b087e523496d8c4cb7",
+      "recipient": "0x3143ec5a285adfb248c9e4de934ee735d4b7d734",
+      "child_call_count": 0,
+      "value": "0",
+      "value_usd": 0,
+      "transferred": true,
+      "input_hex": "a9059cbb00000000000000000000000023ea8008420c4355570f9915b5fe39dc278540d3000000000000000000000000000000000000000000000000000000003b9aca00",
+      "output_hex": "0000000000000000000000000000000000000000000000000000000000000001"
+    }
+  ],
+  "context": {
+    "code": 200,
+    "limit": 1,
+    "offset": 0,
+    "rows": 1,
+    "total_rows": 1422927649,
+    "state": 8792138,
+    "state_layer_2": 8792127,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+See [request costs for infinitables](#link_05)
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/ethereum/calls
+
+
+
+### <a name="link_M43"></a> Inifinitable endpoints for second layers
+
+
+
+#### <a name="link_502"></a> `properties` table (Omni Layer and Wormhole)
+
+Note: this particular table doesn't support querying. The only query section it supports is `?offset=`. Note that this endpoint is in the Alpha stage, and Wormhole is deprecated on our platform.
+
+**Endpoints:**
+
+- `https://api.blockchair.com/bitcoin/omni/properties?{:query}`
+- `https://api.blockchair.com/bitcoin-cash/wormhole/properties?{:query}`
+
+**Where:**
+
+- `{:query}` is the query against the table ([how to build a query](#link_05)), the only supported query section for this table is `?offset=`
+
+**Output:**
+
+`data` contains an array of database rows. Each row is in the format which accords with Omni Layer specification (https://github.com/OmniLayer/spec)
+
+**Example output:**
+
+`https://api.blockchair.com/bitcoin/omni/properties`:
+
+```json
+{
+  "data": [
+    {
+      "id": 412,
+      "name": "ENO",
+      "category": "",
+      "subcategory": "",
+      "description": "",
+      "url": "",
+      "is_divisible": false,
+      "issuer": "1JcfUyi9BkXCTXHdeUusmYrsHXvnnLvTxB",
+      "creation_transaction_hash": "ea5b914ba4e80931c8d46e551f6010113ab2cba82186d2497f2b2f0c6d53953b",
+      "creation_time": "2018-11-25 21:34:08",
+      "creation_block_id": 551501,
+      "is_issuance_fixed": false,
+      "is_issuance_managed": false,
+      "circulation": 222222222,
+      "ecosystem": 1
+    },
+    ...
+  ],
+  "context": {
+    "code": 200,
+    "limit": 10,
+    "offset": 0,
+    "rows": 10,
+    "total_rows": 412,
+    "state": 599976,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+See [request costs for infinitables](#link_05)
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/bitcoin/omni/properties
+- https://blockchair.com/bitcoin-cash/wormhole/properties
+
+
+
+#### <a name="link_505"></a> `tokens` table (ERC-20)
+
+**Endpoint:**
+
+- `https://api.blockchair.com/ethereum/erc-20/tokens?{:query}`
+
+**Where:**
+
+- `{:query}` is the query against the table ([how to build a query](#link_05))
+
+**Output:**
+
+Returns information about ERC-20 tokens indexed by our engine. `data` contains an array of database rows. Each row is in the following format:
+
+| Column                    | Type                             | Description                         | Q?   | S?   | A?   | C?   |
+| ------------------------- | -------------------------------- | ----------------------------------- | ---- | ---- | ---- | ---- |
+| address                   | string `0x[0-9a-f]{40}`          | Address of the token contract       | `=`  |      |      |      |
+| id                        | int                              | Internal Blockchair id of the token | `*`  | `+`  |      |      |
+| date                      | string `YYYY-MM-DD`              | Creation date                       |      |      | `⌘`  |      |
+| time                      | string `YYYY-MM-DD HH:ii:ss`     | Creation timestamp                  | `⌘`  | `+`  |      |      |
+| name                      | string `.*` (or an empty string) | Token name (e.g. `My New Token`)    | `=`  | `+`  |      |      |
+| symbol                    | string `.*` (or an empty string) | Token symbol (e.g. `MNT`)           | `=`  | `+`  |      |      |
+| decimals                  | int                              | Number of decimals                  | `=`  | `+`  |      |      |
+| creating_block_id         | int                              | Creating block height               | `*`  | `+`  |      |      |
+| creating_transaction_hash | string `0x[0-9a-f]{64}`          | Creating transaction hash           |      |      |      |      |
+
+Notes:
+
+- for the columns `address`, `id` increased efficiency when uploading one record is applied
+- there is no possibility to search over `date` column, use searching `?q=time(YYYY-MM-DD)` instead
+- the default sort is `id DESC`
+- when using `offset`, it is reasonable to add to the filters the maximum block number (`?q=block_id(..N)`), since it is very likely that during the iteration new rows will be added to the table. For convenience, you can take the value of `context.state` from the first result of any query containing the number of the latest block at the query time and use this result later on.
+
+**Example output:**
+
+`https://api.blockchair.com/ethereum/erc-20/tokens?limit=1`:
+
+```json
+{
+  "data": [
+    {
+      "address": "0x9b460d404be254d7b2ba89336a8a41807bb1562b",
+      "id": 121500,
+      "date": "2019-10-22",
+      "time": "2019-10-22 19:21:11",
+      "name": "UGB Token",
+      "symbol": "UGB",
+      "decimals": 18,
+      "creating_block_id": 8792093,
+      "creating_transaction_hash": "0x58e132a937c3bd60f1d113ecb14db59fd5229ae312a2afdf8f1b365bf8620e5e"
+    }
+  ],
+  "context": {
+    "code": 200,
+    "limit": 1,
+    "offset": 0,
+    "rows": 1,
+    "total_rows": 121500,
+    "state": 8792147,
+    "state_layer_2": 8792137,
+    ...
+  }
+}
+```
+
+`https://api.blockchair.com/ethereum/erc-20/tokens?q=symbol(USDT)&a=count()`:
+
+```json
+{
+  "data": [
+    {
+      "count()": 72
+    }
+  ],
+  "context": {
+    "code": 200,
+    "limit": 10000,
+    "offset": null,
+    "rows": 1,
+    "total_rows": 1,
+    "state": 8792205,
+    "state_layer_2": 8792192,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+See [request costs for infinitables](#link_05)
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/ethereum/erc-20/tokens
+
+
+
+#### <a name="link_506"></a> `transactions` table (ERC-20)
+
+**Endpoint:**
+
+- `https://api.blockchair.com/ethereum/erc-20/transactions?{:query}`
+
+**Where:**
+
+- `{:query}` is the query against the table ([how to build a query](#link_05))
+
+**Output:**
+
+Returns information about ERC-20 transfers indexed by our engine. `data` contains an array of database rows. Each row is in the following format:
+
+| Column           | Type                             | Description                                       | Q?   | S?   | A?   | C?   |
+| ---------------- | -------------------------------- | ------------------------------------------------- | ---- | ---- | ---- | ---- |
+| block_id         | int                              | Block id including the token transfer             | `*`  | `+`  |      |      |
+| id               | int                              | Internal Blockchair id of the token transfer      | `*`  | `+`  |      |      |
+| transaction_hash | string `0x[0-9a-f]{64}`          | Transaction hash including the token transfer     |      |      |      |      |
+| date             | string `YYYY-MM-DD`              | Date of the transfer                              |      |      | `⌘`  |      |
+| time             | string `YYYY-MM-DD HH:ii:ss`     | Timestamp of the transfer                         | `⌘`  | `+`  |      |      |
+| token_address    | string `0x[0-9a-f]{40}`          | Address of the token contract                     | `=`  |      | `+`  |      |
+| token_name       | string `.*` (or an empty string) | Token name (e.g. `My New Token`)                  | `=`  | `+`  | `+`  |      |
+| token_symbol     | string `.*` (or an empty string) | Token symbol (e.g. `MNT`)                         | `=`  | `+`  | `+`  |      |
+| token_decimals   | int                              | Number of decimals                                | `=`  | `+`  |      |      |
+| sender           | string `0x[0-9a-f]{40}`          | The sender's address                              | `=`  |      |      |      |
+| recipient        | string `0x[0-9a-f]{40}`          | The recipient's address                           | `=`  |      |      |      |
+| value            | numeric string                   | Transferred amount (in the smallest denomination) | `*≈` | `=`  |      |      |
+
+Notes:
+
+- for the columns `id` increased efficiency when uploading one record is applied
+- there is no possibility to search over `date` column, use searching `?q=time(YYYY-MM-DD)` instead
+- the default sort is `id DESC`
+- when using `offset`, it is reasonable to add to the filters the maximum block number (`?q=block_id(..N)`), since it is very likely that during the iteration new rows will be added to the table. For convenience, you can take the value of `context.state` from the first result of any query containing the number of the latest block at the query time and use this result later on.
+- value is approximated when queried
+
+**Example output:**
+
+`https://api.blockchair.com/ethereum/erc-20/transactions?limit=1`:
+
+```json
+{
+  "data": [
+    {
+      "block_id": 8792197,
+      "id": 275501753,
+      "transaction_hash": "0xec32c9b67d3e7088f14bfc17e8ccb0eb06a98eebe81224dc8703f470c62c5a2e",
+      "date": "2019-10-22",
+      "time": "2019-10-22 19:45:41",
+      "token_address": "0xbe59434473c50021b30686b6d34cdd0b1b4f6198",
+      "token_name": "Mobilio",
+      "token_symbol": "MOB",
+      "token_decimals": 18,
+      "sender": "0x2a68bdc41e98ab0fb60c9610e62d83ab29312d06",
+      "recipient": "0xfa96009f004428b85a05cfa1233c24f7afe0536a",
+      "value": "12021696603378832398951"
+    }
+  ],
+  "context": {
+    "code": 200,
+    "limit": 1,
+    "offset": 0,
+    "rows": 1,
+    "total_rows": 275501753,
+    "state": 8792207,
+    "state_layer_2": 8792197,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+See [request costs for infinitables](#link_05)
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/ethereum/erc-20/transactions
+
+
+
+## <a name="link_M5"></a> Misc endpoints
+
+
+
+### <a name="link_202"></a> Broadcasting transactions
+
+Broadcast a transaction to the network
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:chain}/push/transaction` (`POST`request)
+
+**Where:**
+
+- `{:chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `ethereum`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `bitcoin/testnet`
+- `POST` data should contain `data` parameter with raw transaction represented in hex (for Ethereum it should start with `0x`)
+
+**Output:**
+
+If the transaction has been successfully broadcast to the network, API will return a JSON response (code `200`) containing `data` array with `transaction_hash` key holding the hash of the received transaction. In case of any error (wrong transaction format, spending already spent outputs, etc.) API returns status code `400`.
 
 Example of a successful response:
 
+```json
+{
+  "data": {
+    "transaction_hash": "0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098"
+  },
+  "context": {
+  	"code": 200,
+  	...
+  }
+}
 ```
-{"data":{"transaction_hash": "0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098…"},"context":{"code":200,…
+
+Example of a response to an invalid transaction:
+
+```json
+{
+  "data": null,
+  "context": {
+  	"code": 400,
+    "error": "Invalid transaction"
+  	...
+  }
+}
 ```
 
-### <a name="link_raw"></a> Retrieving raw transactions
+**Example request:**
 
-It's possible to get raw transaction data directly from our nodes. In order to do this you should make the following API call: `https://api.blockchair.com/{:chain}/raw/transaction/{txhash}` (where `{:chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `bitcoin-sv`, `litecoin`, `dogecoin`, `dash`, `ethereum`, `groestlcoin`)
+```bash
+> curl -v --data "data=01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0704ffff001d0104ffffffff0100f2052a0100000043410496b538e853519c726a2c91e61ec11600ae1390813a627c66fb8be7947be63c52da7589379515d4e0a604f8141781e62294721166bf621e73a82cbf2342c858eeac00000000" https://api.blockchair.com/bitcoin/push/transaction
+```
 
-The response contains two keys which are:
-* `raw_transaction` - raw transaction represented as hex string
-* `decoded_raw_transaction` (not available for Ethereum) - raw transaction encoded in JSON by our nodes. Please note that the structure of this JSON array may change as we upgrade our nodes, and this won't be reflected in our change logs.
+**Request cost formula:**
 
-### <a name="link_nodes"></a> Node list: {:chain}/nodes
+Always `1`.
 
-Returns a list of full network nodes (except for Ethereum)
+**Explore visualization on our front-end:**
 
-### <a name="link_state"></a> State changes
+- https://blockchair.com/broadcast
 
-It's possible to query state changes caused by a block for all chains we support (except for Ripple).
 
-The endpoint is `https://api.blockchair.com/{:chain}/state/changes/block/{:block_id)`.
 
-The response contains an array where the keys are addresses which were affected by the block, and the values are balance changes.
+### <a name="link_508"></a> Nodes
 
-Example: `https://api.blockchair.com/bitcoin/state/changes/block/1` returns `12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX => 5000000000` which means that the only state change caused by this block was rewarding the miner with 50 bitcoins.
+List of full network nodes
 
-This is useful if you need to track balance changes for a lot of addresses - you can now simply track state changes and find the needed addresses there instead of constantly retrieving information about the balances.
+**Endpoints:**
+
+- `https://api.blockchair.com/{:btc_chain}/nodes` (agregated data on nodes + node list)
+- `https://api.blockchair.com/nodes` (agregated data on nodes for 7 networks at once)
+
+Please note that the number of nodes is also available in the `https://api.blockchair.com/stats` and `https://api.blockchair.com/{:btc_chain}/stats` endpoints output.
+
+**Where:**
+
+- `{:btc_chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`
+
+**Output:**
+
+`data` contains an array of arrays:
+
+- `data.nodes` — the node list; the key is `{:ip}:{:port}`, each element contains `version` (node version), `country` (2 letter country code derived from the IP address based on geolocation), `height` (node reports this number as the best block number it has, `flags` (special field with node options)
+- `data.count` — total number of nodes
+- `data.countries` — number of nodes grouped by country codes
+- `data.versions` — number of nodes grouped by node version
+- `data.heights` — number of nodes grouped by their best block height
+
+`https://api.blockchair.com/nodes` endpoint shows this data for 7 coins at once (`bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`), but it doesn't have the `data.nodes` array, i.e. there's only aggregated data.
+
+**Example output:**
+
+`https://api.blockchair.com/bitcoin/nodes`:
+
+```json
+{
+  "data": {
+    "nodes": {
+      "1.171.38.197:8333": {
+        "version": "/Satoshi:0.18.1/",
+        "country": "TW",
+        "height": 599960,
+        "flags": 1036
+      },
+      "1.172.110.250:8333": {
+        "version": "/Satoshi:0.18.0/",
+        "country": "TW",
+        "height": 599895,
+        "flags": 1037
+      },
+      ...
+    },
+    "count": 8923,
+    "countries": {
+      "US": 2745,
+      "DE": 1589,
+      ...
+    },
+    "versions": {
+      "/Satoshi:0.18.0/": 2974,
+      "/Satoshi:0.18.1/": 1753,
+      ...
+    },
+    "heights": {
+      ...
+      "599960": 414,
+      "599961": 4684,
+      "599962": 982,
+      "599963": 1738,
+      ...
+    }
+  },
+  "context": {
+    "code": 200,
+    "state": 599963,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualizations on our front-end:**
+
+* https://blockchair.com/nodes
+* https://blockchair.com/bitcoin/nodes
+* https://blockchair.com/bitcoin-cash/nodes
+* https://blockchair.com/litecoin/nodes
+* https://blockchair.com/bitcoin-sv/nodes
+* https://blockchair.com/dogecoin/nodes
+* https://blockchair.com/dash/nodes
+* https://blockchair.com/groestlcoin/nodes
+
+
+
+### <a name="link_507"></a> State changes
+
+Allows to query state changes caused by a block and potential state changes caused by mempool transactions in case they get confirmed.
+
+**Endpoints:**
+
+- `https://api.blockchair.com/{:chain}/state/changes/block/{:height}` (state changes caused by a block)
+- `https://api.blockchair.com/{:chain}/state/changes/mempool` (potential state changes caused by mempool transactions)
+
+**Where:**
+
+- `{:chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `bitcoin/testnet`. The first endpoint also supports `ethereum`
+- `{:height}` is the block height (integer value), also known as block id
+
+**Output:**
+
+The response contains an array where the keys are addresses which were affected by the block (or the mempool), and the values are balance changes.
 
 Note: values are returned as strings for Ethereum.
 
-It's also possible to query potential state changes caused by mempool transactions (this is not supported for Ethereum yet).
+No iteration required, this endpoint outputs all state changes at once.
 
-The endpoint for mempool state changes is `https://api.blockchair.com/{:chain}/state/changes/mempool`.
+**Example requests:**
 
-Here's an example logic for an application watching for Bitcoin transactions incoming/outgoing to/from 1 million addresses:
+- `https://api.blockchair.com/bitcoin/state/changes/block/170`
+- `https://api.blockchair.com/bitcoin/state/changes/mempool`
+- `https://api.blockchair.com/ethereum/state/changes/block/46147`
+
+**Example output:**
+
+`https://api.blockchair.com/bitcoin/state/changes/block/170`:
+
+```json
+{
+  "data": {
+    "1PSSGeFHDnKNxiEyFrD1wcEaHr9hrQDDWc": 5000000000,
+    "1Q2TWHE3GMdB6BZKafqwxXtWAWgFt5Jvm3": 1000000000,
+    "12cbQLTFMXRnSzktFkuoG3eHoMeFtpTu3S": -1000000000
+  },
+  "context": {
+    ...
+    "results": 3,
+    ...
+  }
+}
+```
+
+The block in this example was the first Bitcoin block which contained a non-coinbase transaction. We can see the coinbase reward here (50 BTC) sent to the miner, and two state changes caused by a 10 BTC transaction.
+
+**Example usage:**
+
+This endpoint may be useful if you need to track balance changes for a lot of addresses — you can  simply track state changes and find the needed addresses there instead of constantly retrieving information about the balances. Here's an example logic for an application watching for Bitcoin transactions incoming/outgoing to/from 1 million addresses:
 
 ```
 latest_known_block_height = 0
@@ -1024,8 +5241,74 @@ while (true)
     sleep(10) // The mempool data is cached for 10 seconds on our servers by default
 ```
 
-### <a name="link_support"></a> Support
+Note that this example doesn't account for cases like new multiple blocks have been found while you were requesting the latest one, etc. See this example as a possible workaround: https://github.com/Blockchair/Blockchair.Support/pull/207/files
+
+**Request cost formula:**
+
+`5` for changes caused by a block, `10` for changes caused by mempool transactions.
+
+
+
+### <a name="link_M51"></a> Premium API endpoints
+
+
+
+#### <a name="link_600"></a> Premium API usage stats
+
+This is a special endpoint for Premium API users showing some stats on your API key usage.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/premium/stats?key={:api_key}`
+
+**Where:**
+
+- `{:api_key}` is your secret API key
+
+**Output:**
+
+An array with stats:
+
+- `valid_until` — timestamp when the key expires; after that point the key will be invalid
+- `max_requests_per_day` or `max_requests_in_parallel` (depending on the API plan) — your limit on the number of requests
+- `requests_today` — number of requests you made today
+
+Please be advised that
+
+* `requests_today` shows not the number of HTTPS requests you made to the API, but the total number of used "request points" (as some requests "cost" more than 1)
+* The request counter is reset daily at 00:00 UTC
+
+**Example request:**
+
+- `https://api.blockchair.com/premium/stats?key=myfirstpasswordwas4321andifeltsmartaboutit`
+
+**Example output:**
+
+`https://api.blockchair.com/premium/stats?key=myfirstpasswordwas4321andifeltsmartaboutit`:
+
+```json
+{
+  "data": {
+    "valid_until": "2020-01-01 00:00:00",
+    "max_requests_per_day": 100000,
+    "requests_today": 50000
+  },
+  "context": {
+   ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `0`. This request is free to use.
+
+
+
+
+## <a name="link_M7"></a> Support
 
 * E-mail: [info@blockchair.com](mailto:info@blockchair.com)
 * Telegram chat: [@Blockchair](https://telegram.me/Blockchair)
 * Twitter: [@Blockchair](https://twitter.com/Blockchair)
+* Github issue tracker: https://github.com/Blockchair/Blockchair.Support/issues
