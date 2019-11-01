@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [API_DOCUMENTATION_EN.md](API_DOCUMENTATION_EN.md) (up to v.2.0.38)
+* English: [API_DOCUMENTATION_EN.md](API_DOCUMENTATION_EN.md) (up to v.2.0.39)
 
 ### Please apply for an API key first
 
@@ -26,6 +26,11 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.39 - Nov 1st, 2019
+    * Added alpha support for Stellar (XLM). Here's the list of new endpoints (please refer to our documentation for more info: https://blockchair.com/api/docs):
+        * `https://api.blockchair.com/stellar/raw/ledger/{:id}`
+        * `https://api.blockchair.com/stellar/raw/transaction/{:hash}`
+        * `https://api.blockchair.com/stellar/raw/account/{:address}`
 * v.2.0.38 - Oct 26th, 2019
     * We've published new documentation for our API which is lots more clear and describes all the functions we have, it's now available here: https://blockchair.com/api/docs
     * Changes to the Omni Layer and Wormhole support (as they're in Alpha test mode these are compatibility-breaking changes; we'll be bringing Omni to Stable the next year):
