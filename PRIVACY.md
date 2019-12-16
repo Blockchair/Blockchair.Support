@@ -33,9 +33,9 @@ They might sell this information, publish it, share it with government agencies,
 ## Why is Blockchair the safer option?
 
 *   When you connect to Blockchair your browser automatically sends us information about your computer, User Agent, IP address, and the page you want to visit. Since this data may expose your identity, **we do not permanently store information about you**;
-*   **We do not use cookies that can be used to identify you.** See below for details;
+*   **We do not use third-party cookies which can be used to identify you.** We may only set our own cookies to improve your user experience and help us to fight botnets and spammers. See below for details;
 *   **Your browser won’t send HTTP referer headers when leaving Blockchair.com. This means you can move to other sites without your browsing activity being traced by those sites;**
-*   **We do not use CDN-providers, including those used to distribute JavaScript libraries and styles. We do not use hit counters, web analytics tools (such as Google Analytics) or any other third-party site elements. Therefore, other parties do not receive information about you.**
+*   **We do not use CDN-providers, including those used to distribute JavaScript libraries and styles. We do not use any third-party site elements, web analytics tools (such as Google Analytics) and hit counters. Therefore, other parties do not receive information about you.**
 
 * * *
 
@@ -43,17 +43,11 @@ They might sell this information, publish it, share it with government agencies,
 
 We only collect anonymous aggregated data that allows us to improve our website features. We count visitors, analyze popular searches, cryptocurrencies, sortings and other queries.
 
-We also store the incoming IP addresses for short periods of 5 to 10 minutes. This is to limit the rate of API requests.
+We also store the incoming IP addresses in masked or clear form for short periods of 1 to 2 days. This is to limit the rate of API requests.
 
-Your device may store technical cookies, such as those that keep the night mode on. In this case, only the client part of the site interacts with them.
+Your device may store first-party cookies, such as those that keep the night mode on, store referer information, unique visitor and session ID.
 
-Collected data is used to improve user experience and compile website traffic statistics.
-
-* * *
-
-## Exceptions
-
-We might activate logging procedure to safeguard our services since we're not protected from certain types of third-party network attacks. If this happens, we will post a notification in the site header to let you know we're collecting additional information during the attack. Once the attack has been stopped, all logs will be deleted along with the notification.
+Collected data is used to improve user experience and compile website traffic statistics. Session data is deleted on a regular basis.
 
 * * *
 
