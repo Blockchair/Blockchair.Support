@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [API_DOCUMENTATION_EN.md](API_DOCUMENTATION_EN.md) (up to v.2.0.39)
+* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.41)
 
 ### Please apply for an API key first
 
@@ -26,8 +26,21 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.41 - January 18th, 2020
+    * Added alpha support for Monero. Here's the list of new endpoints (please refer to our documentation for more info: https://blockchair.com/api/docs):
+        * `https://api.blockchair.com/monero/stats`
+        * `https://api.blockchair.com/monero/raw/block/{:id|hash}`
+        * `https://api.blockchair.com/monero/raw/transaction/{:hash}`
+        * `https://api.blockchair.com/monero/raw/outputs?{:query}`
+* v.2.0.40 - December 3rd, 2019
+    * Added alpha support for Telegram Open Network (TON). Here's the list of new endpoints (please refer to our documentation for more info: https://blockchair.com/api/docs):
+        * `https://api.blockchair.com/ton/testnet/stats`
+        * `https://api.blockchair.com/ton/testnet/raw/ledger/{:tuple}`
+        * `https://api.blockchair.com/ton/testnet/raw/transaction/{:tuple}`
+        * `https://api.blockchair.com/ton/testnet/raw/account/{:address}`
 * v.2.0.39 - Nov 1st, 2019
     * Added alpha support for Stellar (XLM). Here's the list of new endpoints (please refer to our documentation for more info: https://blockchair.com/api/docs):
+        * `https://api.blockchair.com/stellar/stats`
         * `https://api.blockchair.com/stellar/raw/ledger/{:id}`
         * `https://api.blockchair.com/stellar/raw/transaction/{:hash}`
         * `https://api.blockchair.com/stellar/raw/account/{:address}`
