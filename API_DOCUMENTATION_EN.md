@@ -1,4 +1,4 @@
-# [Blockchair.com](https://blockchair.com/) API v.2.0.39 Documentation
+# [Blockchair.com](https://blockchair.com/) API v.2.0.41 Documentation
 
 ```
     ____  __           __        __          _     
@@ -24,14 +24,16 @@
     + [Ethereum-like blockchain stats](#link_002)
     + [Ripple-like blockchain stats](#link_003)
     + [Stellar-like blockchain stats](#link_004)
+    + [TON-like blockchain stats](#link_005)
+    + [Monero-like blockchain stats](#link_006)
     + [Omni Layer stats](#link_500)
     + [Wormhole stats](#link_500)
     + [ERC-20 stats](#link_509)
 + [Dashboard endpoints](#link_M2) (Retrieve information about various entities in a neat format from our databases)
   + [Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, and Bitcoin Testnet](#link_M21)
-    + [Block](#link_100)
-    + [Transaction](#link_200)
-    + [Address and extended public key (xpub)](#link_300)
+      - [Block](#link_100)
+      - [Transaction](#link_200)
+      - [Address and extended public key (xpub)](#link_300)
   + [Ethereum](#link_M22)
       - [Block](#link_103)
       - [Uncle](#link_401)
@@ -57,6 +59,14 @@
       - [Ledger](#link_107)
       - [Transaction](#link_208)
       - [Account](#link_304)
+    - [Telegram Open Network](#link_M35)
+      - [Ledger](#link_108)
+      - [Transaction](#link_209)
+      - [Account](#link_305)
+    - [Monero](#link_M36)
+      - [Block](#link_109)
+      - [Transaction](#link_210)
+      - [Outputs](#link_306)
 + [Infinitable endpoints](#link_05) (SQL-like queries: filter, sort, and aggregate blockchain data)
     + [Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, and Bitcoin Testnet](#link_M41)
       + [Blocks](#link_102) (table)
@@ -85,7 +95,7 @@
 
 # <a name="link_M0"></a> Introduction
 
-Blockchair API provides developers with access to data contained in [10 different blockchains](#link_M01). Unlike other APIs, Blockchair also support numerous analytical queries like filtering, sorting, and aggregating blockchain data.
+Blockchair API provides developers with access to data contained in [13 different blockchains](#link_M01). Unlike other APIs, Blockchair also supports numerous analytical queries like filtering, sorting, and aggregating blockchain data.
 
 Here are some examples of what you can build using our API:
 
@@ -109,13 +119,17 @@ Our API is free to try under some limitations, and we have a variety of premium 
 
 ## <a name="link_M01"></a> Supported blockchains and second layers
 
-As of today, our API supports **10 blockchains** divided into 4 groups:
-* Bitcoin-like blockchains (Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin), also known as UTXO-based blockchains
+As of today, our API supports **13 blockchains** (11 mainnets and 2 testnets) divided into 5 groups:
+* Bitcoin-like blockchains (Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Bitcoin Testnet), also known as UTXO-based blockchains
 * Ethereum-like blockchains (Ethereum)
 * Ripple-like blockchains (Ripple)
 * Stellar-like blockchains (Stellar)
+* TON-like blockchains (Telegram Open Network Testnet)
+* Monero-like blockchains (Monero)
 
 Within a group, there's no or little difference between the set of available endpoints and their output. 
+
+Here's the list of available mainnets:
 
 | Blokchain | Group | API path prefix | Support status |
 |-----------|------|----------|-------------|
@@ -129,12 +143,14 @@ Within a group, there's no or little difference between the set of available end
 | Ripple | Ripple-like | `https://api.blockchair.com/ripple` | Alpha mode, possible compatibility-breaking changes |
 | Groestlcoin | Bitcoin-like | `https://api.blockchair.com/groestlcoin` | Full support, community-backed till June 18th, 2020 |
 | Stellar | Stellar-like | `https://api.blockchair.com/stellar` | Alpha mode, possible compatibility-breaking changes |
+| Monero | Monero-like | `https://api.blockchair.com/monero` | Alpha mode, possible compatibility-breaking changes |
 
 There are also following testnets supported which are technically considered as separate blockchains:
 
 | Blokchain | Group | API path prefix | Support status |
 |-----------|------|----------|-------------|
 | Bitcoin Testnet | Bitcoin-like | `https://api.blockchair.com/bitcoin/testnet` | Full support |
+| Telegram Open Network Testnet | TON-like | `https://api.blockchair.com/ton/testnet` | Alpha mode, possible compatibility-breaking changes |
 
 We aim to support more blockchains (and their testnets) in future to cover as many users as possible. We don't disclose which blockchains we'll add next and how we choose them, but our main markers are daily number of real transactions and market capitalization. If you're representing a coin community which would like to add its blockchain to our platform, we'd be happy to talk.
 
@@ -170,8 +186,10 @@ This is the full list of available API endpoints.
 - `{:eth_chain}` can be only `ethereum`
 - `{:xrp_chain}` can be only `ripple`
 - `{:xlm_chain}` can be only `stellar`
+- `{:ton_chain}` can be only `ton/testnet`
+- `{:xmr_chain}` can be only `monero`
 
-| API path                                        | Docs | Base request cost | Status |
+| Endpoint path                             | Docs | Base request cost | Status |
 | ----------------------------------------------- | :----------------: | -----------------------------: | :---------------------------------------------: |
 | **General stats** | — | — | — |
 | `https://api.blockchair.com/stats`              | [👉](#link_000) | `1` | Stable |
@@ -179,6 +197,8 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:eth_chain}/stats` | [👉](#link_002) | `1` | Stable |
 | `https://api.blockchair.com/{:xrp_chain}/stats` | [👉](#link_003) | `1` | Alpha |
 | `https://api.blockchair.com/{:xlm_chain}/stats` | [👉](#link_004) | `1` | Alpha |
+| `https://api.blockchair.com/{:ton_chain}/stats` | [👉](#link_005) | `1` | Alpha |
+| `https://api.blockchair.com/{:xmr_chain}/stats` | [👉](#link_006) | `1` | Alpha |
 | **Block-related information** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/block/{:height}₀` | [👉](#link_100) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/block/{:hash}₀` | [👉](#link_100) | `1` | Stable |
@@ -197,6 +217,9 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:xrp_chain}/raw/ledger/{:height}₀` | [👉](#link_106) | `1` | Alpha |
 | `https://api.blockchair.com/{:xrp_chain}/raw/ledger/{:hash}₀` | [👉](#link_106) | `1` | Alpha |
 | `https://api.blockchair.com/{:xlm_chain}/raw/ledger/{:height}₀` | [👉](#link_107) | `1` | Alpha |
+| `https://api.blockchair.com/{:ton_chain}/raw/block/{:tuple}₀` | [👉](#link_108) | `1` | Alpha |
+| `https://api.blockchair.com/{:xmr_chain}/raw/block/{:height}₀` | [👉](#link_109) | `1` | Alpha |
+| `https://api.blockchair.com/{:xmr_chain}/raw/block/{:hash}₀` | [👉](#link_109) | `1` | Alpha |
 | **Transaction-related information and actions** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/transaction/{:hash}₀` | [👉](#link_200) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/transactions/{:hash}₀,...,{:hash}ᵩ` | [👉](#link_200) | `1 + 0.1*c` | Stable |
@@ -212,6 +235,8 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:eth_chain}/mempool/transactions?{:query}` | [👉](#link_206) | `2` | Stable |
 | `https://api.blockchair.com/{:xrp_chain}/raw/transaction/{:hash}₀` | [👉](#link_207) | `1` | Alpha |
 | `https://api.blockchair.com/{:xlm_chain}/raw/transaction/{:hash}₀` | [👉](#link_208) | `1` | Alpha |
+| `https://api.blockchair.com/{:ton_chain}/raw/transaction/{:tuple}₀` | [👉](#link_209) | `1` | Alpha |
+| `https://api.blockchair.com/{:xmr_chain}/raw/transaction/{:hash}₀` | [👉](#link_210) | `1` | Alpha |
 | **Address-related information** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀` | [👉](#link_300) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/addresses/{:address}₀,...,{:address}ᵩ` | [👉](#link_300) | `1 + 0.1*c` | Stable |
@@ -220,6 +245,7 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:eth_chain}/dashboards/address/{:address}₀` | [👉](#link_302) | `1` | Stable |
 | `https://api.blockchair.com/{:xrp_chain}/raw/account/{:address}₀` | [👉](#link_303) | `1` | Alpha |
 | `https://api.blockchair.com/{:xlm_chain}/raw/account/{:address}₀` | [👉](#link_304) | `1` | Alpha |
+| `https://api.blockchair.com/{:ton_chain}/raw/account/{:address}₀` | [👉](#link_305) | `1` | Alpha |
 | **Special entities** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/outputs?{:query}` | [👉](#link_400) | `10` | Beta |
 | `https://api.blockchair.com/{:btc_chain}/mempool/outputs?{:query}` | [👉](#link_400) | `2` | Beta |
@@ -227,6 +253,7 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:eth_chain}/dashboards/uncles/{:hash}₀,...,{:hash}ᵩ` | [👉](#link_401) | `1 + 0.1*c` | Stable |
 | `https://api.blockchair.com/{:eth_chain}/uncles?{:query}` | [👉](#link_402) | `2` | Stable |
 | `https://api.blockchair.com/{:eth_chain}/calls?{:query}` | [👉](#link_403) | `10` | Stable |
+| `https://api.blockchair.com/{:xmr_chain}/outputs?{:query}` | [👉](#link_306) | `1` | Alpha |
 | **Special second layer protocol endpoints (Omni Layer, Wormhole, ERC-20 tokens)** | — | — | — |
 | `https://api.blockchair.com/bitcoin/omni/stats` | [👉](#link_500) | `1` | Alpha |
 | `https://api.blockchair.com/bitcoin/omni/dashboards/property/{:prorerty_id}` | [👉](#link_501) | `1` | Alpha |
@@ -260,7 +287,7 @@ Requests to the API should be made through the HTTPS protocol by GET requests to
 
 ```bash
 > curl 'https://api.blockchair.com/bitcoin/blocks?a=sum(generation)'
-{"data":[{"sum(generation)":1800957104497237}],"context":{"code":200,"source":"A","time":0.007825851440429688,"limit":10000,"offset":null,"rows":1,"pre_rows":1,"total_rows":1,"state":600767,"cache":{"live":true,"duration":60,"since":"2019-10-23 21:33:00","until":"2019-10-23 21:34:00","time":null},"api":{"version":"2.0.38","last_major_update":"2019-07-19 18:07:19","next_major_update":null,"tested_features":"omni-v.a1,whc-v.a1,aggregate-v.b5,xpub-v.b5,ripple-v.a1,ethgraph-v.a1,erc_20-v.a1","documentation":"https:\/\/github.com\/Blockchair\/Blockchair.Support\/blob\/master\/API.md","notice":"Beginning July 19th, 2019 all applications using Blockchair API on a constant basis should apply for an API key (mailto:info@blockchair.com)"}}}
+{"data":[{"sum(generation)":1800957104497237}],"context":{"code":200,"source":"A","time":0.007825851440429688,"limit":10000,"offset":null,"rows":1,"pre_rows":1,"total_rows":1,"state":600767,"cache":{"live":true,"duration":60,"since":"2019-10-23 21:33:00","until":"2019-10-23 21:34:00","time":null},"api":{"version":"2.0.38","last_major_update":"2019-07-19 18:07:19","next_major_update":null,"documentation":"https:\/\/github.com\/Blockchair\/Blockchair.Support\/blob\/master\/API.md","notice":"Beginning July 19th, 2019 all applications using Blockchair API on a constant basis should apply for an API key (mailto:info@blockchair.com)"}}}
 ```
 
 Here are some considerations:
@@ -283,7 +310,7 @@ API returns JSON-encoded data. Typically, the response is an array consisting of
     * `200` if the request succeeded
     * `400` if there is a user error in the request
     * `404` for some endpoints in case there's no results (this behavior is deprecated), also if you're requesting non-existing endpoint
-    * `402`, `429`, or `435` if any limit on the number or complexity of requests is exceeded (see [the list of limits](#link_M05), and please [contact us](#link_M05) if you'd like to increase them)
+    * `402`, `429`, `435`, `436`, or `437` if any limit on the number or complexity of requests is exceeded (see [the list of limits](#link_M05), and please [contact us](#link_M05) if you'd like to increase them) — your IP address will be unblocked automatically after some time
     * `430`, `434`, or `503` if your IP address is temporarily blocked
     * `500` or `503` in case of a server error (it makes sense to wait and repeat the same request or open a ticket at https://github.com/Blockchair/Blockchair.Support/issues/new or write to <info@blockchair.com>)
   * `context.error` — error description in the case there's an error
@@ -398,7 +425,7 @@ If you require data on just one blockchain, please use `https://api.blockchair.c
 
 **Output:**
 
-`data` contains an array with stats on all 9 blockchains we support at once:
+`data` contains an array with stats on 11 blockchains we support at once:
 
 - Bitcoin
 - Bitcoin Cash
@@ -409,8 +436,10 @@ If you require data on just one blockchain, please use `https://api.blockchair.c
 - Dash
 - Ripple
 - Groestlcoin
+- Stellar
+- Telegram Open Network Testnet
 
-Note that Bitcoin Testnet stats are not included in this output.
+Note that Bitcoin Testnet stats are not included in this output, and TON Testnet will be changed to TON Mainnet as soon as it's launched.
 
 Description of the fields is available in the next three sections of documentation.
 
@@ -472,6 +501,18 @@ Description of the fields is available in the next three sections of documentati
     "groestlcoin": {
       "data": {
         "blocks": 2801282,
+        ...
+      }
+    },
+    "stellar": {
+      "data": {
+        "ledgers": 26968006,
+        ...
+      }
+    },
+    "ton": {
+      "data": {
+        "blocks": 475753,
         ...
       }
     }
@@ -831,7 +872,194 @@ Always `1`.
 
 
 
+## <a name="link_004"></a> Stellar-like blockchain stats
 
+**Endpoint:**
+
+- `https://api.blockchair.com/stellar/stats`
+
+**Output:**
+
+`data` contains an array with blockchain statistics:
+
+- `ledgers` — total number of ledgers
+- `circulation` — number of coins in circulation (in stroops)
+- `best_ledger_height` — the latest ledger number
+- `best_ledger_hash` — the latest ledger hash
+- `best_ledger_time` — the latest ledger time
+- `ledgers_24h` — number of ledgers closed over the last 24 hours
+- `transactions_24h` — number of transactions confirmed over the last 24 hours
+- `successful_transactions_24h`— number of successful transactions over the last 24 hours
+- `failed_transactions_24h`— number of failed transactions over the last 24 hours
+- `operations_24h` — number of operations over the last 24 hours
+- `average_transaction_fee_24h` —  average transaction fee over the last 24 hours
+- `average_transaction_fee_usd_24h` — the same in USD
+- `market_price_usd` — average market price of 1 coin in USD (market data source: CoinGecko)
+- `market_price_btc` — average market price of 1 coin in BTC (for Bitcoin it always returns 1)
+- `market_price_usd_change_24h_percentage` — market price change in percent for 24 hours
+- `market_cap_usd` — market capitalization (coins in circulation * price per coin in USD)
+- `market_dominance_percentage` — dominance index (how much % of the total cryptocurrency market is the market capitalization of the coin)
+- `countdowns` (optional) — an optional array of events ([`event`, `time_left`] format), where `time_left` is the number of seconds till the `event`
+
+**Example output:**
+
+`https://api.blockchair.com/stellar/stats`:
+
+```json
+{
+  "data": {
+    "ledgers": 26602978,
+    "best_ledger_height": 26602978,
+    "best_ledger_hash": "3151f16e9a6ce9ee43f57a068c83a04c7e864ccc7d1027519d42aab79e13b40f",
+    "best_ledger_time": "2019-11-02 16:42:01",
+    "circulation": 1054439020873472900,
+    "ledgers_24h": 15643,
+    "transactions_24h": 461072,
+    "successful_transactions_24h": 285958,
+    "failed_transactions_24h": 175114,
+    "operations_24h": 1085466,
+    "average_transaction_fee_24h": 283.5731513695005,
+    "average_transaction_fee_usd_24h": 0.000001991250668916633,
+    "market_price_usd": 0.07022,
+    "market_price_btc": 0.0000075229454120425,
+    "market_price_usd_change_24h_percentage": 3.41847,
+    "market_cap_usd": 1406714595,
+    "market_dominance_percentage": 0.56
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 26602978,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/stellar
+
+
+
+## <a name="link_005"></a> TON-like blockchain stats
+
+**Endpoint:**
+
+- `https://api.blockchair.com/ton/testnet/stats`
+
+**Output:**
+
+`data` contains an array with blockchain statistics:
+
+- `blocks` — total number of blocks
+- `best_block_height` — the latest block number in the default workchain
+- `best_block_file_hash` — its filehash…
+- `best_block_root_hash` — … roothash…
+- `best_block_time` — … and timestamp
+- `fist_block_time` — timestamp of the first block (when the current testnet was launched)
+- `blocks_24h` — an approximate (!) number of blocks over the last 24 hours
+- `transactions_24h` — an approximate (!) number of transactions over the last 24 hours
+
+**Example output:**
+
+`https://api.blockchair.com/ton/testnet/stats`:
+
+```json
+{
+  "data": {
+    "blocks": 475780,
+    "best_block_height": 475780,
+    "best_block_file_hash": "106BF11CFA87F20CF3310F200024D98344B3EC318803734857A5C5AEBF037E53",
+    "best_block_root_hash": "6A6B38C7A29315545271CA0C6FB1F04FB8DB6950EA24CEB3F81C86229FE7F370",
+    "best_block_time": "2019-12-03 18:36:55",
+    "first_block_time": "2019-11-15 12:53:05",
+    "blocks_24h": 26000,
+    "transactions_24h": 130000
+  },
+  ...
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/ton
+
+
+
+## <a name="link_006"></a> Monero-like blockchain stats
+
+**Endpoint:**
+
+* `https://api.blockchair.com/monero/stats`
+
+**Output:**
+
+`data` contains an array with blockchain statistics:
+
+* `blocks` — total number of blocks (note that it's 1 more than the latest block number as there is block #0)
+* `transactions` — total number of transactions
+* `circulation` — number of coins in circulation (in satoshi)
+* `blockchain_size` — total size of all blocks in bytes (note: it's not the size of a full node, it's just bare blocks; nodes are bigger in size as they use database indexing, etc)
+* `difficulty` — current mining difficulty
+* `best_block_height` — the latest block height
+* `best_block_hash` — the latest block hash
+* `best_block_time` — the latest block time
+* `mempool_transactions` — number of transactions in the mempool
+* `mempool_size` — mempool size in bytes
+* `market_price_usd` — average market price of 1 coin in USD (market data source: CoinGecko)
+* `market_price_btc` — average market price of 1 coin in BTC (for Bitcoin it always returns 1)
+* `market_price_usd_change_24h_percentage` — market price change in percent for 24 hours
+* `market_cap_usd` — market capitalization (coins in circulation * price per coin in USD)
+* `market_dominance_percentage` — dominance index (how much % of the total cryptocurrency market is the market capitalization of the coin)
+* `countdowns` (optional) — an optional array of events ([`event`, `time_left`] format), where `time_left` is the number of seconds till the `event`
+* `suggested_transaction_fee_per_byte_sat` — suggests a proper transaction fee in satoshi per byte based on the latest block
+
+**Example output:**
+
+`https://api.blockchair.com/stellar/stats`:
+
+```json
+{
+  "data": {
+    "blocks": 2012711,
+    "transactions": 6147319,
+    "circulation": 17402679371662576000,
+    "difficulty": 127374112357,
+    "hashrate_24h": 1061450936,
+    "mempool_transactions": 140,
+    "mempool_size": 681994000,
+    "best_block_height": 2012710,
+    "best_block_hash": "3cfcac0ccd9e058f56158686fd4d7258351071e113feac9c1b10da65ce62cce5",
+    "best_block_time": "2020-01-16 20:42:47",
+    "suggested_transaction_fee_per_byte_sat": 13,
+    "market_price_usd": 79.36,
+    "market_price_btc": 0.0079091090293004,
+    "market_price_usd_change_24h_percentage": -0.96449,
+    "market_cap_usd": 1362957367,
+    "market_dominance_percentage": 0.52
+  },
+  "context": {
+    "code": 200,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/monero
 
 
 
@@ -2808,7 +3036,7 @@ Always `1`.
 
 
 
-## <a name="link_M32"></a> Dashboard endpoints for Ethereum
+## <a name="link_M32"></a> Raw data endpoints for Ethereum
 
 
 
@@ -2954,7 +3182,7 @@ Always `1`.
 
 
 
-## <a name="link_M33"></a> Dashboard endpoints for Ripple
+## <a name="link_M33"></a> Raw data endpoints for Ripple
 
 
 
@@ -3395,7 +3623,7 @@ Always `1`.
 
 
 
-## <a name="link_M34"></a> Dashboard endpoints for Stellar
+## <a name="link_M34"></a> Raw data endpoints for Stellar
 
 
 
@@ -3712,6 +3940,710 @@ If there's no `{:account}ᵢ` has been found on the blockchain, returns an empty
 **Explore visualizations on our front-end:**
 
 - https://blockchair.com/stellar/account/GBOLDCYKDFVCG2UG3OLPY6GMZUAQAX445UM3RCXGBVW37RMQEYXZ4HD7
+
+
+
+## <a name="link_M35"></a> Raw data endpoints for Telegram Open Network
+
+
+
+### <a name="link_108"></a> Raw block data
+
+Returns raw block data directly from our back end. Please note that as the TON network is highly unstable at the moment, we don't really provide anyone with any guarantees, and the documentation is limited for this section as many things can change very fast.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:ton_chain}/raw/block/{:tuple}₀`
+
+**Where:**
+
+- `{:ton_chain}` can only be `ton/testnet`
+- `{:tuple}ᵢ` is either a block number, or a tuple; possible formats are:
+  - `id` (e.g. `123456`), this will return info on the block no. 123456 in the default workchain (`-1`) and in the default shard (`8000000000000000`)
+  - `(workchain, shard, id)` tuple
+  - `(workchain, shard, id, roothash, filehash)` tuple
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:tuple}ᵢ.block` — block data. We don't provide field descriptions at the moment as they can change at any time. Most of the key names are self-explanatory.
+
+**Example requests:**
+
+- `https://api.blockchair.com/ton/testnet/raw/block/357290`
+- `https://api.blockchair.com/ton/testnet/raw/block/(357290)`
+- `https://api.blockchair.com/ton/testnet/raw/block/(-1,8000000000000000,357290)`
+- `https://api.blockchair.com/ton/testnet/raw/block/(-1,8000000000000000,357290,69179AE3C3B5D3A007B397FD2774F4CCA7A43FC467B701469CC6081B55A72239,8645D68C3655493DB1F8B9AB7CFAC5602672012CC8419BF61EF365A7127C78CD)`
+
+Please note that some of these requests may stop working if the testnet gets reset.
+
+**Example output:**
+
+`https://api.blockchair.com/ton/testnet/raw/block/357290`:
+
+```json
+{
+  "data": {
+    "357290": {
+      "block": {
+        "end_lt": 483827000004,
+        "filehash": "8645D68C3655493DB1F8B9AB7CFAC5602672012CC8419BF61EF365A7127C78CD",
+        "global_id": -239,
+        "prev_block_info": {
+          "end_lt": 483825000004,
+          "filehash": "0x5f8a4eed5c77a717874544292269ada101535cac362ce347f85bea5a441403ef",
+          "roothash": "0xf8990cf733bad398761ee3337a731cd063a3825a5c21337cfe03a9ebb902bcb0",
+          "seqno": 357289
+        },
+        "roothash": "69179AE3C3B5D3A007B397FD2774F4CCA7A43FC467B701469CC6081B55A72239",
+        "seqno": 357290,
+        "shard": "8000000000000000",
+        "shards": [
+          {
+            "filehash": "ECCEDDA9623423B55C711D73A5D33729BB7752AFA5EF5150F9EBF66180B37BED",
+            "roothash": "5DFABF07E43B23102C316FE2FD761495C511CEEF02805A64E0D50DD72D8BF5DF",
+            "seqno": 450944,
+            "shard": "2000000000000000",
+            "workchain": 0
+          },
+          {
+            "filehash": "F7BCEA34AB619443B8401A560F6CC5081B8402600CFE0E21AC97BF3CDD7C2FEB",
+            "roothash": "1E9C27FA21865B468B131949DF45A7E6BB3CFA206392DDC9BD1EDD825A371B30",
+            "seqno": 451222,
+            "shard": "6000000000000000",
+            "workchain": 0
+          },
+          {
+            "filehash": "A5E716AEC2CAC1F02E4C1624179D6A1D32A387E8D189FC77C9E923CDD4BE82F7",
+            "roothash": "E5FA8F81395ECFC6DA85A81052DCB5BF2E005FFECE693C8E54B45AAD5A594630",
+            "seqno": 451025,
+            "shard": "a000000000000000",
+            "workchain": 0
+          },
+          {
+            "filehash": "64307A2B7EC58A85E53F677FC066E577B8A8DF8E4CC8DB8580690939C2BDB846",
+            "roothash": "BA040777090B248B54B334ADA1A0A499822C8E7F5EBDA411DE5DDE9290AC75CB",
+            "seqno": 451462,
+            "shard": "e000000000000000",
+            "workchain": 0
+          }
+        ],
+        "start_lt": 483827000000,
+        "time": "2019-11-29 00:27:17",
+        "transactions": [
+          {
+            "hash": "045740A8D2400EEBFB6EBB9BDB1EE23AB2EBC0693B718C0AF0E04A3498A2934A",
+            "lt": 483827000001,
+            "userfriendly_address": "Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF"
+          },
+          {
+            "hash": "4533BD6576FD34204B7A6DFB2576FDF3BB395917BC8C17A3208F292CDACE34BC",
+            "lt": 483827000002,
+            "userfriendly_address": "Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF"
+          },
+          {
+            "hash": "6F7A37CF43604381C35153CA07E49140AE33C0A8AB3747439508A64E034F1858",
+            "lt": 483827000001,
+            "userfriendly_address": "Ef80UXx731GHxVr0-LYf3DIViMerdo3uJLAG3ykQZFjXz2kW"
+          },
+          {
+            "hash": "7B4876DB8EA7DF3E06D34DAF287B8D94728CC125A8F7C915911A831EA1C86FCD",
+            "lt": 483827000003,
+            "userfriendly_address": "Ef80UXx731GHxVr0-LYf3DIViMerdo3uJLAG3ykQZFjXz2kW"
+          },
+          {
+            "hash": "70E5BA410D9CCFDA457442661CCED8B42B0587158E130C85D7EC4BBA9335FFCC",
+            "lt": 483827000003,
+            "userfriendly_address": "Ef9VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVbxn"
+          }
+        ],
+        "value_flow": {
+          "created": {
+            "nanograms": 1700000000
+          },
+          "exported": {
+            "nanograms": 0
+          },
+          "fees_collected": {
+            "nanograms": 2950000000
+          },
+          "fees_imported": {
+            "nanograms": 1250000000
+          },
+          "from_prev_blk": {
+            "nanograms": 4990184927132822000
+          },
+          "imported": {
+            "nanograms": 0
+          },
+          "minted": {
+            "nanograms": 0
+          },
+          "recovered": {
+            "nanograms": 2950000000
+          },
+          "to_next_blk": {
+            "nanograms": 4990184930082821000
+          }
+        },
+        "workchain_id": -1
+      }
+    }
+  },
+  "context": {
+    "results": 1,
+    "state": 475783,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/ton/block/357290
+
+
+
+### <a name="link_209"></a> Raw transaction data
+
+Returns raw transaction data directly from our back end. Please note that as the TON network is highly unstable at the moment, we don't really provide anyone with any guarantees, and the documentation is limited for this section as many things can change very fast.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:ton_chain}/raw/transaction/{:tuple}₀`
+
+**Where:**
+
+- `{:ton_chain}` can only be `ton/testnet`
+- `{:tuple}ᵢ` is a tuple in the following format: `(account, logical time, transaction hash)`, where `account` can be in two different formats (see the examples)
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:tuple}ᵢ.transaction` — transaction data. We don't provide field descriptions at the moment as they can change at any time. Most of the key names are self-explanatory.
+
+**Example requests:**
+
+- `https://api.blockchair.com/ton/testnet/raw/transaction/(Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF,483716000001,809A932E2AD8C307A5E69B427762AA1BE0EC57D9A246A7CE4E7D4CE49F00C4AE)`
+- `https://api.blockchair.com/ton/testnet/raw/transaction/(0x3333333333333333333333333333333333333333333333333333333333333333,483716000001,809A932E2AD8C307A5E69B427762AA1BE0EC57D9A246A7CE4E7D4CE49F00C4AE)`
+
+Please note that some of these requests may stop working if the testnet gets reset.
+
+**Example output:**
+
+`https://api.blockchair.com/ton/testnet/raw/transaction/(Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF,483716000001,809A932E2AD8C307A5E69B427762AA1BE0EC57D9A246A7CE4E7D4CE49F00C4AE)`:
+
+```json
+{
+  "data": {
+    "(Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF,483716000001,809A932E2AD8C307A5E69B427762AA1BE0EC57D9A246A7CE4E7D4CE49F00C4AE)": {
+      "transaction": {
+        "account": "Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF",
+        "block": {
+          "filehash": "B3F4BA8B1C2FDC10F5F04C43B0FB226585E1F0EE170290DD3FC331D95DF5D9B2",
+          "roothash": "826176479B470808ED6CA721559000DF5E90602E05B5E7A8DBA7994A1C143AEB",
+          "seqno": 357220,
+          "shard": "8000000000000000",
+          "workchain": -1
+        },
+        "end_status": "acc_state_active",
+        "lt": 483716000001,
+        "orig_status": "acc_state_active",
+        "prev_transaction_hash": "0xc7ab8c6aea7f14c949ccb16230b9d18f12424fcceb9055e1775fc4f654f9b13b",
+        "prev_transaction_lt": 483714000002,
+        "raw_account": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "state_update": {
+          "new_hash": "0xfe41f7e87cd0b5df7ce677b4ba8d0939316c8a2968fa7c532d073e131969a60e",
+          "old_hash": "0x27906825005713fcec1602b4f16d16e29c38aac18623f80d256e177680d72af4"
+        },
+        "time": "2019-11-29 00:22:55",
+        "total_fee": 0,
+        "tx_hash": "809A932E2AD8C307A5E69B427762AA1BE0EC57D9A246A7CE4E7D4CE49F00C4AE"
+      }
+    }
+  },
+  "context": {
+    "results": 1,
+    "state": 475783,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/ton/transaction/(Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF,483716000001,809A932E2AD8C307A5E69B427762AA1BE0EC57D9A246A7CE4E7D4CE49F00C4AE)
+
+
+
+### <a name="link_305"></a> Raw account data
+
+Returns raw account data directly from our back end. Please note that as the TON network is highly unstable at the moment, we don't really provide anyone with any guarantees, and the documentation is limited for this section as many things can change very fast.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:ton_chain}/raw/account/{:address}₀`
+
+**Where:**
+
+- `{:ton_chain}` can only be `ton/testnet`
+- `{:address}ᵢ` can be an address in two different formats (hex or "user-friendly", see the examples below)
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:tuple}ᵢ.account` — account data. We don't provide field descriptions at the moment as they can change at any time. Most of the key names are self-explanatory.
+
+**Example requests:**
+
+- `https://api.blockchair.com/ton/testnet/raw/account/Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF`
+- `https://api.blockchair.com/ton/testnet/raw/account/0x3333333333333333333333333333333333333333333333333333333333333333`
+
+Please note that some of these requests may stop working if the testnet gets reset.
+
+**Example output:**
+
+`https://api.blockchair.com/ton/testnet/raw/account/Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF`:
+
+```json
+{
+  "data": {
+    "Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF": {
+      "account": {
+        "address": {
+          "last_trans_hash": "8CC5546C7D770ECF0A0538B5A477D034403A7004124E00A7EE674CFF8ED0CFB8",
+          "last_trans_lt": 658854000002,
+          "raw_address": "0x3333333333333333333333333333333333333333333333333333333333333333",
+          "userfrienly_address": "Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF",
+          "workchain_id": -1
+        },
+        "balances": {
+          "nanograms": 2086443035892730
+        },
+        "storage_stat": {
+          "bits": 74434,
+          "cells": 228,
+          "due_payment": null,
+          "last_paid": 0,
+          "public_cells": 0
+        }
+      }
+    }
+  },
+  "context": {
+    "results": 1,
+    "state": 475783,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/ton/account/Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF
+
+
+
+## <a name="link_M36"></a> Raw data endpoints for Monero
+
+
+
+### <a name="link_109"></a> Raw block data
+
+Returns raw block data from our `onion-monero-blockchain-explorer` instance. See https://github.com/moneroexamples/onion-monero-blockchain-explorer/blob/master/README.md for field descriptions (`api/block/<block_number|block_hash>` section), but mostly they are self-describing.
+
+**Endpoints:**
+
+- `https://api.blockchair.com/{:xmr_chain}/raw/block/{:height}₀`
+- `https://api.blockchair.com/{:xmr_chain}/raw/block/{:hash}₀`
+
+**Where:**
+
+- `{:xmr_chain}` can be only `monero`
+- `{:height}ᵢ` is the block height (integer value), also known as block id
+- `{:hash}ᵢ` is the block hash (regex: `/^[0-9a-f]{64}$/i`)
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:id}ᵢ.block` — block data. We don't provide field descriptions at the moment as they can change at any time. Most of the key names are self-explanatory.
+
+**Example requests:**
+
+- `https://api.blockchair.com/monero/raw/block/1234567`
+- `https://api.blockchair.com/monero/raw/block/f093439d0dd48010a22fdb615a659e22738a10991871b5dc2335efa69008a8cd`
+
+**Example output:**
+
+`https://api.blockchair.com/monero/raw/block/1234567`:
+
+```json
+{
+  "data": {
+    "1234567": {
+      "block": {
+        "block_height": 1234567,
+        "current_height": 2014051,
+        "hash": "f093439d0dd48010a22fdb615a659e22738a10991871b5dc2335efa69008a8cd",
+        "size": 51507,
+        "timestamp": 1485715365,
+        "timestamp_utc": "2017-01-29 18:42:45",
+        "txs": [
+          {
+            "coinbase": true,
+            "extra": "0125abf5f7f41eeae08c49b48ec8dffcd7aff78d87e808508e3b073105582fd1b6020800000001e75bdb47",
+            "mixin": 0,
+            "payment_id": "",
+            "payment_id8": "",
+            "rct_type": 0,
+            "tx_fee": 0,
+            "tx_hash": "09d132f2c90d0f6726cf7dbbce83114a1e650a098c1e9cf3fc6773bba02c5e13",
+            "tx_size": 95,
+            "tx_version": 2,
+            "xmr_inputs": 0,
+            "xmr_outputs": 8864856845578
+          },
+          {
+            "coinbase": false,
+            "extra": "018a462e859627da64801ab1a4122717451a4e4f7ab917fcd746c62dd0eeceeba2",
+            "mixin": 3,
+            "payment_id": "",
+            "payment_id8": "",
+            "rct_type": 2,
+            "tx_fee": 66692772936,
+            "tx_hash": "467f1914b3f5f4eb52dda02bfd0b70b89722b88063f40889bfba46d3ec78de80",
+            "tx_size": 38479,
+            "tx_version": 2,
+            "xmr_inputs": 0,
+            "xmr_outputs": 0
+          },
+          {
+            "coinbase": false,
+            "extra": "01445566c1696160cd602ad2fe7805b12d0efbd2866be04ee8d1c1c00cce399cfe020901cd644f0fe978dc0c",
+            "mixin": 3,
+            "payment_id": "",
+            "payment_id8": "cd644f0fe978dc0c",
+            "rct_type": 1,
+            "tx_fee": 22815948636,
+            "tx_hash": "5eb59639478898cf227cd89aa95303cfb8d392e1151047728a57ec16dc4c1a7e",
+            "tx_size": 12933,
+            "tx_version": 2,
+            "xmr_inputs": 0,
+            "xmr_outputs": 0
+          }
+        ]
+      }
+    }
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 2014050,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/monero/block/1234567
+
+
+
+### <a name="link_210"></a> Raw transaction data
+
+Returns raw block data from our `onion-monero-blockchain-explorer` instance. See https://github.com/moneroexamples/onion-monero-blockchain-explorer/blob/master/README.md for field descriptions (`api/transaction/<tx_hash>` section), but mostly they are self-describing.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:xmr_chain}/raw/transaction/{:hash}₀`
+
+**Where:**
+
+- `{:xmr_chain}` can only be `monero`
+- `{:hash}ᵢ` is the transaction hash (regex: `/^[0-9a-f]{64}$/i`)
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:hash}ᵢ.transaction` — transaction data
+
+**Example requests:**
+
+- `https://api.blockchair.com/monero/raw/transaction/467f1914b3f5f4eb52dda02bfd0b70b89722b88063f40889bfba46d3ec78de80`
+
+**Example output:**
+
+`https://api.blockchair.com/monero/raw/transaction/467f1914b3f5f4eb52dda02bfd0b70b89722b88063f40889bfba46d3ec78de80`:
+
+```json
+{
+  "data": {
+    "467f1914b3f5f4eb52dda02bfd0b70b89722b88063f40889bfba46d3ec78de80": {
+      "transaction": {
+        "block_height": 1234567,
+        "coinbase": false,
+        "confirmations": 779488,
+        "current_height": 2014055,
+        "extra": "018a462e859627da64801ab1a4122717451a4e4f7ab917fcd746c62dd0eeceeba2",
+        "inputs": [
+          {
+            "amount": 0,
+            "key_image": "03f3a29dd840d08654755771d36c8d39268d215d78214a8f29ac19a98116efe8",
+            "mixins": [
+              {
+                "block_no": 1230415,
+                "public_key": "10f4d46bf0bb09fa9ad4208ddbb8fd5fcfa2fb2d964731a5e04071a93288ae5c"
+              },
+              {
+                "block_no": 1231535,
+                "public_key": "d7b6f7c37564f647ad33cac3447727b62231d41cd80fd09c6f596a99f97b25e1"
+              },
+              {
+                "block_no": 1234337,
+                "public_key": "c4766978af804c3581818a5b8aae54bfb5b7fde8a9482dccf2c75786d7aa0ed6"
+              }
+            ]
+          },
+          {
+            "amount": 0,
+            "key_image": "661d4484ebc15f7d5d9122c29f282e9b2b3b119ffe71a49440fc3cf0bbc0c642",
+            "mixins": [
+              {
+                "block_no": 1226106,
+                "public_key": "5a532e0677a862660fdd9af0f177b83e67d99bf38535f778b107f02c101dabb7"
+              },
+              {
+                "block_no": 1226709,
+                "public_key": "6497da459ce91f78461e81c20ca3148e273576bc9008908cb369c9440db251de"
+              },
+              {
+                "block_no": 1231101,
+                "public_key": "e907bd174dc7b20ab811c1b99e4fa58990146e242d7d4702c5443e1dc421255f"
+              }
+            ]
+          }
+        ],
+        "mixin": 3,
+        "outputs": [
+          {
+            "amount": 0,
+            "public_key": "dfce36cfd52cd63ba2c950bd71e0523fee57cb4ddf9e54bc2ceebd8e37597f4a"
+          },
+          {
+            "amount": 0,
+            "public_key": "613f4849f2bd27f28b6d85a01cef421dfadd491b9f1b4956e625ddeadefacc1a"
+          },
+          {
+            "amount": 0,
+            "public_key": "c0ba1f794159dbd9a35a7118f35f1c3ba8c1d09c2fe51655a32071a966560e62"
+          },
+          {
+            "amount": 0,
+            "public_key": "967e2ae67aa85fbd1dc6f2937bf87f70328cf8fb3df8b7d3041768adbf782595"
+          },
+          {
+            "amount": 0,
+            "public_key": "977c64e40fd8bc436f4962ad89ed2374a88d766408e18d36f984955212c4344f"
+          },
+          {
+            "amount": 0,
+            "public_key": "e796f069bbf7d25b422d384ca08dd9a9d83c7592aa827914c9cba9724111afe3"
+          }
+        ],
+        "payment_id": "",
+        "payment_id8": "",
+        "rct_type": 2,
+        "timestamp": 1485715365,
+        "timestamp_utc": "2017-01-29 18:42:45",
+        "tx_fee": 66692772936,
+        "tx_hash": "467f1914b3f5f4eb52dda02bfd0b70b89722b88063f40889bfba46d3ec78de80",
+        "tx_size": 38479,
+        "tx_version": 2,
+        "xmr_inputs": 0,
+        "xmr_outputs": 0
+      }
+    }
+  },
+  "context": {
+    "code": 200
+    "results": 1,
+    "state": 2014050,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/monero/transaction/467f1914b3f5f4eb52dda02bfd0b70b89722b88063f40889bfba46d3ec78de80
+
+
+
+### <a name="link_306"></a> Raw outputs
+
+Returns raw block data from our `onion-monero-blockchain-explorer` instance. See https://github.com/moneroexamples/onion-monero-blockchain-explorer/blob/master/README.md for field descriptions (`api/outputs?txhash=<tx_hash>&address=&viewkey=&txprove=<0|1>` section), but mostly they are self-describing.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:xmr_chain}/raw/outputs?{:query}`
+
+**Where:**
+
+- `{:xmr_chain}` can only be `monero`
+- `{:query}` is the query string:
+  - `txprove=0` checks which outputs belong to given address and corresponding viewkey
+  - `txprove=1` proves the sender sent funds
+  - `address` is the address
+  - `viewkey` is the viewkey
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.outputs` — the list of outputs
+
+**Example requests:**
+
+- `https://api.blockchair.com/monero/raw/outputs?txhash=8e6a144dee7537a38e87f30e7c1f2bc1a35e5ef8b5032dfa7cf89a2df3073c41&address=44AFFq5kSiGBoZ4NMDwYtN18obc8AemS33DBLWs3H7otXft3XjrpDtQGv7SqSsaBYBb98uNbr2VBBEt7f2wfn3RVGQBEP3A&viewkey=f359631075708155cc3d92a32b75a7d02a5dcf27756707b47a2b31b21c389501&txprove=0`
+- `https://api.blockchair.com/monero/raw/outputs?txhash=8e6a144dee7537a38e87f30e7c1f2bc1a35e5ef8b5032dfa7cf89a2df3073c41&address=44AFFq5kSiGBoZ4NMDwYtN18obc8AemS33DBLWs3H7otXft3XjrpDtQGv7SqSsaBYBb98uNbr2VBBEt7f2wfn3RVGQBEP3A&viewkey=f359631075708155cc3d92a32b75a7d02a5dcf27756707b47a2b31b21c389501&txprove=1`
+
+**Example responses:**
+
+`https://api.blockchair.com/monero/raw/outputs?txhash=8e6a144dee7537a38e87f30e7c1f2bc1a35e5ef8b5032dfa7cf89a2df3073c41&address=44AFFq5kSiGBoZ4NMDwYtN18obc8AemS33DBLWs3H7otXft3XjrpDtQGv7SqSsaBYBb98uNbr2VBBEt7f2wfn3RVGQBEP3A&viewkey=f359631075708155cc3d92a32b75a7d02a5dcf27756707b47a2b31b21c389501&txprove=0`:
+
+```json
+{
+  "data": {
+    "address": "42f18fc61586554095b0799b5c4b6f00cdeb26a93b20540d366932c6001617b75db35109fbba7d5f275fef4b9c49e0cc1c84b219ec6ff652fda54f89f7f63c88",
+    "outputs": [
+      {
+        "amount": 800000000000,
+        "match": false,
+        "output_idx": 0,
+        "output_pubkey": "2b0d6d7573895be2fccb06bf83099a4dddf3f73656f18e2b96eab997571a640d"
+      },
+      {
+        "amount": 1000000000000,
+        "match": false,
+        "output_idx": 1,
+        "output_pubkey": "543c158062f43c11ac16ff90dea61728a41410ffeccea4cea65a6ba6fb83ccab"
+      },
+      {
+        "amount": 10000000000000,
+        "match": true,
+        "output_idx": 2,
+        "output_pubkey": "122b7ba237e82ca95d620f286761b8f8102fa346df8d982c6fe48003d3939c60"
+      },
+      {
+        "amount": 10000000000000,
+        "match": false,
+        "output_idx": 3,
+        "output_pubkey": "7ba5f4dc9acf62c6bca171ac8e81f7757050a480bbe20f2d1836086aa23f004f"
+      },
+      {
+        "amount": 300000000000000,
+        "match": true,
+        "output_idx": 4,
+        "output_pubkey": "597a3bd3e7a7007fb2bb11cd734731e388ee95f436f6aa07d0d7afe927b7faad"
+      }
+    ],
+    "tx_hash": "8e6a144dee7537a38e87f30e7c1f2bc1a35e5ef8b5032dfa7cf89a2df3073c41",
+    "tx_prove": false,
+    "viewkey": "f359631075708155cc3d92a32b75a7d02a5dcf27756707b47a2b31b21c389501"
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 2014050,
+    ...
+  }
+}
+```
+
+`https://api.blockchair.com/monero/raw/outputs?txhash=8e6a144dee7537a38e87f30e7c1f2bc1a35e5ef8b5032dfa7cf89a2df3073c41&address=44AFFq5kSiGBoZ4NMDwYtN18obc8AemS33DBLWs3H7otXft3XjrpDtQGv7SqSsaBYBb98uNbr2VBBEt7f2wfn3RVGQBEP3A&viewkey=f359631075708155cc3d92a32b75a7d02a5dcf27756707b47a2b31b21c389501&txprove=1`:
+
+```json
+{
+  "data": {
+    "address": "42f18fc61586554095b0799b5c4b6f00cdeb26a93b20540d366932c6001617b75db35109fbba7d5f275fef4b9c49e0cc1c84b219ec6ff652fda54f89f7f63c88",
+    "outputs": [
+      {
+        "amount": 800000000000,
+        "match": false,
+        "output_idx": 0,
+        "output_pubkey": "2b0d6d7573895be2fccb06bf83099a4dddf3f73656f18e2b96eab997571a640d"
+      },
+      {
+        "amount": 1000000000000,
+        "match": false,
+        "output_idx": 1,
+        "output_pubkey": "543c158062f43c11ac16ff90dea61728a41410ffeccea4cea65a6ba6fb83ccab"
+      },
+      {
+        "amount": 10000000000000,
+        "match": false,
+        "output_idx": 2,
+        "output_pubkey": "122b7ba237e82ca95d620f286761b8f8102fa346df8d982c6fe48003d3939c60"
+      },
+      {
+        "amount": 10000000000000,
+        "match": false,
+        "output_idx": 3,
+        "output_pubkey": "7ba5f4dc9acf62c6bca171ac8e81f7757050a480bbe20f2d1836086aa23f004f"
+      },
+      {
+        "amount": 300000000000000,
+        "match": false,
+        "output_idx": 4,
+        "output_pubkey": "597a3bd3e7a7007fb2bb11cd734731e388ee95f436f6aa07d0d7afe927b7faad"
+      }
+    ],
+    "tx_hash": "8e6a144dee7537a38e87f30e7c1f2bc1a35e5ef8b5032dfa7cf89a2df3073c41",
+    "tx_prove": true,
+    "viewkey": "f359631075708155cc3d92a32b75a7d02a5dcf27756707b47a2b31b21c389501"
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 2014050,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/monero/transaction/8e6a144dee7537a38e87f30e7c1f2bc1a35e5ef8b5032dfa7cf89a2df3073c41 (enter the address and the viewkey)
 
 
 
@@ -5366,7 +6298,7 @@ Broadcast a transaction to the network
 
 **Endpoint:**
 
-- `https://api.blockchair.com/{:chain}/push/transaction` (`POST`request)
+- `https://api.blockchair.com/{:chain}/push/transaction` (`POST` request)
 
 **Where:**
 
@@ -5397,9 +6329,9 @@ Example of a response to an invalid transaction:
 {
   "data": null,
   "context": {
-  	"code": 400,
+    "code": 400,
     "error": "Invalid transaction"
-  	...
+    ...
   }
 }
 ```
