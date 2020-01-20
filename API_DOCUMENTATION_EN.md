@@ -1,4 +1,4 @@
-# [Blockchair.com](https://blockchair.com/) API v.2.0.41 Documentation
+# [Blockchair.com](https://blockchair.com/) API v.2.0.42 Documentation
 
 ```
     ____  __           __        __          _     
@@ -87,6 +87,7 @@
     + [Broadcasting transactions](#link_202)
     + [Nodes](#link_508)
     + [State changes](#link_507)
+    + [Available block ranges](#link_510)
     + [Premium API endpoints](#link_M51)
       + [Premium API usage stats](#link_600)
 + [Support](#link_M7)
@@ -160,6 +161,8 @@ As a general rule, if we add a blockchain to our platform, it means we'll suppor
 * If a blockchain hard-forks and that results in a new ruleset we can't support for technical or other reasons, we may either drop support for this blockchain, or don't accept the new ruleset;
 * If a blockchain is community-backed, we guarantee support till some specified date (this is reflected in the tables above). If its community decides not to prolong the agreement with Blockchair after that date, we may either continue to support that blockchain for free, or drop support for it;
 * If we see that a particular blockchain became unpopular on our platform, we may terminate its support with a 3 month notice.
+
+For some of the blockchains we support we don't store full historical data. These blockchains are: `Ripple`, `Stellar`. That means you won't be able to query some old blocks, and the transaction list for an address may not show some old transactions. See [Available block ranges](#link_510) API endpoint to get data on which blocks are available in these blockchains. All other blockchains have full historical data. It's our intent to have full historical data for all blockchains.
 
 Blockchair API also supports **3 layer 2 solutions** (tokens) divided into 2 groups:
 
@@ -425,7 +428,7 @@ If you require data on just one blockchain, please use `https://api.blockchair.c
 
 **Output:**
 
-`data` contains an array with stats on 11 blockchains we support at once:
+`data` contains an array with stats on 12 blockchains we support at once:
 
 - Bitcoin
 - Bitcoin Cash
@@ -438,6 +441,7 @@ If you require data on just one blockchain, please use `https://api.blockchair.c
 - Groestlcoin
 - Stellar
 - Telegram Open Network Testnet
+- Monero
 
 Note that Bitcoin Testnet stats are not included in this output, and TON Testnet will be changed to TON Mainnet as soon as it's launched.
 
@@ -513,6 +517,12 @@ Description of the fields is available in the next three sections of documentati
     "ton": {
       "data": {
         "blocks": 475753,
+        ...
+      }
+    },
+    "monero": {
+      "data": {
+        "blocks": 2014108,
         ...
       }
     }
@@ -6519,6 +6529,136 @@ Note that this example doesn't account for cases like new multiple blocks have b
 **Request cost formula:**
 
 `5` for changes caused by a block, `10` for changes caused by mempool transactions.
+
+
+
+## <a name="link_510"></a> Available block ranges
+
+As Blockchair doesn't store historical data for some blockchains (at this moment this applies to Ripple and Stellar only) it may be useful to know which blocks can be queried.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/range`
+
+**Output:**
+
+The response contains an array where the keys are blockchains, and the values are arrays containing:
+
+* `blockchain_first_entry` — first block (or ledger) id on the blockchain
+* `blockchain_first_entry_date` — its date
+* `blockchair_first_entry` — first block id Blockchair processes
+* `blockchair_first_entry_date` — its date
+* `is_full` — whether we have the full history for this blockchain
+
+**Example output:**
+
+`https://api.blockchair.com/range`:
+
+```json
+{
+  "data": {
+    "bitcoin": {
+      "blockchain_first_entry": 0,
+      "blockchain_first_entry_date": "2009-01-03",
+      "blockchair_first_entry": 0,
+      "blockchair_first_entry_date": "2009-01-03",
+      "is_full": true
+    },
+    "bitcoin-cash": {
+      "blockchain_first_entry": 0,
+      "blockchain_first_entry_date": "2009-01-03",
+      "blockchair_first_entry": 0,
+      "blockchair_first_entry_date": "2009-01-03",
+      "is_full": true
+    },
+    "ethereum": {
+      "blockchain_first_entry": 0,
+      "blockchain_first_entry_date": "2015-07-30",
+      "blockchair_first_entry": 0,
+      "blockchair_first_entry_date": "2015-07-30",
+      "is_full": true
+    },
+    "litecoin": {
+      "blockchain_first_entry": 0,
+      "blockchain_first_entry_date": "2011-10-07",
+      "blockchair_first_entry": 0,
+      "blockchair_first_entry_date": "2011-10-07",
+      "is_full": true
+    },
+    "bitcoin-sv": {
+      "blockchain_first_entry": 0,
+      "blockchain_first_entry_date": "2009-01-03",
+      "blockchair_first_entry": 0,
+      "blockchair_first_entry_date": "2009-01-03",
+      "is_full": true
+    },
+    "dogecoin": {
+      "blockchain_first_entry": 0,
+      "blockchain_first_entry_date": "2013-12-06",
+      "blockchair_first_entry": 0,
+      "blockchair_first_entry_date": "2013-12-06",
+      "is_full": true
+    },
+    "dash": {
+      "blockchain_first_entry": 0,
+      "blockchain_first_entry_date": "2014-01-19",
+      "blockchair_first_entry": 0,
+      "blockchair_first_entry_date": "2014-01-19",
+      "is_full": true
+    },
+    "ripple": {
+      "blockchain_first_entry": 32570,
+      "blockchain_first_entry_date": "2013-01-01",
+      "blockchair_first_entry": 52688390,
+      "blockchair_first_entry_date": "2020-01-12",
+      "is_full": false
+    },
+    "groestlcoin": {
+      "blockchain_first_entry": 0,
+      "blockchain_first_entry_date": "2014-03-20",
+      "blockchair_first_entry": 0,
+      "blockchair_first_entry_date": "2014-03-20",
+      "is_full": true
+    },
+    "stellar": {
+      "blockchain_first_entry": 1,
+      "blockchain_first_entry_date": "2015-09-30",
+      "blockchair_first_entry": 27225363,
+      "blockchair_first_entry_date": "2019-12-11",
+      "is_full": false
+    },
+    "monero": {
+      "blockchain_first_entry": 0,
+      "blockchain_first_entry_date": "2014-04-18",
+      "blockchair_first_entry": 0,
+      "blockchair_first_entry_date": "2014-04-18",
+      "is_full": true
+    },
+    "bitcoin/testnet": {
+      "blockchain_first_entry": 0,
+      "blockchain_first_entry_date": "2011-02-02",
+      "blockchair_first_entry": 0,
+      "blockchair_first_entry_date": "2011-02-02",
+      "is_full": true
+    },
+    "ton/testnet": {
+      "blockchain_first_entry": 1,
+      "blockchain_first_entry_date": "2019-11-15",
+      "blockchair_first_entry": 1,
+      "blockchair_first_entry_date": "2019-11-15",
+      "is_full": true
+    }
+  },
+  "context": {
+    "code": 200,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
 
 
 
