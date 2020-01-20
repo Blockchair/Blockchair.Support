@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.41)
+* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.42)
 
 ### Please apply for an API key first
 
@@ -26,6 +26,8 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.42 - January 20th, 2020
+    * New endpoint to query the range of available blocks in blockchains we support: `https://api.blockchair.com/range`. Note that at this moment we don't store full historical data for Ripple and Stellar, so this endpoint is useful when you need to know which blocks can be queried.
 * v.2.0.41 - January 18th, 2020
     * Added alpha support for Monero. Here's the list of new endpoints (please refer to our documentation for more info: https://blockchair.com/api/docs):
         * `https://api.blockchair.com/monero/stats`
