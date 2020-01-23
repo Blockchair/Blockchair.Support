@@ -1,4 +1,5 @@
-# [Blockchair.com](https://blockchair.com/) API v.2.0.42 Documentation
+/usr/bin/php /Users/Alf/PhpstormProjects/Sandbox/mdgluer.php
+# [Blockchair.com](https://blockchair.com/) API v.2.0.43 Documentation
 
 ```
     ____  __           __        __          _     
@@ -26,8 +27,8 @@
     + [Stellar-like blockchain stats](#link_004)
     + [TON-like blockchain stats](#link_005)
     + [Monero-like blockchain stats](#link_006)
+    + [Cardano-like blockchain stats](#link_007)
     + [Omni Layer stats](#link_500)
-    + [Wormhole stats](#link_500)
     + [ERC-20 stats](#link_509)
 + [Dashboard endpoints](#link_M2) (Retrieve information about various entities in a neat format from our databases)
   + [Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, and Bitcoin Testnet](#link_M21)
@@ -67,6 +68,10 @@
       - [Block](#link_109)
       - [Transaction](#link_210)
       - [Outputs](#link_306)
+    - [Cardano](#link_M37)
+      - [Block](#link_110)
+      - [Transaction](#link_211)
+      - [Outputs](#link_307)
 + [Infinitable endpoints](#link_05) (SQL-like queries: filter, sort, and aggregate blockchain data)
     + [Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, and Bitcoin Testnet](#link_M41)
       + [Blocks](#link_102) (table)
@@ -96,7 +101,7 @@
 
 # <a name="link_M0"></a> Introduction
 
-Blockchair API provides developers with access to data contained in [13 different blockchains](#link_M01). Unlike other APIs, Blockchair also supports numerous analytical queries like filtering, sorting, and aggregating blockchain data.
+Blockchair API provides developers with access to data contained in [14 different blockchains](#link_M01). Unlike other APIs, Blockchair also supports numerous analytical queries like filtering, sorting, and aggregating blockchain data.
 
 Here are some examples of what you can build using our API:
 
@@ -120,13 +125,14 @@ Our API is free to try under some limitations, and we have a variety of premium 
 
 ## <a name="link_M01"></a> Supported blockchains and second layers
 
-As of today, our API supports **13 blockchains** (11 mainnets and 2 testnets) divided into 5 groups:
+As of today, our API supports **14 blockchains** (12 mainnets and 2 testnets) divided into 7 groups:
 * Bitcoin-like blockchains (Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Bitcoin Testnet), also known as UTXO-based blockchains
 * Ethereum-like blockchains (Ethereum)
 * Ripple-like blockchains (Ripple)
 * Stellar-like blockchains (Stellar)
 * TON-like blockchains (Telegram Open Network Testnet)
 * Monero-like blockchains (Monero)
+* Cardano-like blockchains (Cardano)
 
 Within a group, there's no or little difference between the set of available endpoints and their output. 
 
@@ -145,6 +151,7 @@ Here's the list of available mainnets:
 | Groestlcoin | Bitcoin-like | `https://api.blockchair.com/groestlcoin` | Full support, community-backed till June 18th, 2020 |
 | Stellar | Stellar-like | `https://api.blockchair.com/stellar` | Alpha mode, possible compatibility-breaking changes |
 | Monero | Monero-like | `https://api.blockchair.com/monero` | Alpha mode, possible compatibility-breaking changes |
+| Cardano | Cardano-like | `https://api.blockchair.com/cardano` | Alpha mode, possible compatibility-breaking changes |
 
 There are also following testnets supported which are technically considered as separate blockchains:
 
@@ -164,9 +171,9 @@ As a general rule, if we add a blockchain to our platform, it means we'll suppor
 
 For some of the blockchains we support we don't store full historical data. These blockchains are: `Ripple`, `Stellar`. That means you won't be able to query some old blocks, and the transaction list for an address may not show some old transactions. See [Available block ranges](#link_510) API endpoint to get data on which blocks are available in these blockchains. All other blockchains have full historical data. It's our intent to have full historical data for all blockchains.
 
-Blockchair API also supports **3 layer 2 solutions** (tokens) divided into 2 groups:
+Blockchair API also supports **2 layer 2 solutions** (tokens) divided into 2 groups:
 
-* Omni-like tokens (Omni Layer on top of Bitcoin, Wormhole on top of Bitcoin Cash)
+* Omni-like tokens (Omni Layer on top of Bitcoin)
 * ERC-20-like tokens (ERC-20's on top of Ethereum)
 
 Like with blockchains, within a group, there's no or little difference between the available endpoints. 
@@ -174,10 +181,11 @@ Like with blockchains, within a group, there's no or little difference between t
 | Layer 2    | Group       | Parent blockchain | API path prefix                                    | Support status                                   |
 | ---------- | ----------- | ----------------- | -------------------------------------------------- | ------------------------------------------------ |
 | Omni Layer | Omni-like   | Bitcoin           | `https://api.blockchair.com/bitcoin/omni`          | Alpha support                                    |
-| Wormhole   | Omni-like   | Bitcoin Cash      | `https://api.blockchair.com/bitcoin-cash/wormhole` | Deprecated, alpha support till January 1st, 2020 |
 | ERC-20     | ERC-20-like | Ethereum          | `https://api.blockchair.com/ethereum/erc-20`       | Beta support                                     |
 
-We also plan to bring ERC-721 support in the near future. Please note that we'll be dropping support for Wormhole on January 1st, 2020 as it's not used by anyone anymore.
+We also plan to bring ERC-721 support in the near future.
+
+Wormhole support was dropped on January 1st, 2020 with a 3-month notice as it's not used by anyone anymore.
 
 
 
@@ -191,6 +199,7 @@ This is the full list of available API endpoints.
 - `{:xlm_chain}` can be only `stellar`
 - `{:ton_chain}` can be only `ton/testnet`
 - `{:xmr_chain}` can be only `monero`
+- `{:ada_chain}` can be only `cardano`
 
 | Endpoint path                             | Docs | Base request cost | Status |
 | ----------------------------------------------- | :----------------: | -----------------------------: | :---------------------------------------------: |
@@ -202,6 +211,7 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:xlm_chain}/stats` | [👉](#link_004) | `1` | Alpha |
 | `https://api.blockchair.com/{:ton_chain}/stats` | [👉](#link_005) | `1` | Alpha |
 | `https://api.blockchair.com/{:xmr_chain}/stats` | [👉](#link_006) | `1` | Alpha |
+| `https://api.blockchair.com/{:ada_chain}/stats` | [👉](#link_007) | `1` | Alpha |
 | **Block-related information** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/block/{:height}₀` | [👉](#link_100) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/block/{:hash}₀` | [👉](#link_100) | `1` | Stable |
@@ -223,6 +233,8 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:ton_chain}/raw/block/{:tuple}₀` | [👉](#link_108) | `1` | Alpha |
 | `https://api.blockchair.com/{:xmr_chain}/raw/block/{:height}₀` | [👉](#link_109) | `1` | Alpha |
 | `https://api.blockchair.com/{:xmr_chain}/raw/block/{:hash}₀` | [👉](#link_109) | `1` | Alpha |
+| `https://api.blockchair.com/{:ada_chain}/raw/block/{:height}₀` | [👉](#link_110) | `1` | Alpha |
+| `https://api.blockchair.com/{:ada_chain}/raw/block/{:hash}₀` | [👉](#link_110) | `1` | Alpha |
 | **Transaction-related information and actions** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/transaction/{:hash}₀` | [👉](#link_200) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/transactions/{:hash}₀,...,{:hash}ᵩ` | [👉](#link_200) | `1 + 0.1*c` | Stable |
@@ -240,6 +252,7 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:xlm_chain}/raw/transaction/{:hash}₀` | [👉](#link_208) | `1` | Alpha |
 | `https://api.blockchair.com/{:ton_chain}/raw/transaction/{:tuple}₀` | [👉](#link_209) | `1` | Alpha |
 | `https://api.blockchair.com/{:xmr_chain}/raw/transaction/{:hash}₀` | [👉](#link_210) | `1` | Alpha |
+| `https://api.blockchair.com/{:ada_chain}/raw/transaction/{:hash}₀` | [👉](#link_211) | `1` | Alpha |
 | **Address-related information** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀` | [👉](#link_300) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/addresses/{:address}₀,...,{:address}ᵩ` | [👉](#link_300) | `1 + 0.1*c` | Stable |
@@ -249,6 +262,7 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:xrp_chain}/raw/account/{:address}₀` | [👉](#link_303) | `1` | Alpha |
 | `https://api.blockchair.com/{:xlm_chain}/raw/account/{:address}₀` | [👉](#link_304) | `1` | Alpha |
 | `https://api.blockchair.com/{:ton_chain}/raw/account/{:address}₀` | [👉](#link_305) | `1` | Alpha |
+| `https://api.blockchair.com/{:ada_chain}/raw/address/{:address}₀` | [👉](#link_307) | `1` | Alpha |
 | **Special entities** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/outputs?{:query}` | [👉](#link_400) | `10` | Beta |
 | `https://api.blockchair.com/{:btc_chain}/mempool/outputs?{:query}` | [👉](#link_400) | `2` | Beta |
@@ -442,6 +456,7 @@ If you require data on just one blockchain, please use `https://api.blockchair.c
 - Stellar
 - Telegram Open Network Testnet
 - Monero
+- Cardano
 
 Note that Bitcoin Testnet stats are not included in this output, and TON Testnet will be changed to TON Mainnet as soon as it's launched.
 
@@ -523,6 +538,12 @@ Description of the fields is available in the next three sections of documentati
     "monero": {
       "data": {
         "blocks": 2014108,
+        ...
+      }
+    },
+    "cardano": {
+      "data": {
+        "blocks": 3673733,
         ...
       }
     }
@@ -714,7 +735,7 @@ Always `1`.
 - `inflation_usd_24h` — the same in USD
 - `largest_transaction_24h`:  array of `hash` and `value_usd` — biggest payment over the last 24 hours
 - `market_price_usd` — average market price of 1 coin in USD (market data source: CoinGecko)
-- `market_price_btc` — average market price of 1 coin in BTC (for Bitcoin it always returns 1)
+- `market_price_btc` — average market price of 1 coin in BTC
 - `market_price_usd_change_24h_percentage` — market price change in percent for 24 hours
 - `market_cap_usd` — market capitalization (coins in circulation * price per coin in USD)
 - `market_dominance_percentage` — dominance index (how much % of the total cryptocurrency market is the market capitalization of the coin)
@@ -825,7 +846,7 @@ Always `1`.
 - `inflation_usd_24h` — the same in USD
 - `largest_transaction_24h`:  array of `hash` and `value_usd` — biggest payment over the last 24 hours
 - `market_price_usd` — average market price of 1 coin in USD (market data source: CoinGecko)
-- `market_price_btc` — average market price of 1 coin in BTC (for Bitcoin it always returns 1)
+- `market_price_btc` — average market price of 1 coin in BTC
 - `market_price_usd_change_24h_percentage` — market price change in percent for 24 hours
 - `market_cap_usd` — market capitalization (coins in circulation * price per coin in USD)
 - `market_dominance_percentage` — dominance index (how much % of the total cryptocurrency market is the market capitalization of the coin)
@@ -905,7 +926,7 @@ Always `1`.
 - `average_transaction_fee_24h` —  average transaction fee over the last 24 hours
 - `average_transaction_fee_usd_24h` — the same in USD
 - `market_price_usd` — average market price of 1 coin in USD (market data source: CoinGecko)
-- `market_price_btc` — average market price of 1 coin in BTC (for Bitcoin it always returns 1)
+- `market_price_btc` — average market price of 1 coin in BTC
 - `market_price_usd_change_24h_percentage` — market price change in percent for 24 hours
 - `market_cap_usd` — market capitalization (coins in circulation * price per coin in USD)
 - `market_dominance_percentage` — dominance index (how much % of the total cryptocurrency market is the market capitalization of the coin)
@@ -938,8 +959,6 @@ Always `1`.
   },
   "context": {
     "code": 200,
-    "results": 1,
-    "state": 26602978,
     ...
   }
 }
@@ -990,7 +1009,10 @@ Always `1`.
     "blocks_24h": 26000,
     "transactions_24h": 130000
   },
-  ...
+  "context": {
+    "code": 200,
+    ...
+  }
 }
 ```
 
@@ -1025,7 +1047,7 @@ Always `1`.
 * `mempool_transactions` — number of transactions in the mempool
 * `mempool_size` — mempool size in bytes
 * `market_price_usd` — average market price of 1 coin in USD (market data source: CoinGecko)
-* `market_price_btc` — average market price of 1 coin in BTC (for Bitcoin it always returns 1)
+* `market_price_btc` — average market price of 1 coin in BTC
 * `market_price_usd_change_24h_percentage` — market price change in percent for 24 hours
 * `market_cap_usd` — market capitalization (coins in circulation * price per coin in USD)
 * `market_dominance_percentage` — dominance index (how much % of the total cryptocurrency market is the market capitalization of the coin)
@@ -1073,14 +1095,82 @@ Always `1`.
 
 
 
+## <a name="link_007"></a> Cardano-like blockchain stats
+
+**Endpoint:**
+
+* `https://api.blockchair.com/cardano/stats`
+
+**Output:**
+
+`data` contains an array with blockchain statistics:
+
+* `blocks` — total number of blocks
+* `transactions` — total number of transactions
+* `circulation` — number of coins in circulation (in satoshi)
+* `blockchain_size` — total size of all blocks in bytes (note: it's not the size of a full node, it's just bare blocks; nodes are bigger in size as they use database indexing, etc)
+* `best_block_epoch` — the latest epoch number
+* `best_block_slot` — the latest slot number
+* `best_block_height` — the latest block height
+* `best_block_hash` — the latest block hash
+* `best_block_time` — the latest block time
+* `blocks_24h` — number of blocks over the last 24 hours
+* `transactions_24h` — number of transactions over the last 24 hours
+* `market_price_usd` — average market price of 1 coin in USD (market data source: CoinGecko)
+* `market_price_btc` — average market price of 1 coin in BTC
+* `market_price_usd_change_24h_percentage` — market price change in percent for 24 hours
+* `market_cap_usd` — market capitalization (coins in circulation * price per coin in USD)
+* `market_dominance_percentage` — dominance index (how much % of the total cryptocurrency market is the market capitalization of the coin)
+* `countdowns` (optional) — an optional array of events ([`event`, `time_left`] format), where `time_left` is the number of seconds till the `event`
+
+**Example output:**
+
+`https://api.blockchair.com/cardano/stats`:
+
+```json
+{
+  "data": {
+    "blocks": 3673733,
+    "transactions": 1725714,
+    "best_block_epoch": 170,
+    "best_block_slot": 3790,
+    "best_block_height": 3673733,
+    "best_block_hash": "d70406d8707105b333f2107d6d786316f8232fd8c7beb9565b02f134fe1c03f2",
+    "best_block_time": "2020-01-22 18:48:11",
+    "blocks_24h": 4320,
+    "transactions_24h": 1987,
+    "circulation": 31112169560261348,
+    "blockchain_size": 3474703715,
+    "market_price_usd": 0.04703496,
+    "market_price_btc": 0.000004687558301774,
+    "market_price_usd_change_24h_percentage": -3.43458,
+    "market_cap_usd": 1465483381,
+    "market_dominance_percentage": 0.55
+  },
+  "context": {
+    "code": 200,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/cardano
+
+
+
 ## <a name="link_500"></a> Omni Layer and Wormhole stats
 
-Allows to retrieve the some basic stats on Omni Layer (Bitcoin) and Wormhole (Bitcoin Cash). Since Wormhole is based on Omni Layer, the output is the same for both. Note that this endpoint is in the Alpha stage, and Wormhole is deprecated on our platform.
+Allows to retrieve the some basic stats on Omni Layer (Bitcoin). Note that this endpoint is in the Alpha stage, and Wormhole (Bitcoin Cash Omni-like token system) was phased out on January 1st, 2020.
 
-**Endpoints:**
+**Endpoint:**
 
 - `https://api.blockchair.com/bitcoin/omni/stats`
-- `https://api.blockchair.com/bitcoin-cash/wormhole/stats`
 
 **Output:**
 
@@ -1092,12 +1182,11 @@ Allows to retrieve the some basic stats on Omni Layer (Bitcoin) and Wormhole (Bi
 - `transactions_approximate` — approximate number of transactions
 - `latest_transactions` — array of 10 latest transactions
 
-Note that the "mainnet" and "testnet" terms don't imply using Bitcoin Testnet (or Bitcoin Cash Testnet), the idea behind that is "testnet" properties still live on the Bitcoin Mainnet (or Bitcoin Cash Mainnet), but they have should have no monetary value, and their purpose is for testing only.
+Note that the "mainnet" and "testnet" terms don't imply using Bitcoin Testnet, the idea behind that is "testnet" properties still live on the Bitcoin Mainnet, but they have should have no monetary value, and their purpose is for testing only.
 
-**Example requests:**
+**Example request:**
 
 - `https://api.blockchair.com/bitcoin/omni/stats`
-- `https://api.blockchair.com/bitcoin-cash/wormhole/stats`
 
 **Example output:**
 
@@ -1138,10 +1227,9 @@ Note that the "mainnet" and "testnet" terms don't imply using Bitcoin Testnet (o
 
 Always `1`.
 
-**Explore visualizations on our front-end:**
+**Explore visualization on our front-end:**
 
 - https://blockchair.com/bitcoin/omni
-- https://blockchair.com/bitcoin-cash/wormhole
 
 
 
@@ -2625,12 +2713,11 @@ Notes:
 
 ### <a name="link_501"></a> Omni Layer and Wormhole property info
 
-Allows to retrieve the some basic information on an Omni Layer (Bitcoin) or Wormhole (Bitcoin Cash) property (token). Since Wormhole is based on Omni Layer, the output is the same for both. Note that this endpoint is in the Alpha stage, and Wormhole is deprecated on our platform.
+Allows to retrieve the some basic information on an Omni Layer (Bitcoin) property (token).
 
 **Endpoints:**
 
 * `https://api.blockchair.com/bitcoin/omni/dashboards/property/{:prorerty_id}`
-* `https://api.blockchair.com/bitcoin-cash/wormhole/dashboards/property/{:prorerty_id}`
 
 **Where:**
 
@@ -2640,10 +2727,9 @@ Allows to retrieve the some basic information on an Omni Layer (Bitcoin) or Worm
 
 `data` contains information about the property, fields accord with Omni Layer specification (https://github.com/OmniLayer/spec)
 
-**Example requests:**
+**Example request:**
 
 - `https://api.blockchair.com/bitcoin/omni/dashboards/property/31`
-- `https://api.blockchair.com/bitcoin-cash/wormhole/stats/property/1`
 
 **Example output:**
 
@@ -2681,10 +2767,9 @@ Allows to retrieve the some basic information on an Omni Layer (Bitcoin) or Worm
 
 Always `1`.
 
-**Explore visualizations on our front-end:**
+**Explore visualization on our front-end:**
 
 - https://blockchair.com/bitcoin/omni/property/31
-- https://blockchair.com/bitcoin-cash/wormhole/property/1
 
 
 
@@ -4529,6 +4614,7 @@ Returns raw block data from our `onion-monero-blockchain-explorer` instance. See
 - `{:query}` is the query string:
   - `txprove=0` checks which outputs belong to given address and corresponding viewkey
   - `txprove=1` proves the sender sent funds
+  - `txhash` is the transaction hash
   - `address` is the address
   - `viewkey` is the viewkey
 
@@ -4654,6 +4740,506 @@ Always `1`.
 **Explore visualization on our front-end:**
 
 - https://blockchair.com/monero/transaction/8e6a144dee7537a38e87f30e7c1f2bc1a35e5ef8b5032dfa7cf89a2df3073c41 (enter the address and the viewkey)
+
+
+
+## <a name="link_M37"></a> Raw data endpoints for Cardano
+
+
+
+### <a name="link_110"></a> Raw block data
+
+Returns raw block data from our `cardano-explorer-webapi` instance. See https://cardanodocs.com/technical/explorer/api for field descriptions (`/api/blocks/summary/{hash}` section), but mostly they are self-describing. Our API also allows to query by block id.
+
+**Endpoints:**
+
+- `https://api.blockchair.com/{:ada_chain}/raw/block/{:height}₀`
+- `https://api.blockchair.com/{:ada_chain}/raw/block/{:hash}₀`
+
+**Where:**
+
+- `{:ada_chain}` can be only `cardano`
+- `{:height}ᵢ` is the block height (integer value), also known as block id
+- `{:hash}ᵢ` is the block hash (regex: `/^[0-9a-f]{64}$/i`)
+
+**Possible options:**
+
+- `?transactions=true` displays transaction data
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:id}ᵢ.block` — block data
+- `data.{:id}ᵢ.block` — block transactions (`null` if `?transactions=true` isn't set, an empty array `[]` if there are no transactions in the block )
+
+**Example requests:**
+
+- `https://api.blockchair.com/cardano/raw/block/1234567`
+- `https://api.blockchair.com/monero/raw/block/f093439d0dd48010a22fdb615a659e22738a10991871b5dc2335efa69008a8cd?transactions=true`
+
+**Example output:**
+
+`https://api.blockchair.com/cardano/raw/block/321123?transactions=true`:
+
+```json
+{
+  "data": {
+    "321123": {
+      "block": {
+        "cbsEntry": {
+          "cbeEpoch": 14,
+          "cbeSlot": 18766,
+          "cbeBlkHeight": 321123,
+          "cbeBlkHash": "f2568f498ad9d376cb1620ec00555171439fd241b5a66ecb700aeca5310422b1",
+          "cbeTimeIssued": 1512626411,
+          "cbeTxNum": 2,
+          "cbeTotalSent": {
+            "getCoin": "6428170796567000000"
+          },
+          "cbeSize": 1390,
+          "cbeBlockLead": "5411c7bf87c252609831a337a713e4859668cba7bba70a9c3ef7c398",
+          "cbeFees": {
+            "getCoin": "342492000000"
+          }
+        },
+        "cbsPrevHash": "7394430cf20bb55270f596106db75abd8dc56a4450f5f18ebc672fc9454389ad",
+        "cbsNextHash": "eb3dce1bb6ec8a3fcbffca7cd43ca37d27d4f6bcde106b01d6e7ad6ca9c622f1",
+        "cbsMerkleRoot": "83efc565aa681e5987c1721c1ac918fd246116157a66ca313be00315d10d9829"
+      },
+      "transactions": [
+        {
+          "ctbId": "5641a3c38fd200aa49df75690e9ea48526da874b336913868cd4b7aebfeb4107",
+          "ctbTimeIssued": 1512626411,
+          "ctbInputs": [
+            {
+              "ctaAddress": {
+                "unCAddress": "DdzFFzCqrhsjyGfac6fkMYYCw9Ny5kHpyz48muHKMba4wAvAHT61FBF5JN7KPRuauJZtk41nh8WmDZhQpPVwNejsdk8kW1FZKwbTqgzr"
+              },
+              "ctaAmount": {
+                "getCoin": "3214070827317"
+              },
+              "ctaTxHash": "c571fa570cc4250bbdead41509fb1d906133c9d206225c77b23759f117ac88a6",
+              "ctaTxIndex": 0
+            }
+          ],
+          "ctbOutputs": [
+            {
+              "ctaAddress": {
+                "unCAddress": "DdzFFzCqrhseaXNVDcCXmbtY7rFbpdMp5dv2Znx7njXkGgAzq8NyAA4T9wfWvBR3wK5H7Q6ARVSnBysnfdY844iMZ4wSyDLkbCoB7W1k"
+              },
+              "ctaAmount": {
+                "getCoin": "6097360975"
+              },
+              "ctaTxHash": "abb8159acc49c89ed3ce1066884e93d94f4469db1cc5ea76031c8062c37c4348",
+              "ctaTxIndex": 1
+            },
+            {
+              "ctaAddress": {
+                "unCAddress": "DdzFFzCqrhsgFPX9T4QefXVuRxuAtiXouLbrwa9zGn2PKyCqv7aKqDGHLMBdSTGyCihB17MjTwN7iZq4XeEpAbwqkUKHzyXY6xtLqQyF"
+              },
+              "ctaAmount": {
+                "getCoin": "3208002779521"
+              },
+              "ctaTxHash": "abb8159acc49c89ed3ce1066884e93d94f4469db1cc5ea76031c8062c37c4348",
+              "ctaTxIndex": 0
+            },
+            {
+              "ctaAddress": {
+                "unCAddress": "DdzFFzCqrht368NFCQotpKy2mKzJQXPyZUvTZ2Vjx6pMP7jc82T13et6wc6cZJtQTqWxVhY5kwmirWZkQLLszGgcrr2LV9FyPZtq5E3P"
+              },
+              "ctaAmount": {
+                "getCoin": "165464412631"
+              },
+              "ctaTxHash": "5641a3c38fd200aa49df75690e9ea48526da874b336913868cd4b7aebfeb4107",
+              "ctaTxIndex": 1
+            },
+            {
+              "ctaAddress": {
+                "unCAddress": "DdzFFzCqrhszNt18zTvCzom5qbtiDaJLPHNYbXfYnD4ScT3ZLXKQe4YC3jLraWeFuzXQ7gqN5cnYDUS3VrqxKGx3E5cz6mdtFuEoXUDs"
+              },
+              "ctaAmount": {
+                "getCoin": "3048606243440"
+              },
+              "ctaTxHash": "5641a3c38fd200aa49df75690e9ea48526da874b336913868cd4b7aebfeb4107",
+              "ctaTxIndex": 0
+            }
+          ],
+          "ctbInputSum": {
+            "getCoin": "3214070827317"
+          },
+          "ctbOutputSum": {
+            "getCoin": "6428170796567"
+          },
+          "ctbFees": {
+            "getCoin": "-3214099969250"
+          }
+        },
+        {
+          "ctbId": "abb8159acc49c89ed3ce1066884e93d94f4469db1cc5ea76031c8062c37c4348",
+          "ctbTimeIssued": 1512626411,
+          "ctbInputs": [
+            {
+              "ctaAddress": {
+                "unCAddress": "DdzFFzCqrhsniCkr7dmbXovTkGWbqYLFefc6sLqbJPi6HguiS8J5yCqGdYCPUuPf5HtctdLAiP9AFPQZPW3fprxWNuP1y45UVuRMvpie"
+              },
+              "ctaAmount": {
+                "getCoin": "3214100311742"
+              },
+              "ctaTxHash": "6b5d6cdfcb0da57430ad80ec18fb9e2ccaf9ae1e4b0d9f1361c267aaf57dfa7d",
+              "ctaTxIndex": 0
+            }
+          ],
+          "ctbOutputs": [
+            {
+              "ctaAddress": {
+                "unCAddress": "DdzFFzCqrhseaXNVDcCXmbtY7rFbpdMp5dv2Znx7njXkGgAzq8NyAA4T9wfWvBR3wK5H7Q6ARVSnBysnfdY844iMZ4wSyDLkbCoB7W1k"
+              },
+              "ctaAmount": {
+                "getCoin": "6097360975"
+              },
+              "ctaTxHash": "abb8159acc49c89ed3ce1066884e93d94f4469db1cc5ea76031c8062c37c4348",
+              "ctaTxIndex": 1
+            },
+            {
+              "ctaAddress": {
+                "unCAddress": "DdzFFzCqrhsgFPX9T4QefXVuRxuAtiXouLbrwa9zGn2PKyCqv7aKqDGHLMBdSTGyCihB17MjTwN7iZq4XeEpAbwqkUKHzyXY6xtLqQyF"
+              },
+              "ctaAmount": {
+                "getCoin": "3208002779521"
+              },
+              "ctaTxHash": "abb8159acc49c89ed3ce1066884e93d94f4469db1cc5ea76031c8062c37c4348",
+              "ctaTxIndex": 0
+            },
+            {
+              "ctaAddress": {
+                "unCAddress": "DdzFFzCqrht368NFCQotpKy2mKzJQXPyZUvTZ2Vjx6pMP7jc82T13et6wc6cZJtQTqWxVhY5kwmirWZkQLLszGgcrr2LV9FyPZtq5E3P"
+              },
+              "ctaAmount": {
+                "getCoin": "165464412631"
+              },
+              "ctaTxHash": "5641a3c38fd200aa49df75690e9ea48526da874b336913868cd4b7aebfeb4107",
+              "ctaTxIndex": 1
+            },
+            {
+              "ctaAddress": {
+                "unCAddress": "DdzFFzCqrhszNt18zTvCzom5qbtiDaJLPHNYbXfYnD4ScT3ZLXKQe4YC3jLraWeFuzXQ7gqN5cnYDUS3VrqxKGx3E5cz6mdtFuEoXUDs"
+              },
+              "ctaAmount": {
+                "getCoin": "3048606243440"
+              },
+              "ctaTxHash": "5641a3c38fd200aa49df75690e9ea48526da874b336913868cd4b7aebfeb4107",
+              "ctaTxIndex": 0
+            }
+          ],
+          "ctbInputSum": {
+            "getCoin": "3214100311742"
+          },
+          "ctbOutputSum": {
+            "getCoin": "6428170796567"
+          },
+          "ctbFees": {
+            "getCoin": "-3214070484825"
+          }
+        }
+      ]
+    }
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 3677155,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+`1`. If `?transactions=true` option is used then `2`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/cardano/block/321123
+
+
+
+### <a name="link_211"></a> Raw transaction data
+
+Returns raw block data from our `cardano-explorer-webapi` instance. See https://cardanodocs.com/technical/explorer/api for field descriptions (`/api/txs/summary/{txid}` section), but mostly they are self-describing.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:ada_chain}/raw/transaction/{:hash}₀`
+
+**Where:**
+
+- `{:ada_chain}` can only be `cardano`
+- `{:hash}ᵢ` is the transaction hash (regex: `/^[0-9a-f]{64}$/i`)
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:hash}ᵢ.transaction` — transaction data
+
+**Example requests:**
+
+- `https://api.blockchair.com/cardano/raw/transaction/5641a3c38fd200aa49df75690e9ea48526da874b336913868cd4b7aebfeb4107`
+
+**Example output:**
+
+`https://api.blockchair.com/cardano/raw/transaction/5641a3c38fd200aa49df75690e9ea48526da874b336913868cd4b7aebfeb4107`:
+
+```json
+{
+  "data": {
+    "5641a3c38fd200aa49df75690e9ea48526da874b336913868cd4b7aebfeb4107": {
+      "transaction": {
+        "ctsId": "5641a3c38fd200aa49df75690e9ea48526da874b336913868cd4b7aebfeb4107",
+        "ctsTxTimeIssued": 1512626411,
+        "ctsBlockTimeIssued": 1512626411,
+        "ctsBlockHeight": 321123,
+        "ctsBlockEpoch": 14,
+        "ctsBlockSlot": 18766,
+        "ctsBlockHash": "f2568f498ad9d376cb1620ec00555171439fd241b5a66ecb700aeca5310422b1",
+        "ctsRelayedBy": null,
+        "ctsTotalInput": {
+          "getCoin": "3214070827317"
+        },
+        "ctsTotalOutput": {
+          "getCoin": "3214070656071"
+        },
+        "ctsFees": {
+          "getCoin": "171246"
+        },
+        "ctsInputs": [
+          {
+            "ctaAddress": {
+              "unCAddress": "DdzFFzCqrhsjyGfac6fkMYYCw9Ny5kHpyz48muHKMba4wAvAHT61FBF5JN7KPRuauJZtk41nh8WmDZhQpPVwNejsdk8kW1FZKwbTqgzr"
+            },
+            "ctaAmount": {
+              "getCoin": "3214070827317"
+            },
+            "ctaTxHash": "c571fa570cc4250bbdead41509fb1d906133c9d206225c77b23759f117ac88a6",
+            "ctaTxIndex": 0
+          }
+        ],
+        "ctsOutputs": [
+          {
+            "ctaAddress": {
+              "unCAddress": "DdzFFzCqrht368NFCQotpKy2mKzJQXPyZUvTZ2Vjx6pMP7jc82T13et6wc6cZJtQTqWxVhY5kwmirWZkQLLszGgcrr2LV9FyPZtq5E3P"
+            },
+            "ctaAmount": {
+              "getCoin": "165464412631"
+            },
+            "ctaTxHash": "5641a3c38fd200aa49df75690e9ea48526da874b336913868cd4b7aebfeb4107",
+            "ctaTxIndex": 1
+          },
+          {
+            "ctaAddress": {
+              "unCAddress": "DdzFFzCqrhszNt18zTvCzom5qbtiDaJLPHNYbXfYnD4ScT3ZLXKQe4YC3jLraWeFuzXQ7gqN5cnYDUS3VrqxKGx3E5cz6mdtFuEoXUDs"
+            },
+            "ctaAmount": {
+              "getCoin": "3048606243440"
+            },
+            "ctaTxHash": "5641a3c38fd200aa49df75690e9ea48526da874b336913868cd4b7aebfeb4107",
+            "ctaTxIndex": 0
+          }
+        ]
+      }
+    }
+  },
+  "context": {
+    "code": 200,
+    "source": "D",
+    "results": 1,
+    "state": 3677165,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/cardano/transaction/5641a3c38fd200aa49df75690e9ea48526da874b336913868cd4b7aebfeb4107
+
+
+
+### <a name="link_307"></a> Raw address data
+
+Returns raw block data from our `cardano-explorer-webapi` instance. See https://cardanodocs.com/technical/explorer/api for field descriptions (`/api/addresses/summary/{address}` section), but mostly they are self-describing.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:ada_chain}/raw/address/{:address}₀`
+
+**Where:**
+
+- `{:ada_chain}` can only be `cardano`
+- `{:address}ᵢ` is the address
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:address}ᵢ.address` — address data
+
+**Example request:**
+
+- `https://api.blockchair.com/cardano/raw/address/DdzFFzCqrhsjyGfac6fkMYYCw9Ny5kHpyz48muHKMba4wAvAHT61FBF5JN7KPRuauJZtk41nh8WmDZhQpPVwNejsdk8kW1FZKwbTqgzr`
+
+**Example output:**
+
+`https://api.blockchair.com/cardano/raw/address/DdzFFzCqrhsjyGfac6fkMYYCw9Ny5kHpyz48muHKMba4wAvAHT61FBF5JN7KPRuauJZtk41nh8WmDZhQpPVwNejsdk8kW1FZKwbTqgzr`:
+
+```json
+{
+  "data": {
+    "DdzFFzCqrhsjyGfac6fkMYYCw9Ny5kHpyz48muHKMba4wAvAHT61FBF5JN7KPRuauJZtk41nh8WmDZhQpPVwNejsdk8kW1FZKwbTqgzr": {
+      "address": {
+        "caAddress": {
+          "unCAddress": "DdzFFzCqrhsjyGfac6fkMYYCw9Ny5kHpyz48muHKMba4wAvAHT61FBF5JN7KPRuauJZtk41nh8WmDZhQpPVwNejsdk8kW1FZKwbTqgzr"
+        },
+        "caType": "CPubKeyAddress",
+        "caChainTip": {
+          "ctBlockNo": 3677186,
+          "ctSlotNo": 3679243,
+          "ctBlockHash": "972695ba985f68001bfef72d6c7454e3cc92fd8ac02ff7c00d848cded1e190db"
+        },
+        "caTxNum": 2,
+        "caBalance": {
+          "getCoin": "0"
+        },
+        "caTotalInput": {
+          "getCoin": "3214070827317"
+        },
+        "caTotalOutput": {
+          "getCoin": "3214070827317"
+        },
+        "caTotalFee": {
+          "getCoin": "342492"
+        },
+        "caTxList": [
+          {
+            "ctbId": "c571fa570cc4250bbdead41509fb1d906133c9d206225c77b23759f117ac88a6",
+            "ctbTimeIssued": 1512609191,
+            "ctbInputs": [
+              {
+                "ctaAddress": {
+                  "unCAddress": "DdzFFzCqrhsvsU8xNsq7eanKQAJVpzFyUzjZqTqsYCQ1wj8STUgvCBGUH5DGjrsuuuNi4as6MQfY3jmqRxPKxmuyPH8T1LMyghxr82Xb"
+                },
+                "ctaAmount": {
+                  "getCoin": "3234070798563"
+                },
+                "ctaTxHash": "fcf9be849290d0228fb339f125fe7c47c71909633e9f93c65f4e4222fb362ded",
+                "ctaTxIndex": 0
+              }
+            ],
+            "ctbOutputs": [
+              {
+                "ctaAddress": {
+                  "unCAddress": "DdzFFzCqrhsegE9H92jxSgEHv3W4mSLWq5ELTJiK4DTnZ8frf4squEQmFbvzjTeUsMiLe287qUZSsb8USXhf5i7WR5DTbJuSUfLEFu1q"
+                },
+                "ctaAmount": {
+                  "getCoin": "19999800000"
+                },
+                "ctaTxHash": "c571fa570cc4250bbdead41509fb1d906133c9d206225c77b23759f117ac88a6",
+                "ctaTxIndex": 1
+              },
+              {
+                "ctaAddress": {
+                  "unCAddress": "DdzFFzCqrhsjyGfac6fkMYYCw9Ny5kHpyz48muHKMba4wAvAHT61FBF5JN7KPRuauJZtk41nh8WmDZhQpPVwNejsdk8kW1FZKwbTqgzr"
+                },
+                "ctaAmount": {
+                  "getCoin": "3214070827317"
+                },
+                "ctaTxHash": "c571fa570cc4250bbdead41509fb1d906133c9d206225c77b23759f117ac88a6",
+                "ctaTxIndex": 0
+              }
+            ],
+            "ctbInputSum": {
+              "getCoin": "3234070798563"
+            },
+            "ctbOutputSum": {
+              "getCoin": "3234070627317"
+            },
+            "ctbFees": {
+              "getCoin": "171246"
+            }
+          },
+          {
+            "ctbId": "5641a3c38fd200aa49df75690e9ea48526da874b336913868cd4b7aebfeb4107",
+            "ctbTimeIssued": 1512626411,
+            "ctbInputs": [
+              {
+                "ctaAddress": {
+                  "unCAddress": "DdzFFzCqrhsjyGfac6fkMYYCw9Ny5kHpyz48muHKMba4wAvAHT61FBF5JN7KPRuauJZtk41nh8WmDZhQpPVwNejsdk8kW1FZKwbTqgzr"
+                },
+                "ctaAmount": {
+                  "getCoin": "3214070827317"
+                },
+                "ctaTxHash": "c571fa570cc4250bbdead41509fb1d906133c9d206225c77b23759f117ac88a6",
+                "ctaTxIndex": 0
+              }
+            ],
+            "ctbOutputs": [
+              {
+                "ctaAddress": {
+                  "unCAddress": "DdzFFzCqrht368NFCQotpKy2mKzJQXPyZUvTZ2Vjx6pMP7jc82T13et6wc6cZJtQTqWxVhY5kwmirWZkQLLszGgcrr2LV9FyPZtq5E3P"
+                },
+                "ctaAmount": {
+                  "getCoin": "165464412631"
+                },
+                "ctaTxHash": "5641a3c38fd200aa49df75690e9ea48526da874b336913868cd4b7aebfeb4107",
+                "ctaTxIndex": 1
+              },
+              {
+                "ctaAddress": {
+                  "unCAddress": "DdzFFzCqrhszNt18zTvCzom5qbtiDaJLPHNYbXfYnD4ScT3ZLXKQe4YC3jLraWeFuzXQ7gqN5cnYDUS3VrqxKGx3E5cz6mdtFuEoXUDs"
+                },
+                "ctaAmount": {
+                  "getCoin": "3048606243440"
+                },
+                "ctaTxHash": "5641a3c38fd200aa49df75690e9ea48526da874b336913868cd4b7aebfeb4107",
+                "ctaTxIndex": 0
+              }
+            ],
+            "ctbInputSum": {
+              "getCoin": "3214070827317"
+            },
+            "ctbOutputSum": {
+              "getCoin": "3214070656071"
+            },
+            "ctbFees": {
+              "getCoin": "171246"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "context": {
+    "code": 200,
+    "source": "D",
+    "results": 1,
+    "state": 3677186,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/cardano/address/DdzFFzCqrhsjyGfac6fkMYYCw9Ny5kHpyz48muHKMba4wAvAHT61FBF5JN7KPRuauJZtk41nh8WmDZhQpPVwNejsdk8kW1FZKwbTqgzr
 
 
 
@@ -6055,12 +6641,11 @@ See [request costs for infinitables](#link_05)
 
 ### <a name="link_502"></a> `properties` table (Omni Layer and Wormhole)
 
-Note: this particular table doesn't support querying. The only query section it supports is `?offset=`. Note that this endpoint is in the Alpha stage, and Wormhole is deprecated on our platform.
+Note: this particular table doesn't support querying. The only query section it supports is `?offset=`. Note that this endpoint is in the Alpha stage.
 
 **Endpoints:**
 
 - `https://api.blockchair.com/bitcoin/omni/properties?{:query}`
-- `https://api.blockchair.com/bitcoin-cash/wormhole/properties?{:query}`
 
 **Where:**
 
@@ -6112,10 +6697,9 @@ Note: this particular table doesn't support querying. The only query section it 
 
 See [request costs for infinitables](#link_05)
 
-**Explore visualizations on our front-end:**
+**Explore visualization on our front-end:**
 
 - https://blockchair.com/bitcoin/omni/properties
-- https://blockchair.com/bitcoin-cash/wormhole/properties
 
 
 
@@ -6646,6 +7230,13 @@ The response contains an array where the keys are blockchains, and the values ar
       "blockchain_first_entry_date": "2019-11-15",
       "blockchair_first_entry": 1,
       "blockchair_first_entry_date": "2019-11-15",
+      "is_full": true
+    },
+    "cardano": {
+      "blockchain_first_entry": 1,
+      "blockchain_first_entry_date": "2017-09-23",
+      "blockchair_first_entry": 1,
+      "blockchair_first_entry_date": "2017-09-23",
       "is_full": true
     }
   },
