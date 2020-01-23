@@ -1,4 +1,3 @@
-/usr/bin/php /Users/Alf/PhpstormProjects/Sandbox/mdgluer.php
 # [Blockchair.com](https://blockchair.com/) API v.2.0.43 Documentation
 
 ```
