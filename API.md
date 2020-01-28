@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.43)
+* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.44)
 
 ### Please apply for an API key first
 
@@ -26,6 +26,8 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.44 - January 28th, 2020
+    * New endpoint to track new reference node software releases: `https://api.blockchair.com/tools/releases`. This endpoint returns the list of latest software (core clients) releases for blockchains we support. This may be useful for those who want to track blockchain development, new features, and hard forks (especially this is useful for multi-currency blockchain software — wallets or exchanges — developers). Never miss a BSV hard fork anymore! Documentation: https://blockchair.com/api/docs#link_510
 * v.2.0.43 - January 23rd, 2020
     * Added alpha support for Cardano (ADA). Here's the list of new endpoints (please refer to our documentation for more info: https://blockchair.com/api/docs):
         * `https://api.blockchair.com/cardano/stats`
