@@ -1,4 +1,4 @@
-# [Blockchair.com](https://blockchair.com/) API v.2.0.43 Documentation
+# [Blockchair.com](https://blockchair.com/) API v.2.0.44 Documentation
 
 ```
     ____  __           __        __          _     
@@ -70,7 +70,7 @@
     - [Cardano](#link_M37)
       - [Block](#link_110)
       - [Transaction](#link_211)
-      - [Outputs](#link_307)
+      - [Address](#link_307)
 + [Infinitable endpoints](#link_05) (SQL-like queries: filter, sort, and aggregate blockchain data)
     + [Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, and Bitcoin Testnet](#link_M41)
       + [Blocks](#link_102) (table)
@@ -92,6 +92,7 @@
     + [Nodes](#link_508)
     + [State changes](#link_507)
     + [Available block ranges](#link_510)
+    + [Release monitor](#link_511)
     + [Premium API endpoints](#link_M51)
       + [Premium API usage stats](#link_600)
 + [Support](#link_M7)
@@ -116,9 +117,9 @@ Almost every API endpoint description is accompanied with an example visualizati
 
 Blockchair cares about user privacy, we neither collect nor share with anyone your personal data rather than for statistical purposes. That includes using the API as well. Please refer to our Privacy policy: https://blockchair.com/privacy. Please also check out our Terms of service available here: https://blockchair.com/terms — by using our API, you are agreeing to these terms.
 
-We have a public tracker for bugs, issues, and questions available on GitHub: https://github.com/Blockchair/Blockchair.Support/issues — please use it or contact us by [any other means available](#M7).
+We have a public tracker for bugs, issues, and questions available on GitHub: https://github.com/Blockchair/Blockchair.Support/issues — please use it or contact us by [any other means available](#link_M7).
 
-Our API is free to try under some limitations, and we have a variety of premium plans. Please check out the information about [the limits and plans](#M05).
+Our API is free to try under some limitations, and we have a variety of premium plans. Please check out the information about [the limits and plans](#link_M05).
 
 
 
@@ -285,6 +286,9 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:btc_chain}/state/changes/block/{:block_id}` | [👉](#link_507) | `5` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/state/changes/mempool` | [👉](#link_507) | `10` | Stable |
 | `https://api.blockchair.com/{:eth_chain}/state/changes/block/{:block_id}` | [👉](#link_507) | `5` | Stable |
+| **Misc** | — | — | — |
+| `https://api.blockchair.com/range` | [👉](#link_510) | `1` | Stable |
+| `https://api.blockchair.com/tools/releases` | [👉](#link_511) | `1` | Stable |
 | **Network nodes** | — | — | — |
 | `https://api.blockchair.com/nodes` | [👉](#link_508) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/nodes` | [👉](#link_508) | `1` | Stable |
@@ -989,8 +993,8 @@ Always `1`.
 - `best_block_root_hash` — … roothash…
 - `best_block_time` — … and timestamp
 - `fist_block_time` — timestamp of the first block (when the current testnet was launched)
-- `blocks_24h` — an approximate (!) number of blocks over the last 24 hours
-- `transactions_24h` — an approximate (!) number of transactions over the last 24 hours
+- `blocks_24h` — number of blocks over the last 24 hours
+- `transactions_24h` — number of transactions over the last 24 hours
 
 **Example output:**
 
@@ -1051,7 +1055,7 @@ Always `1`.
 * `market_cap_usd` — market capitalization (coins in circulation * price per coin in USD)
 * `market_dominance_percentage` — dominance index (how much % of the total cryptocurrency market is the market capitalization of the coin)
 * `countdowns` (optional) — an optional array of events ([`event`, `time_left`] format), where `time_left` is the number of seconds till the `event`
-* `suggested_transaction_fee_per_byte_sat` — suggests a proper transaction fee in satoshi per byte based on the latest block
+* `suggested_transaction_fee_per_byte_sat` — suggests a proper transaction fee in piconero per byte
 
 **Example output:**
 
@@ -7249,6 +7253,121 @@ The response contains an array where the keys are blockchains, and the values ar
 **Request cost formula:**
 
 Always `1`.
+
+
+
+## <a name="link_511"></a> Release monitor 
+
+This endpoint returns the list of latest software (core clients) releases for blockchains we support. This may be useful for those who want to track blockchain development, new features, and hard forks (especially this is useful for multi-currency blockchain software — wallets or exchanges — developers). Never miss a BSV hard fork anymore!
+
+**Endpoint:**
+
+- `https://api.blockchair.com/tools/releases`
+
+**Possible options:**
+
+- `?chain={:chain}` displays latest releases for `{:chain}` only
+
+**Output:**
+
+`data` contains an array of latest releases sorted by time for all chains we support (or for a specific chain if `?chain` is set). Each element is an array with the following elements:
+
+* `chain` — chain id
+* `version` — tag name
+* `time` — release publish time (UTC)
+* `link` — link to this release on GitHub
+
+`context` has two special fields:
+
+* `latest_update` — latest update time (UTC)
+* `supported_chains` — array of chains monitored with their chain ids and software names
+
+**Example requests:**
+
+- `https://api.blockchair.com/tools/releases`
+- `https://api.blockchair.com/tools/releases?chain=bitcoin`
+
+**Example output:**
+
+`https://api.blockchair.com/tools/releases`:
+
+```json
+{
+  "data": [
+    {
+      "chain": "bitcoin-sv",
+      "version": "Bitcoin SV v1.0.1",
+      "time": "2020-01-28 11:35:26",
+      "link": "https://github.com/bitcoin-sv/bitcoin-sv/releases/tag/v1.0.1"
+    },
+    {
+      "chain": "dash",
+      "version": "Dash Core v0.15.0.0-rc2",
+      "time": "2020-01-27 20:12:45",
+      "link": "https://github.com/dashpay/dash/releases/tag/v0.15.0.0-rc2"
+    },
+    {
+      "chain": "groestlcoin",
+      "version": "Groestlcoin Core v2.18.2",
+      "time": "2020-01-25 12:53:41",
+      "link": "https://github.com/Groestlcoin/groestlcoin/releases/tag/v2.18.2"
+    },
+    {
+      "chain": "stellar",
+      "version": "Stellar Core v12.3.0rc2",
+      "time": "2020-01-24 04:57:51",
+      "link": "https://github.com/stellar/stellar-core/releases/tag/v12.3.0rc2"
+    },
+    {
+      "chain": "stellar",
+      "version": "Stellar Core v12.3.0rc1",
+      "time": "2020-01-22 23:54:01",
+      "link": "https://github.com/stellar/stellar-core/releases/tag/v12.3.0rc1"
+    },
+    {
+      "chain": "bitcoin-cash",
+      "version": "Bitcoin ABC v0.20.11",
+      "time": "2020-01-21 21:46:10",
+      "link": "https://github.com/Bitcoin-ABC/bitcoin-abc/releases/tag/v0.20.11"
+    },
+    {
+      "chain": "ethereum",
+      "version": "Geth v1.9.10",
+      "time": "2020-01-20 10:36:41",
+      "link": "https://github.com/ethereum/go-ethereum/releases/tag/v1.9.10"
+    },
+    ...
+  ],
+  "context": {
+    "code": 200,
+    "latest_update": "2020-01-28 13:12:16",
+    "supported_chains": {
+      "bitcoin": "Bitcoin Core",
+      "bitcoin-cash": "Bitcoin ABC",
+      "ethereum": "Geth",
+      "litecoin": "Litecoin Core",
+      "bitcoin-sv": "Bitcoin SV",
+      "dogecoin": "Dogecoin Core",
+      "dash": "Dash Core",
+      "ripple": "rippled",
+      "groestlcoin": "Groestlcoin Core",
+      "stellar": "Stellar Core",
+      "monero": "Monero",
+      "cardano": "Cardano SL"
+    },
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/tools/release-monitor
+
 
 
 
