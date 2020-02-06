@@ -1,4 +1,4 @@
-# [Blockchair.com](https://blockchair.com/) API v.2.0.44 Documentation
+# [Blockchair.com](https://blockchair.com/) API v.2.0.45 Documentation
 
 ```
     ____  __           __        __          _     
@@ -93,6 +93,7 @@
     + [State changes](#link_507)
     + [Available block ranges](#link_510)
     + [Release monitor](#link_511)
+    + [Halvening countdown](#link_512)
     + [Premium API endpoints](#link_M51)
       + [Premium API usage stats](#link_600)
 + [Support](#link_M7)
@@ -289,6 +290,7 @@ This is the full list of available API endpoints.
 | **Misc** | — | — | — |
 | `https://api.blockchair.com/range` | [👉](#link_510) | `1` | Stable |
 | `https://api.blockchair.com/tools/releases` | [👉](#link_511) | `1` | Stable |
+| `https://api.blockchair.com/tools/halvening` | [👉](#link_512) | `1` | Stable |
 | **Network nodes** | — | — | — |
 | `https://api.blockchair.com/nodes` | [👉](#link_508) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/nodes` | [👉](#link_508) | `1` | Stable |
@@ -7367,6 +7369,84 @@ Always `1`.
 **Explore visualization on our front-end:**
 
 - https://blockchair.com/tools/release-monitor
+
+
+
+## <a name="link_512"></a> Halvening countdown
+
+While `{:chain}/stats` endpoints already include info on various countdowns (i.e. to some hard forks), this is a separate endpoint to track halving events in UTXO coins.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/tools/halvening
+
+**Output:**
+
+`data` contains an array of next halvening event data for all chains we support. Each element is an array with the following elements which are self-describing.
+
+`context` has a special array:
+
+* `supported_chains` — array of chains monitored
+
+**Example requests:**
+
+- `https://api.blockchair.com/tools/halvening`
+
+**Example output:**
+
+`https://api.blockchair.com/tools/halvening`:
+
+```json
+{
+  "data": {
+    "bitcoin": {
+      "current_block": 616264,
+      "current_reward": 1250000000,
+      "halvening_block": 630000,
+      "halvening_reward": 625000000,
+      "halvening_time_approximate": "2020-05-12 01:29:34",
+      "seconds_left_approximate": 8241000,
+      "blocks_left": 13735
+    },
+    "bitcoin-cash": {
+      "current_block": 621124,
+      "current_reward": 1250000000,
+      "halvening_block": 630000,
+      "halvening_reward": 625000000,
+      "halvening_time_approximate": "2020-04-08 07:29:34",
+      "seconds_left_approximate": 5325000,
+      "blocks_left": 8875
+    },
+    "bitcoin-sv": {
+      "current_block": 620900,
+      "current_reward": 1250000000,
+      "halvening_block": 630000,
+      "halvening_reward": 625000000,
+      "halvening_time_approximate": "2020-04-09 20:49:34",
+      "seconds_left_approximate": 5459400,
+      "blocks_left": 9099
+    }
+  },
+  "context": {
+    "code": 200,
+    "supported_chains": [
+      "bitcoin",
+      "bitcoin-cash",
+      "bitcoin-sv"
+    ],
+    ...
+    }
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/tools/halving-countdown
 
 
 
