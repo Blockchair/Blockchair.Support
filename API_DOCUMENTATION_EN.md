@@ -1,4 +1,4 @@
-# [Blockchair.com](https://blockchair.com/) API v.2.0.45 Documentation
+# [Blockchair.com](https://blockchair.com/) API v.2.0.46 Documentation
 
 ```
     ____  __           __        __          _     
@@ -380,7 +380,7 @@ Here's our policy:
 | **Non-commercial or academic** | Key is not needed         | Key is required, up to 100% discount |
 | **Commercial**                 | Key is required           | Key is required, up to 10% discount  |
 
-**Our Premium API plans are available here: https://blockchair.com/api/plans, please [contact us](#link_M7) if you're interested.**
+**Our Premium API plans are available here: https://api.blockchair.com/premium/plans, please [contact us](#link_M7) if you have any questions or would like to have a custom plan.**
 
 The daily request counter is reset at 00:00 UTC every day. 
 
@@ -394,20 +394,34 @@ If you have exceeded the limit multiple times without using a key, an error `430
 
 **Please note that some of API requests may "cost" more than 1 request.** Here's an example:
 
-* `https://api.blockchair.com/bitcoin/dashboard/block/0` — requesting information about one block via one request "costs" 1 request
-* `https://api.blockchair.com/bitcoin/dashboard/blocks/0,1,2,3,4,5,6,7,8,9` — requesting information about ten blocks via one request "costs" 1.9 requests
+* `https://api.blockchair.com/bitcoin/dashboards/block/0` — requesting information about one block via one request "costs" 1 request
+* `https://api.blockchair.com/bitcoin/dashboards/blocks/0,1,2,3,4,5,6,7,8,9` — requesting information about ten blocks via one request "costs" 1.9 requests
 
 Every API endpoint documentation has the "Request cost formula" section describing how the "cost" is calculated. For most API requests it's always 1. It's more than 1 in cases when you're requiring additional data (e.g. when you're requesting data on an Ethereum address, and you're also requesting its ERC-20 token balances).
 
 As a kindly reminder, there are tasks such as extracting lots of blockchain data (e.g. all transactions over a 2 month period) which require lots of requests done —  it may be better to use our Database dumps feature instead of the API (see https://blockchair.com/dumps for documentation)
 
+**What are the steps to acquire an API key?**
+
+Our Premium API dashboard is available here: https://api.blockchair.com/premium
+
+First, you need to choose a suitable plan: https://api.blockchair.com/premium/plans
+
+At the moment, this automated system accepts PayPal payments only (which also allows you to pay with your card). If you'd like to pay via wire transfer or crypto, please contact us at [info@blockchair.com](mailto:info@blockchair.com)
+
+Once you've paid, you will receive a one-time password which can be used to generate and activate your API key. Enter it on [this page](https://api.blockchair.com/premium) into the "I want to activate an API key I've just purchased..." form, then fill in a small form about yourself, and you'll get the key.
+
+After you have received a key, you can track your stats and extend your subscription. Enter your API key on [this page](https://api.blockchair.com/premium) into the "I already have an API key and would like to see some stats or extend my subscription..." form. If you'd like to extend your subscription, you'd need to buy a one-time extension password and enter it on your key management page.
+
+If you have any questions about how to buy and use your key, you can always [contact us](#link_M7).
+
 **In order to use an API key, you need to append `?key={:api_key}` or `&key={:api_key}` to the end of request URLs.** You should use `?` if there are no other parameters in the URL, and `&` otherwise. Here are three examples of correct URLs with a key:
 
-* `https://api.blockchair.com/bitcoin/dashboard/block/0?key=myfirstpasswordwas4321andifeltsmartaboutit`
+* `https://api.blockchair.com/bitcoin/dashboards/block/0?key=myfirstpasswordwas4321andifeltsmartaboutit`
 
-* `https://api.blockchair.com/bitcoin/dashboard/block/0?limit=0&key=myfirstpasswordwas4321andifeltsmartaboutit`
+* `https://api.blockchair.com/bitcoin/dashboards/block/0?limit=0&key=myfirstpasswordwas4321andifeltsmartaboutit`
 
-* `https://api.blockchair.com/bitcoin/dashboard/block/0?key=myfirstpasswordwas4321andifeltsmartaboutit&limit=0`
+* `https://api.blockchair.com/bitcoin/dashboards/block/0?key=myfirstpasswordwas4321andifeltsmartaboutit&limit=0`
 
 There's an extra API endpoint for those who have an API key allowing to [track the number of request made](#link_600).
 
@@ -5983,22 +5997,22 @@ See [request costs for infinitables](#link_05)
 
 **Explore visualizations on our front-end:**
 
-- https://blockchair.com/bitcoin/transactions
-- https://blockchair.com/bitcoin-cash/transactions
-- https://blockchair.com/litecoin/transactions
-- https://blockchair.com/bitcoin-sv/transactions
-- https://blockchair.com/dogecoin/transactions
-- https://blockchair.com/dash/transactions
-- https://blockchair.com/groestlcoin/transactions
-- https://blockchair.com/bitcoin/testnet/transactions
-- https://blockchair.com/bitcoin/mempool/transactions
-- https://blockchair.com/bitcoin-cash/mempool/transactions
-- https://blockchair.com/litecoin/mempool/transactions
-- https://blockchair.com/bitcoin-sv/mempool/transactions
-- https://blockchair.com/dogecoin/mempool/transactions
-- https://blockchair.com/dash/mempool/transactions
-- https://blockchair.com/groestlcoin/mempool/transactions
-- https://blockchair.com/bitcoin/testnet/mempool/transactions
+- https://blockchair.com/bitcoin/outputs
+- https://blockchair.com/bitcoin-cash/outputs
+- https://blockchair.com/litecoin/outputs
+- https://blockchair.com/bitcoin-sv/outputs
+- https://blockchair.com/dogecoin/outputs
+- https://blockchair.com/dash/outputs
+- https://blockchair.com/groestlcoin/outputs
+- https://blockchair.com/bitcoin/testnet/outputs
+- https://blockchair.com/bitcoin/mempool/outputs
+- https://blockchair.com/bitcoin-cash/mempool/outputs
+- https://blockchair.com/litecoin/mempool/outputs
+- https://blockchair.com/bitcoin-sv/mempool/outputs
+- https://blockchair.com/dogecoin/mempool/outputs
+- https://blockchair.com/dash/mempool/outputs
+- https://blockchair.com/groestlcoin/mempool/outputs
+- https://blockchair.com/bitcoin/testnet/mempool/outputs
 
 
 
