@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.45)
+* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.46)
 
 ### Please apply for an API key first
 
@@ -26,6 +26,8 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.46 - March 3rd, 2020
+    * There's a new interface for our Premium API users available at `https://api.blockchair.com/premium`. It's now possible to buy and extend a subscription using this interface as well as to track some basic stats. Subscription extending is not available for existing customers with custom plans, please contact us at <info@blockchair.com> if you'd like to have an automated interface.
 * v.2.0.45 - February 6th, 2020
     * New endpoint to track halvening events: `https://api.blockchair.com/tools/halvening`. Documentation: https://blockchair.com/api/docs#link_511
 * v.2.0.44 - January 28th, 2020
