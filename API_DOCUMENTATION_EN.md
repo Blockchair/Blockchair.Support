@@ -1,4 +1,4 @@
-# [Blockchair.com](https://blockchair.com/) API v.2.0.47 Documentation
+# [Blockchair.com](https://blockchair.com/) API v.2.0.48 Documentation
 
 ```
     ____  __           __        __          _     
@@ -27,6 +27,7 @@
     + [TON-like blockchain stats](#link_005)
     + [Monero-like blockchain stats](#link_006)
     + [Cardano-like blockchain stats](#link_007)
+    + [Mixin-like DAG stats](#link_008)
     + [Omni Layer stats](#link_500)
     + [ERC-20 stats](#link_509)
 + [Dashboard endpoints](#link_M2) (Retrieve information about various entities in a neat format from our databases)
@@ -70,6 +71,12 @@
       - [Block](#link_110)
       - [Transaction](#link_211)
       - [Address](#link_307)
+    - [Mixin](#link_M38)
+      - [Snapshot](#link_111)
+      - [Round](#link_404)
+      - [Transaction](#link_212)
+      - [Node](#link_405)
+      - [Graph](#link_406)
 + [Infinitable endpoints](#link_05) (SQL-like queries: filter, sort, and aggregate blockchain data)
     + [Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Zcash, and Bitcoin Testnet](#link_M41)
       + [Blocks](#link_102) (table)
@@ -81,6 +88,10 @@
       + [Uncles](#link_402) (table)
       + [Transactions](#link_206) (table)
       + [Calls](#link_403) (table)
+    + [Mixin](#link_M44)
+      + [Snapshots](#link_407) (table)
+      + [Mintings](#link_408) (table)
+      + [Nodes](#link_409) (table)
     + [Second layers](#link_M43)
       + [Omni Layer properties](#link_502) (table)
       + [ERC-20 tokens](#link_505) (table)
@@ -100,7 +111,7 @@
 
 # <a name="link_M0"></a> Introduction
 
-Blockchair API provides developers with access to data contained in [15 different blockchains](#link_M01). Unlike other APIs, Blockchair also supports numerous analytical queries like filtering, sorting, and aggregating blockchain data.
+Blockchair API provides developers with access to data contained in [16 different blockchains](#link_M01). Unlike other APIs, Blockchair also supports numerous analytical queries like filtering, sorting, and aggregating blockchain data.
 
 Here are some examples of what you can build using our API:
 
@@ -124,7 +135,7 @@ Our API is free to try under some limitations, and we have a variety of premium 
 
 ## <a name="link_M01"></a> Supported blockchains and second layers
 
-As of today, our API supports **15 blockchains** (13 mainnets and 2 testnets) divided into 7 groups:
+As of today, our API supports **16 blockchains** (14 mainnets and 2 testnets) divided into 7 groups:
 * Bitcoin-like blockchains (Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Zcash, Bitcoin Testnet), also known as UTXO-based blockchains
 * Ethereum-like blockchains (Ethereum)
 * Ripple-like blockchains (Ripple)
@@ -132,6 +143,7 @@ As of today, our API supports **15 blockchains** (13 mainnets and 2 testnets) di
 * TON-like blockchains (Telegram Open Network Testnet)
 * Monero-like blockchains (Monero)
 * Cardano-like blockchains (Cardano)
+* Mixin-like DAGs (Mixin) — technically, it's a DAG rather than a blockchain, but for the sake of unification it may be mentioned as a blockchain further in this documentation
 
 Within a group, there's no or little difference between the set of available endpoints and their output. 
 
@@ -152,6 +164,7 @@ Here's the list of available mainnets:
 | Monero | Monero-like | `https://api.blockchair.com/monero` | Alpha mode, possible compatibility-breaking changes |
 | Cardano | Cardano-like | `https://api.blockchair.com/cardano` | Alpha mode, possible compatibility-breaking changes |
 | Zcash | Bitcoin-like | `https://api.blockchair.com/zcash` | Full support |
+| Mixin | Mixin-like | `https://api.blockchair.com/mixin` | Full support |
 
 There are also following testnets supported which are technically considered as separate blockchains:
 
@@ -200,6 +213,7 @@ This is the full list of available API endpoints.
 - `{:ton_chain}` can be only `ton/testnet`
 - `{:xmr_chain}` can be only `monero`
 - `{:ada_chain}` can be only `cardano`
+- `{:xin_chain}` can be only `mixin`
 
 | Endpoint path                             | Docs | Base request cost | Status |
 | ----------------------------------------------- | :----------------: | -----------------------------: | :---------------------------------------------: |
@@ -207,11 +221,12 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/stats`              | [👉](#link_000) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/stats` | [👉](#link_001) | `1` | Stable |
 | `https://api.blockchair.com/{:eth_chain}/stats` | [👉](#link_002) | `1` | Stable |
-| `https://api.blockchair.com/{:xrp_chain}/stats` | [👉](#link_003) | `1` | Alpha |
-| `https://api.blockchair.com/{:xlm_chain}/stats` | [👉](#link_004) | `1` | Alpha |
-| `https://api.blockchair.com/{:ton_chain}/stats` | [👉](#link_005) | `1` | Alpha |
-| `https://api.blockchair.com/{:xmr_chain}/stats` | [👉](#link_006) | `1` | Alpha |
-| `https://api.blockchair.com/{:ada_chain}/stats` | [👉](#link_007) | `1` | Alpha |
+| `https://api.blockchair.com/{:xrp_chain}/stats` | [👉](#link_003) | `1` | Stable |
+| `https://api.blockchair.com/{:xlm_chain}/stats` | [👉](#link_004) | `1` | Stable |
+| `https://api.blockchair.com/{:ton_chain}/stats` | [👉](#link_005) | `1` | Stable |
+| `https://api.blockchair.com/{:xmr_chain}/stats` | [👉](#link_006) | `1` | Stable |
+| `https://api.blockchair.com/{:ada_chain}/stats` | [👉](#link_007) | `1` | Stable |
+| `https://api.blockchair.com/{:xin_chain}/stats` | [👉](#link_008) | `1` | Stable |
 | **Block-related information** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/block/{:height}₀` | [👉](#link_100) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/block/{:hash}₀` | [👉](#link_100) | `1` | Stable |
@@ -235,6 +250,8 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:xmr_chain}/raw/block/{:hash}₀` | [👉](#link_109) | `1` | Alpha |
 | `https://api.blockchair.com/{:ada_chain}/raw/block/{:height}₀` | [👉](#link_110) | `1` | Alpha |
 | `https://api.blockchair.com/{:ada_chain}/raw/block/{:hash}₀` | [👉](#link_110) | `1` | Alpha |
+| `https://api.blockchair.com/{:xin_chain}/raw/snapshot/{:height}₀` | [👉](#link_111) | `1` | Alpha |
+| `https://api.blockchair.com/{:xin_chain}/raw/snapshot/{:hash}₀` | [👉](#link_111) | `1` | Alpha |
 | **Transaction-related information and actions** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/transaction/{:hash}₀` | [👉](#link_200) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/transactions/{:hash}₀,...,{:hash}ᵩ` | [👉](#link_200) | `1 + 0.1*c` | Stable |
@@ -253,6 +270,8 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:ton_chain}/raw/transaction/{:tuple}₀` | [👉](#link_209) | `1` | Alpha |
 | `https://api.blockchair.com/{:xmr_chain}/raw/transaction/{:hash}₀` | [👉](#link_210) | `1` | Alpha |
 | `https://api.blockchair.com/{:ada_chain}/raw/transaction/{:hash}₀` | [👉](#link_211) | `1` | Alpha |
+| `https://api.blockchair.com/{:xin_chain}/raw/transaction/{:hash}₀` | [👉](#link_212) | `1` | Alpha |
+| `https://api.blockchair.com/{:xin_chain}/push/transaction` (`POST`) | [👉](#link_202) | `1` | Stable |
 | **Address-related information** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀` | [👉](#link_300) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/addresses/{:address}₀,...,{:address}ᵩ` | [👉](#link_300) | `1 + 0.1*c` | Stable |
@@ -271,6 +290,13 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:eth_chain}/uncles?{:query}` | [👉](#link_402) | `2` | Stable |
 | `https://api.blockchair.com/{:eth_chain}/calls?{:query}` | [👉](#link_403) | `10` | Stable |
 | `https://api.blockchair.com/{:xmr_chain}/outputs?{:query}` | [👉](#link_306) | `1` | Alpha |
+| `https://api.blockchair.com/{:xin_chain}/raw/round/{:hash}` | [👉](#link_404) | `1` | Alpha |
+| `https://api.blockchair.com/{:xin_chain}/raw/round/({:node_hash},{:id})` | [👉](#link_404) | `1` | Alpha |
+| `https://api.blockchair.com/{:xin_chain}/raw/node/{:hash}` | [👉](#link_405) | `1` | Alpha |
+| `https://api.blockchair.com/{:xin_chain}/raw/graph` | [👉](#link_406) | `1` | Alpha |
+| `https://api.blockchair.com/{:xin_chain}/raw/snapshots?{:query}` | [👉](#link_407) | `1` | Alpha |
+| `https://api.blockchair.com/{:xin_chain}/raw/mintings?{:query}` | [👉](#link_408) | `1` | Alpha |
+| `https://api.blockchair.com/{:xin_chain}/raw/nodes?{:query}` | [👉](#link_409) | `1` | Alpha |
 | **Special second layer protocol endpoints (Omni Layer and ERC-20 tokens)** | — | — | — |
 | `https://api.blockchair.com/bitcoin/omni/stats` | [👉](#link_500) | `1` | Alpha |
 | `https://api.blockchair.com/bitcoin/omni/dashboards/property/{:prorerty_id}` | [👉](#link_501) | `1` | Alpha |
@@ -457,7 +483,7 @@ If you require data on just one blockchain, please use `https://api.blockchair.c
 
 **Output:**
 
-`data` contains an array with stats on 13 blockchains we support at once:
+`data` contains an array with stats on 15 blockchains we support at once:
 
 - Bitcoin
 - Bitcoin Cash
@@ -473,6 +499,7 @@ If you require data on just one blockchain, please use `https://api.blockchair.c
 - Monero
 - Cardano
 - Zcash
+- Mixin
 
 Note that Bitcoin Testnet stats are not included in this output, and TON Testnet will be changed to TON Mainnet as soon as it's launched.
 
@@ -566,6 +593,12 @@ Description of the fields is available in the next three sections of documentati
     "zcash": {
       "data": {
         "blocks": 756512,
+        ...
+      }
+    },
+    "mixin": {
+      "data": {
+        "snapshots": 18632532,
         ...
       }
     }
@@ -1188,6 +1221,78 @@ Always `1`.
 **Explore visualizations on our front-end:**
 
 - https://blockchair.com/cardano
+
+
+
+## <a name="link_008"></a> Mixin-like DAG stats
+
+**Endpoint:**
+
+* `https://api.blockchair.com/mixin/stats`
+
+**Output:**
+
+`data` contains an array with DAG statistics:
+
+* `snapshots` — total number of snapshots
+* `snapshots_24h` — number of snapshots over the last 24 hours
+* `transactions_24h` — number of transactions over the last 24 hours
+* `mempool_transactions` — number of unvonfirmed transactions
+* `tps_24h` — transactions per second over 24 hours period
+* `best_snapshot_height` — the latest snapshot number
+* `best_snapshot_hash` — the latest snapshots hash
+* `best_snapshot_time` — the latest snapshot time (UTC)
+* `circulation` — number of coins in circulation (smallest denomination)
+* `circulation_xin` — number of coins in circulation (in XINs)
+* `market_price_usd` — average market price of 1 coin in USD (market data source: CoinGecko)
+* `market_price_btc` — average market price of 1 coin in BTC
+* `market_price_usd_change_24h_percentage` — market price change in percent for 24 hours
+* `market_cap_usd` — market capitalization (coins in circulation * price per coin in USD)
+* `market_dominance_percentage` — dominance index (how much % of the total cryptocurrency market is the market capitalization of the coin)
+* `countdowns` (optional) — an optional array of events ([`event`, `time_left`] format), where `time_left` is the number of seconds till the `event`
+* `accepted_nodes` — number of accepted network nodes
+* `mintings` — number of coin mintings
+
+**Example output:**
+
+`https://api.blockchair.com/cardano/stats`:
+
+```json
+{
+  "data": {
+    "snapshots": 18626733,
+    "snapshots_24h": 135000,
+    "transactions_24h": 135000,
+    "mempool_transactions": 0,
+    "tps_24h": 1.5625,
+    "best_snapshot_height": 18626732,
+    "best_snapshot_hash": "6cc46ccbd753dbaf09c1a72d94225af0aaabc5c0c1f705939c7ea77515d6d18c",
+    "best_snapshot_time": "2020-04-22 16:33:08",
+    "circulation_xin": 550991.78082032,
+    "circulation": 55099178082032,
+    "market_price_usd": 168.06,
+    "market_price_btc": 0.02323,
+    "market_price_usd_change_24h_percentage": 2.901,
+    "market_cap_usd": 84247126,
+    "market_dominance_percentage": 0.01,
+    "accepted_nodes": 22,
+    "mintings": 419
+  },
+  "context": {
+    "code": 200,
+    "state": 18626733,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/mixin
 
 
 
@@ -5270,6 +5375,462 @@ Always `1`.
 
 
 
+## <a name="link_M38"></a> Raw data endpoints for Mixin
+
+
+
+### <a name="link_111"></a> Raw snapshot data
+
+**Endpoints:**
+
+- `https://api.blockchair.com/{:xin_chain}/raw/snapshot/{:height}₀`
+- `https://api.blockchair.com/{:xin_chain}/raw/snapshot/{:hash}₀`
+
+**Where:**
+
+- `{:xin_chain}` can be only `mixin`
+- `{:height}ᵢ` is the snapshot id (topology)
+- `{:hash}ᵢ` is the snapshot hash (regex: `/^[0-9a-f]{64}$/i`)
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:id}ᵢ.snapshot` — snapshot data
+- `data.{:id}ᵢ.snapshot.transaction` — transaction data
+
+**Example requests:**
+
+- `https://api.blockchair.com/mixin/raw/snapshot/0`
+- `https://api.blockchair.com/mixin/raw/snapshot/75eabab3b5e3fe0a811bc2969f32716cc58bac7260b112380be45a23fc839939`
+
+**Example output:**
+
+`https://api.blockchair.com/mixin/raw/snapshot/0`:
+
+```json
+{
+  "data": [
+    {
+      "snapshot": {
+        "hash": "75eabab3b5e3fe0a811bc2969f32716cc58bac7260b112380be45a23fc839939",
+        "node": "a721a4fc0c667c4a1222c8d80350cbe07dab55c49942c8100a8c5e2f5bb4ec50",
+        "references": null,
+        "round": 0,
+        "signatures": null,
+        "timestamp": 1551312000000000000,
+        "topology": 0,
+        "transaction": {
+          "asset": "a99c2e0e2b1da4d648755ef19bd95139acbbe6564cfb06dec7cd34931ca72cdc",
+          "extra": "065866c10424d5cfa7ca95eddad69d261ddc7c31a107f28773880bd9cb5bf611c70a3825ca359993324db9e169acb832e9ca75ec17b2b2e1f5b10ebd40eb9dca",
+          "hash": "f3a94f83f0a579d1a1b87f713d934df44e9b888216938667e7b2817aba71ef93",
+          "inputs": [
+            {
+              "genesis": "6430225c42bb015b4da03102fa962e4f4ef3969e03e04345db229f8377ef7997"
+            }
+          ],
+          "outputs": [
+            {
+              "amount": "10000.00000000",
+              "keys": [
+                "1d2dced65983ef59ea096d75a27a276308f1ae717c66f1884125adedfda3ae3d",
+                "ec7d399503241bf26975719df8152feb599afb85c8cf3cc4175761421fb4c2ca",
+                "a5ada6adecdc3bbb8aeb128ba8ddc3f6cb3022406de5576f3d15a38e926f0b96",
+                "d1913a811ea696961a0d253359f9590efd77519d6005a6326a47435589e3c909",
+                "3796347874919f62625a8db893d254b4292248f84504e7a5c766994c6251aea9",
+                "e566095e3fb7949ec2fef418c2a097bc1609ac5adde2401974d7d449ae31190b",
+                "2486621dc6c86300a60f2a46a910771f267dba698609aa686aa76d630e58e727",
+                "71b3238bb152e5c63386af6bfd27bcfdd677436bb8e70520535fac2087bc5452",
+                "9cd1704f830d035f7917e0a7eaf79b873abb715b00f0a2713205d2660f4b533b",
+                "967407727188086d3ac67811603e073743945c372103323898a15004da0503d8",
+                "4011b7a390e3c514c9da9341fbe461e3398e1538b9647ecafe1a95a74cebdefd",
+                "52dae8ec6e0abaab28902f7427163de375e618aaf012d5a5c4ef4629d0b32d1d",
+                "7a51cc274ea7dbc39bd81737b952aeea2f3bfaba55313b9a239bdd7e1f8f792e",
+                "682ecb376c5af616b20c653fadc59e5c3992ee4ad6ef10b1f4cbe429b2f8e9fb",
+                "0359fd509abff274bf7f8eca839ea17ec33c455478c4d1088936f8ff58a71705"
+              ],
+              "mask": "1502ba20afb0fa88b64ff9fbd8f12615da0fcd57f2132a3af712fee103d5ddeb",
+              "script": "fffe0b",
+              "type": 164
+            }
+          ],
+          "version": 0
+        },
+        "version": 0
+      }
+    }
+  ],
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 18627212,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/mixin/snapshot/0
+
+
+
+### <a name="link_404"></a> Raw round data
+
+**Endpoints:**
+
+- `https://api.blockchair.com/{:xin_chain}/raw/round/{:hash}`
+- `https://api.blockchair.com/{:xin_chain}/raw/round/({:id},{:node_hash})`
+
+**Where:**
+
+- `{:xin_chain}` can be only `mixin`
+- `{:hash}` is the round hash (regex: `/^[0-9a-f]{64}$/i`)
+- `{:id}` is the round id
+- `{:node_hash}` is the node hash (regex: `/^[0-9a-f]{64}$/i`)
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:id}ᵢ.round` — round data
+
+**Example requests:**`
+
+- `https://api.blockchair.com/mixin/raw/round/(0,a721a4fc0c667c4a1222c8d80350cbe07dab55c49942c8100a8c5e2f5bb4ec50)`
+- `https://api.blockchair.com/mixin/raw/round/3a3edfac471bdcfd0ad6f0162c1c81b2771c606dc4c4ec08f7c0174366906712`
+
+**Example output:**
+
+`https://api.blockchair.com/mixin/raw/round/(0,a721a4fc0c667c4a1222c8d80350cbe07dab55c49942c8100a8c5e2f5bb4ec50)`:
+
+```json
+{
+  "data": {
+    "(0,a721a4fc0c667c4a1222c8d80350cbe07dab55c49942c8100a8c5e2f5bb4ec50)": {
+      "round": {
+        "end": 1551312000000000000,
+        "hash": "3a3edfac471bdcfd0ad6f0162c1c81b2771c606dc4c4ec08f7c0174366906712",
+        "node": "a721a4fc0c667c4a1222c8d80350cbe07dab55c49942c8100a8c5e2f5bb4ec50",
+        "number": 0,
+        "references": null,
+        "snapshots": [
+          {
+            "hash": "75eabab3b5e3fe0a811bc2969f32716cc58bac7260b112380be45a23fc839939",
+            "node": "a721a4fc0c667c4a1222c8d80350cbe07dab55c49942c8100a8c5e2f5bb4ec50",
+            "references": null,
+            "round": 0,
+            "timestamp": 1551312000000000000,
+            "topology": 0,
+            "transaction": "f3a94f83f0a579d1a1b87f713d934df44e9b888216938667e7b2817aba71ef93",
+            "version": 0
+          },
+          {
+            "hash": "35882901dbeae376b01cf61d7ef0d58d3f9545878c0f9649c086628f1eaf9ab7",
+            "node": "a721a4fc0c667c4a1222c8d80350cbe07dab55c49942c8100a8c5e2f5bb4ec50",
+            "references": null,
+            "round": 0,
+            "timestamp": 1551312000000000000,
+            "topology": 15,
+            "transaction": "4e24675df8a9d1592c82d6fa9ef86881fb2dfafe2a06b2a51134daf5a98f8411",
+            "version": 0
+          }
+        ],
+        "start": 1551312000000000000
+      }
+    }
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 18628189,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/mixin/round/3a3edfac471bdcfd0ad6f0162c1c81b2771c606dc4c4ec08f7c0174366906712
+
+
+
+### <a name="link_212"></a> Raw transaction data
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:xin_chain}/raw/transaction/{:hash}₀`
+
+**Where:**
+
+- `{:xin_chain}` can be only `mixin`
+- `{:hash}ᵢ` is the transaction hash (regex: `/^[0-9a-f]{64}$/i`)
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:hash}ᵢ.transaction` — transaction data
+
+**Example request:**`
+
+- `https://api.blockchair.com/mixin/raw/transaction/704f7d52b864a70cc7219d04f534fb5105f341ff8fcbc6b80f90237ea7694ed2`
+
+**Example output:**
+
+`https://api.blockchair.com/mixin/raw/transaction/704f7d52b864a70cc7219d04f534fb5105f341ff8fcbc6b80f90237ea7694ed2`:
+
+```json
+{
+  "data": {
+    "704f7d52b864a70cc7219d04f534fb5105f341ff8fcbc6b80f90237ea7694ed2": {
+      "transaction": {
+        "asset": "8dd50817c082cdcdd6f167514928767a4b52426997bd6d4930eca101c5ff8a27",
+        "extra": "1fb1bb3ab8d8423f9c7421205c694810",
+        "hash": "704f7d52b864a70cc7219d04f534fb5105f341ff8fcbc6b80f90237ea7694ed2",
+        "hex": "86a756657273696f6e01a54173736574c4208dd50817c082cdcdd6f167514928767a4b52426997bd6d4930eca101c5ff8a27a6496e707574739385a448617368c420d53c766688b082db87c762fd517af5afc31b3b00e468193cb8c10b46cd0f375ba5496e64657800a747656e65736973c0a74465706f736974c0a44d696e74c085a448617368c420313f6552d57a89f47a43ca29019d2b15b250976c1652af30795022daf4a0ae4ba5496e64657801a747656e65736973c0a74465706f736974c0a44d696e74c085a448617368c4203bc42d2d3dfd3b95c0abd97750c1f2f1c2ee89156e3c1e5b89205852ce2f8895a5496e64657800a747656e65736973c0a74465706f736974c0a44d696e74c0a74f7574707574739285a45479706500a6416d6f756e74c703005265c0a44b65797391c42049c29716841df40eb88dc21974e3b2867ffed2b37b852015746aa3c151bffdf9a6536372697074c403fffe01a44d61736bc420efe475f7f66eb1946638e1ef0dbdaa7fa6ca83cce9fa856a20dd90fbad807a5985a45479706500a6416d6f756e74c70300b476f2a44b65797391c4202445800f02fff64f07f8062f66b8d35b0bab5e95c138de00f446e47b8bd1347ca6536372697074c403fffe01a44d61736bc420b7b135023dd232265c350173a0e84a14451b67de180636cc8829472d0bfff259a54578747261c4101fb1bb3ab8d8423f9c7421205c694810aa5369676e6174757265739391c44084560dd45f63aec94e07124bcb79a62fc8bd0d38e1d1254796d1b46400c0a75b9ce8b56b4c6be4c7db7e8d0613331d44b9bc1d8873d266e80c211f8008f50d0e91c44076fac18ee299eb471448fded8569c375547d097701eb02bb82edfba34a87df8767b5b1293f6a58d483841e961ad686577d101136a86be5d485e095f87dbafc0291c440ecf4d639b46d0c4ff310598446f37ac5e82817a44f1be86227dbfe9ced4511f1aa9b401c939396cb4605d1522a071320ef8b490ca5cfc4bf3c5bd6386a561502",
+        "inputs": [
+          {
+            "hash": "d53c766688b082db87c762fd517af5afc31b3b00e468193cb8c10b46cd0f375b",
+            "index": 0
+          },
+          {
+            "hash": "313f6552d57a89f47a43ca29019d2b15b250976c1652af30795022daf4a0ae4b",
+            "index": 1
+          },
+          {
+            "hash": "3bc42d2d3dfd3b95c0abd97750c1f2f1c2ee89156e3c1e5b89205852ce2f8895",
+            "index": 0
+          }
+        ],
+        "outputs": [
+          {
+            "amount": "0.05400000",
+            "keys": [
+              "49c29716841df40eb88dc21974e3b2867ffed2b37b852015746aa3c151bffdf9"
+            ],
+            "mask": "efe475f7f66eb1946638e1ef0dbdaa7fa6ca83cce9fa856a20dd90fbad807a59",
+            "script": "fffe01",
+            "type": 0
+          },
+          {
+            "amount": "0.11826930",
+            "keys": [
+              "2445800f02fff64f07f8062f66b8d35b0bab5e95c138de00f446e47b8bd1347c"
+            ],
+            "mask": "b7b135023dd232265c350173a0e84a14451b67de180636cc8829472d0bfff259",
+            "script": "fffe01",
+            "type": 0
+          }
+        ],
+        "snapshot": "83c4636a560fb15e25e69f0ea63e15900633db03ba2663d453b0825750f910d2",
+        "version": 1
+      }
+    }
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 18627910,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/mixin/transaction/704f7d52b864a70cc7219d04f534fb5105f341ff8fcbc6b80f90237ea7694ed2
+
+
+
+### <a name="link_405"></a> Raw node data
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:xin_chain}/raw/node/{:node_hash}`
+
+**Where:**
+
+- `{:xin_chain}` can be only `mixin`
+- `{:node_hash}` is the node hash (regex: `/^[0-9a-f]{64}$/i`)
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:id}ᵢ.node` — node data
+- `data.{:id}ᵢ.graph` — node graph data
+- `data.{:id}ᵢ.transaction` — node transaction data
+- `data.{:id}ᵢ.round` — node round data
+
+**Example request:**`
+
+- `https://api.blockchair.com/mixin/raw/node/a721a4fc0c667c4a1222c8d80350cbe07dab55c49942c8100a8c5e2f5bb4ec50`
+
+**Example output:**
+
+`https://api.blockchair.com/mixin/raw/node/a721a4fc0c667c4a1222c8d80350cbe07dab55c49942c8100a8c5e2f5bb4ec50`:
+
+```json
+{
+  "data": {
+    "node": {
+      "id": "a721a4fc0c667c4a1222c8d80350cbe07dab55c49942c8100a8c5e2f5bb4ec50",
+      "payee": "XINT3KrjgaC3EkrWJQkJBvY5ZJ4YFVTtrjxTuAkYoKTM8sZKLjrGnzDBAJkNZ3gUQuSWQdk98rr3xAF5C21Zb5YwaFHQ3WF9",
+      "signer": "XINq9ctH1qYjxE8AsxJoH53qgNpS6hpL5mv5sFGML4Bf7tdpBD5LorhGBGpSF4tEKh9LD81XrXcaLA3CmTnCZU2NoKExsDh",
+      "state": "REMOVED",
+      "timestamp": 1584709251628742100,
+      "transaction": "b26b3accf232512924087fc810a3ace700d8ccfd75a392e7403471465bc1a886"
+    },
+    "graph": {
+      "hash": "a14ab7cb37931acd4a35cb46a0e1533a5557d24bf588767b2c5e36b888d44ac3",
+      "node": "a721a4fc0c667c4a1222c8d80350cbe07dab55c49942c8100a8c5e2f5bb4ec50",
+      "round": 539409
+    },
+    "transaction": {
+      "asset": "a99c2e0e2b1da4d648755ef19bd95139acbbe6564cfb06dec7cd34931ca72cdc",
+      "extra": "065866c10424d5cfa7ca95eddad69d261ddc7c31a107f28773880bd9cb5bf611c70a3825ca359993324db9e169acb832e9ca75ec17b2b2e1f5b10ebd40eb9dca",
+      "hash": "b26b3accf232512924087fc810a3ace700d8ccfd75a392e7403471465bc1a886",
+      "hex": "86a756657273696f6e01a54173736574c420a99c2e0e2b1da4d648755ef19bd95139acbbe6564cfb06dec7cd34931ca72cdca6496e707574739185a448617368c420f3a94f83f0a579d1a1b87f713d934df44e9b888216938667e7b2817aba71ef93a5496e64657800a747656e65736973c0a74465706f736974c0a44d696e74c0a74f7574707574739185a454797065cca6a6416d6f756e74c70500e8d4a51000a44b65797391c42064bc93e6e22a4e5f2ca3340e898393478f1aec5354c5444e927b66efea4c8491a6536372697074c403fffe01a44d61736bc420e54a5084f751b0966bb28cf532ce070efd68121c7ccb258bce1ad877ef0fe0eea54578747261c440065866c10424d5cfa7ca95eddad69d261ddc7c31a107f28773880bd9cb5bf611c70a3825ca359993324db9e169acb832e9ca75ec17b2b2e1f5b10ebd40eb9dcaaa5369676e617475726573c0",
+      "inputs": [
+        {
+          "hash": "f3a94f83f0a579d1a1b87f713d934df44e9b888216938667e7b2817aba71ef93",
+          "index": 0
+        }
+      ],
+      "outputs": [
+        {
+          "amount": "10000.00000000",
+          "keys": [
+            "64bc93e6e22a4e5f2ca3340e898393478f1aec5354c5444e927b66efea4c8491"
+          ],
+          "mask": "e54a5084f751b0966bb28cf532ce070efd68121c7ccb258bce1ad877ef0fe0ee",
+          "script": "fffe01",
+          "type": 166
+        }
+      ],
+      "snapshot": "abe3e91c47618e45047bf19d7258fe7af9e599ea18e1814dffc661391863d38f",
+      "version": 1
+    },
+    "round": {
+      "end": 1584709084891248400,
+      "hash": "a14ab7cb37931acd4a35cb46a0e1533a5557d24bf588767b2c5e36b888d44ac3",
+      "node": "a721a4fc0c667c4a1222c8d80350cbe07dab55c49942c8100a8c5e2f5bb4ec50",
+      "number": 539409,
+      "references": {
+        "self": "80a01607cd8a3c9444c502f1008c3f1880b95471f25376fbc3e18d14d556a718",
+        "external": "73bec29807b077af6f061482cbee0ea8ec7b70021c03f82989bfc0edac27bea4"
+      },
+      "snapshots": [
+        {
+          "hash": "3b1039a352a5bcb8914239e4ef8e90c9f8e86e53186216ea7363a080d91e6472",
+          "node": "a721a4fc0c667c4a1222c8d80350cbe07dab55c49942c8100a8c5e2f5bb4ec50",
+          "references": {
+            "self": "80a01607cd8a3c9444c502f1008c3f1880b95471f25376fbc3e18d14d556a718",
+            "external": "73bec29807b077af6f061482cbee0ea8ec7b70021c03f82989bfc0edac27bea4"
+          },
+          "round": 539409,
+          "timestamp": 1584709084891248400,
+          "topology": 15283799,
+          "transaction": "9e4c9bb6bbb8f92a9811b75a147844453038dfeb835ed790f4fe5a344de10186",
+          "version": 1
+        }
+      ],
+      "start": 1584709084891248400
+    }
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 18628433,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/mixin/node/a721a4fc0c667c4a1222c8d80350cbe07dab55c49942c8100a8c5e2f5bb4ec50
+
+
+
+### <a name="link_406"></a> Raw graph data
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:xin_chain}/raw/graph`
+
+**Where:**
+
+- `{:xin_chain}` can be only `mixin`
+
+**Output:**
+
+`data` contains an array of graph elements
+
+**Example request:**`
+
+- `https://api.blockchair.com/mixin/raw/graph`
+
+**Example output:**
+
+`https://api.blockchair.com/mixin/raw/graph`:
+
+```json
+{
+  "data": [
+    {
+      "hash": "304d2b18a1d30db251702c0ea7c9aec1128c554afcbb2ebf4ce28a47ca722e65",
+      "node": "017ebfb57ed9aace3d2ed9d559b7a6bf16a8745113872f80cf74ed618a40d3d3",
+      "round": 133635
+    },
+    {
+      "hash": "ecf9ae5e469ce68907178f2e3dc8681438a779ad30a66f42c48b2db223731bcd",
+      "node": "028d97996a0b78f48e43f90e82137dbca60199519453a8fbf6e04b1e4d11efc9",
+      "round": 545028
+    },
+    {
+      "hash": "52837654b5b2530a4a171656f48479c809a3718ed98b877a4cf5d19901e97276",
+      "node": "1334081011398877b225a11a680440f8edbc2b3dd8b4a33cf90e571069d4c471",
+      "round": 525300
+    },
+    ...
+  ],
+  "context": {
+    "code": 200,
+    "results": 53,
+    "state": 18628655,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/mixin/graph
+
+
+
 # <a name="link_05"></a> Infinitable endpoints (SQL-like queries)
 
 These endpoints allow you to filter, sort, and aggregate blockchain data. The output is database rows. Unlike dashboard and raw endpoints, all infinitable endpoints listed in this section can be considered as just one endpoint as it has the same options and the same output structure across different blockchains and entities. Here it is: `https://api.blockchair.com/{:table}{:query}`.
@@ -5289,6 +5850,9 @@ Just don't ask why do we call that `infinitables`… Infinite tables? Maybe.
 * `{:eth_chain}/transactions`
 * `{:eth_chain}/mempool/transactions`
 * `{:eth_chain}/calls`
+* `{:xin_chain}/raw/snapshots`
+* `{:xin_chain}/raw/mintings`
+* `{:xin_chain}/raw/nodes`
 * `bitcoin/omni/properties`
 * `ethereum/erc-20/tokens`
 * `ethereum/erc-20/transactions`
@@ -5297,6 +5861,7 @@ Where:
 
 * `{:btc_chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `zcash`, or `bitcoin/testnet`
 * `{:eth_chain}` can be only `ethereum`
+* `{:xin_chain}` can be only `mixin`
 
 Note on mempool tables: to speed up some requests, our architecture have separate tables (`{:chain}/mempool/{:entity}`) for unconfirmed transactions. Unlike with dashboard endpoints which search entities like transactions in both the blockchain and the mempool, infinitable endpoints don't do that.
 
@@ -5530,6 +6095,9 @@ Applying a limit over the default multiplies the summed cost by `1 + 0.01 * numb
 | `{:eth_chain}/transactions`         | `5`       |
 | `{:eth_chain}/mempool/transactions` | `2`       |
 | `{:eth_chain}/calls`                | `10`      |
+| `{:xin_chain}/raw/snapshots`        | `1`       |
+| `{:xin_chain}/raw/mintings`         | `1`       |
+| `{:xin_chain}/raw/nodes`            | `1`       |
 | `bitcoin/omni/properties`           | `10`      |
 | `ethereum/erc-20/tokens`            | `2`       |
 | `ethereum/erc-20/transactions`      | `5`       |
@@ -5540,7 +6108,7 @@ Further in documentations are table descriptions. Each documentation section con
 
 | Column        | Type          | Description          | Q?                                         | S?                                       | A?                                        | C?                                                           |
 | ------------- | ------------- | -------------------- | ------------------------------------------ | ---------------------------------------- | ----------------------------------------- | ------------------------------------------------------------ |
-| *Column name* | *Column type* | *Column description* | *Is it possible to filter by this column?* | *Is it possible to sort by this column?* | *Is it possible to group by this column?* | *Is it possible to apply aggregation functions (like `sum` to this column)?* |
+| *Column name* | *Column type* | *Column description* | *Is it possible to filter by this column?* | *Is it possible to sort by this column?* | *Is it possible to group by this column?* | *Is it possible to apply aggregation functions (like `sum`) to this column?* |
 
 The following marks are possible for the `Q?` column:
 
@@ -6686,6 +7254,316 @@ See [request costs for infinitables](#link_05)
 
 
 
+## <a name="link_M44"></a> Inifinitable endpoints for Mixin
+
+Please note that our Mixin API outputs raw node data for these endpoints. 
+
+
+
+### <a name="link_407"></a> `snapshots` table
+
+Note: this particular table doesn't support advanced querying. The only query section it supports are `?offset=` and sorting/filtering by `topology`.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:xin_chain}/raw/snapshots?{:query}`
+
+**Where:**
+
+- `{:xin_chain}` can be only `mixin`
+
+**Where:**
+
+- `{:query}` is the query against the table ([how to build a query](#link_05))
+
+**Output:**
+
+`data` contains an array of database rows.
+
+**Example requests:**`
+
+- `https://api.blockchair.com/mixin/raw/snapshots`
+- `https://api.blockchair.com/mixin/raw/snapshots?q=topology(..18629737)&offset=10`
+- `https://api.blockchair.com/mixin/raw/snapshots?s=topology(asc)`
+
+**Example output:**
+
+`https://api.blockchair.com/mixin/raw/snapshots`:
+
+```json
+{
+  "data": [
+    {
+      "hash": "a6188df5dfecef1a2650fc7efd51ad0147539182cf0459fee6986b48f83502a6",
+      "node": "f7d194a68478987bc472c9f99478260dc12f4860204e0e91bee98a8b89363bc3",
+      "references": {
+        "self": "c77df83dcc00afba5e8cbc34b075df975c42efe520b4e00b501289b23f9affc1",
+        "external": "4d5f06d7b8512780396c212ecf55a7bfd7c42b4d82d0bd8e7911a03cab28c8cc"
+      },
+      "round": 8729,
+      "signature": "652e1d783743c45aebb127a3c9a8d823d743b3dd2304f12a4dc490e104448e61de8fe14abae911528ab9f7b845b73fc86582e53333e35ee1b78fdcb17b272e0000000000003eade5",
+      "timestamp": 1587575473417249500,
+      "topology": 18629830,
+      "transaction": {
+        "asset": "da5f6dbd3102cd89b1b040c6b61e5f2b696bcb989dff7d8ecee8872aacf65592",
+        "extra": "44876fa784bc11eabda9b827eb81dfb7",
+        "hash": "ce122ec544fc41c9cde2d350c544659ee5d4887201becf0a01eed6d238030303",
+        "inputs": [
+          {
+            "hash": "d3ac83d0cc8ef79bb215e6fc3326d58c6b16d2eb43fd6d6f16c18de4ddb0907a",
+            "index": 0
+          }
+        ],
+        "outputs": [
+          {
+            "amount": "0.01033063",
+            "keys": [
+              "322c48fa5b19aae518147de7223f62bcb7b444b054226d50fcfd064d0ed555c5"
+            ],
+            "mask": "bc561649c4f9a36c252159717cc0deb797f1af1af1704cefd96cb467616e060e",
+            "script": "fffe01",
+            "type": 0
+          }
+        ],
+        "version": 1
+      },
+      "version": 1
+    },
+    {
+      "hash": "80f6199ccc5bcb2cfb484a334107a67f89dc6e4cbcbcaae341fe28c619960bd5",
+      "node": "f7d194a68478987bc472c9f99478260dc12f4860204e0e91bee98a8b89363bc3",
+      "references": {
+        "self": "c77df83dcc00afba5e8cbc34b075df975c42efe520b4e00b501289b23f9affc1",
+        "external": "4d5f06d7b8512780396c212ecf55a7bfd7c42b4d82d0bd8e7911a03cab28c8cc"
+      },
+      "round": 8729,
+      "signature": "8e18689d15e051bb484ae08fa6b9325d61d75f86cbc203e2fcb87f97f93d5906d91d8cb31036b94a43918fc3e007a0e82bb3acb2735d66b5a90566b68bbb130700000000001efdf0",
+      "timestamp": 1587575472096503000,
+      "topology": 18629829,
+      "transaction": {
+        "asset": "d4c304ffc3270ee0f3468913bd8027225201f0eccd336d47062d76c6e2b6bb27",
+        "extra": "c5029926c5904a4583094a9e0761c9da",
+        "hash": "a95f88e19cd5dfbb6f14dd6ea581049b065ce0065798faa3cb889995088db9c0",
+        "inputs": [
+          {
+            "hash": "80dac46fe23abc29d7fe74b6e3580c42e164d37c9bd50be05306ccd2c7e6c653",
+            "index": 1
+          }
+        ],
+        "outputs": [
+          {
+            "amount": "0.01193500",
+            "keys": [
+              "b8124285ceca9f5e83b2a5f0420c8483067a69719f0741550742f0ac4c38c580"
+            ],
+            "mask": "0aef3fc155aa561d75490f545bb044f9a8f488060db7a6f4631d33a6d53296fd",
+            "script": "fffe01",
+            "type": 0
+          },
+          {
+            "amount": "0.00944393",
+            "keys": [
+              "f75bfa4afe3584b2beda6998be56c93cf6cd79b5635d40f61e0a6cefdf66367b"
+            ],
+            "mask": "d6bb73f16b57f7a67bb0c8bfce11b2f7ab1a1f108b9f7af242e36d448d2406e5",
+            "script": "fffe01",
+            "type": 0
+          }
+        ],
+        "version": 1
+      },
+      "version": 1
+    },
+    ...
+  ],
+  "context": {
+    "code": 200,
+    "results": 10,
+    "total_rows": 18629831,
+    "offset": 0,
+    "state": 18629830,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+See [request costs for infinitables](#link_05)
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/mixin/snapshots
+
+
+
+### <a name="link_408"></a> `mintings` table
+
+Note: this particular table doesn't support advanced querying. The only query section it supports are `?offset=` and sorting/filtering by `batch`.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:xin_chain}/raw/mintings?{:query}`
+
+**Where:**
+
+- `{:xin_chain}` can be only `mixin`
+
+**Where:**
+
+- `{:query}` is the query against the table ([how to build a query](#link_05))
+
+**Output:**
+
+`data` contains an array of database rows.
+
+**Example requests:**`
+
+- `https://api.blockchair.com/mixin/raw/mintings`
+- `https://api.blockchair.com/mixin/raw/mintings?q=batch(..400)&offset=10`
+- `https://api.blockchair.com/mixin/raw/mintings?s=batch(asc)`
+
+**Example output:**
+
+`https://api.blockchair.com/mixin/raw/mintings?s=batch(asc)`:
+
+```json
+{
+  "data": [
+    {
+      "amount": "1726.02739638",
+      "batch": 14,
+      "group": "KERNELNODE",
+      "transaction": "20001842d6eff5129c11f7c053bf1209f0267bf223f1681c9cb9d19fc773a692",
+      "snapshot": {
+        "hash": "1f408b456fe82b3e47801167649a725cb71075a58bb2568c8fe44bc223a0eece",
+        "node": "307ecfa84d100ecd6bc32743972083e5178e02db049ce16bfd743f3ae52fefc5",
+        "references": {
+          "self": "31923e163f5daddcb97ef98bf3b8a76002ec007e309c209ec9a071e16f876d90",
+          "external": "0597b1772ba2a0bd814dba7f9f6010512a426eef3154d41f7e63ff1394db6ce2"
+        },
+        "round": 1,
+        "signatures": [ ... ],
+        "timestamp": 1552544417124320500,
+        "topology": 116,
+        "transaction": {
+          "asset": "a99c2e0e2b1da4d648755ef19bd95139acbbe6564cfb06dec7cd34931ca72cdc",
+          "extra": "",
+          "hash": "20001842d6eff5129c11f7c053bf1209f0267bf223f1681c9cb9d19fc773a692",
+          "inputs": [
+            {
+              "mint": {
+                "group": "KERNELNODE",
+                "batch": 14,
+                "amount": "1726.02739638"
+              }
+            }
+          ],
+          "outputs": [
+            {
+              "amount": "115.06849309",
+              "keys": [
+                "5cd87b6b5a25f67445197261e1ebb5d68be598cd63b0a57eef6897f82cde5c0a"
+              ],
+              "mask": "f287afceabccc3d48b52de04d0edd43b446275041b024a3b5c9517894c06f9ab",
+              "script": "fffe01",
+              "type": 0
+            },
+            ...
+          ],
+          "version": 1
+        },
+        "version": 0
+      },
+      "timestamp": 1552544417124320500
+    },
+    ...
+  ],
+  "context": {
+    "code": 200,
+    "results": 10,
+    "total_rows": 404,
+    "offset": 0,
+    "state": 18630676,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+See [request costs for infinitables](#link_05)
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/mixin/mintings
+
+
+
+### <a name="link_408"></a> `nodes` table
+
+Note: this particular table doesn't support querying. It outputs all the entries (so there's no standard limit of 10 rows). Nodes are sorted by their `state`, and then by `timestamp`.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:xin_chain}/raw/nodes`
+
+**Where:**
+
+- `{:xin_chain}` can be only `mixin`
+
+**Output:**
+
+`data` contains an array of database rows.
+
+**Example requests:**`
+
+- `https://api.blockchair.com/mixin/raw/nodes`
+
+**Example output:**
+
+`https://api.blockchair.com/mixin/raw/nodes`:
+
+```json
+{
+  "data": [
+    {
+      "id": "cbba7a5e7bae3b0cef3d6dcba7948fa03facda3be401d67aa1a38aecb1f443a0",
+      "payee": "XINCcpcWJbJRiqEoUV7pWrmAdN1AZq3wyYTxa62JojvM4UqpuQnoVX7DZ6BgJEb61pSUS4ZyZNuEbAGL5azNyZNCbwdgqcVY",
+      "signer": "XIN3ntCzd1FqjSxrYM1f9abN3wY5DcydkDviEVgZL3paV7oYEeKnwzbMLwoRVANwyiu7w9mRrPf2eTpPaLRgQow9rSr3hzWH",
+      "state": "ACCEPTED",
+      "timestamp": 1579450099118731000,
+      "transaction": "ebbbf69e9e74e4070ef0685f8d9b4d7bc443922ac93445bc9bda1567984bdda8"
+    },
+    {
+      "id": "6985deee66ead2021925eae21737fa172d19c6efc3e53f3ca5e28ab42f7f51eb",
+      "payee": "XINYDpVHXHxkFRPbP9LZak5p7FZs3mWTeKvrAzo4g9uziTW99t7LrU7me66Xhm6oXGTbYczQLvznk3hxgNSfNBaZveAmEeRM",
+      "signer": "XINDfgnkijCTe9ijVd9yDwQP8VY4rXwFqYczfgeKJViJqjGKmWS8MdZhJn7kPd5Hv6M8W8RobhJUAxkxgZ6YNtdWQwefYE51",
+      "state": "ACCEPTED",
+      "timestamp": 1583004182403037400,
+      "transaction": "48f3d7b5ae6b03f251705cfc82c3b3c7413ec8a7e7b100de0cab4d8f3ec33bd5"
+    },
+    ...
+  ],
+  "context": {
+    "code": 200,
+    "results": 55,
+    "state": 18630827,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+See [request costs for infinitables](#link_05)
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/mixin/nodes
+
+
+
 ## <a name="link_M43"></a> Inifinitable endpoints for second layers
 
 
@@ -6694,7 +7572,7 @@ See [request costs for infinitables](#link_05)
 
 Note: this particular table doesn't support querying. The only query section it supports is `?offset=`. Note that this endpoint is in the Alpha stage.
 
-**Endpoints:**
+**Endpoint:**
 
 - `https://api.blockchair.com/bitcoin/omni/properties?{:query}`
 
@@ -6947,7 +7825,7 @@ Broadcast a transaction to the network
 
 **Where:**
 
-- `{:chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `ethereum`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `zcash`, `bitcoin/testnet`
+- `{:chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `ethereum`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `zcash`, `bitcoin/testnet`, `mixin`
 - `POST` data should contain `data` parameter with raw transaction represented in hex (for Ethereum it should start with `0x`)
 
 **Output:**
@@ -7297,6 +8175,13 @@ The response contains an array where the keys are blockchains, and the values ar
       "blockchair_first_entry": 0,
       "blockchair_first_entry_date": "2016-10-28",
       "is_full": true
+    },
+    "mixin": {
+      "blockchain_first_entry": 0,
+      "blockchain_first_entry_date": "2019-02-28",
+      "blockchair_first_entry": 0,
+      "blockchair_first_entry_date": "2019-02-28",
+      "is_full": true
     }
   },
   "context": {
@@ -7410,7 +8295,8 @@ This endpoint returns the list of latest software (core clients) releases for bl
       "stellar": "Stellar Core",
       "monero": "Monero",
       "cardano": "Cardano SL",
-      "zcash": "Zcash"
+      "zcash": "Zcash",
+      "mixin": "Mixin"
     },
     ...
   }
