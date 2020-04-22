@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.47)
+* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.48)
 
 ### Please apply for an API key first
 
@@ -26,6 +26,20 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.48 - April 22nd, 2020 (Lenin turns 150 today!)
+    * Added Mixin support. The list of new endpoints (see the documentation for details):
+        * `https://api.blockchair.com/mixin/stats`
+        * `https://api.blockchair.com/mixin/raw/snapshots`
+        * `https://api.blockchair.com/mixin/raw/mintings`
+        * `https://api.blockchair.com/mixin/raw/nodes`
+        * `https://api.blockchair.com/mixin/raw/graph`
+        * `https://api.blockchair.com/mixin/raw/snapshot/{:hash}`
+        * `https://api.blockchair.com/mixin/raw/snapshot/{:id}`
+        * `https://api.blockchair.com/mixin/raw/transaction/{:hash}`
+        * `https://api.blockchair.com/mixin/raw/round/{:hash}`
+        * `https://api.blockchair.com/mixin/raw/round/({:id},{:node_hash})`
+        * `https://api.blockchair.com/mixin/raw/node/{:node_hash}`
+        * `https://api.blockchair.com/mixin/push/transaction`
 * v.2.0.47 - March 12th, 2020
     * Added Zcash support. Features: dashboard endpoints, raw endpoints, infinitables (allowing to filter and sort blockchain data), node explorer, and many more.
 * v.2.0.46 - March 3rd, 2020
