@@ -1,4 +1,4 @@
-# [Blockchair.com](https://blockchair.com/) API v.2.0.48 Documentation
+# [Blockchair.com](https://blockchair.com/) API v.2.0.49 Documentation
 
 ```
     ____  __           __        __          _     
@@ -1734,7 +1734,7 @@ For mempool transactions shows priority (`position`) — for chains supporting S
 * `?offset={:transaction_offset},{:utxo_offest}` or a shorthand `?offset={:offset}` allows to paginate transaction hashes and the UTXO array. The behaviour is similar to the `?limit=` section. Default for both offset is `0`, and the maximum is `1000000`.  
 * `?transaction_details=true` — returns detailed info on transactions instead of just hashes in the `transactions` array. Each element contains `block_id`, `transaction_hash`, `time`, and `balance_change` (shows how the transactions affected the balance of `{:address}`, i.e. it can be a negative value). At the moment, this option is available for the `address` endpoint only.
 * `?omni=true` (for `bitcoin` only; in alpha test mode) — shows information about Omni Layer tokens belonging to the address. At the moment, this option is available for the `address` endpoint only. The data is returned in the `layer_2.omni` array.
-* `?wormhole=true` (for `bitcoin-cash` only; in alpha test mode) — shows information about Wormhole tokens belonging to the address. At the moment, this option is available for the `address` endpoint only. The data is returned in the `layer_2.wormhole` array.
+* `?state=latest` — discards unconfirmed transactions from the output — `balance` will show only confirmed balance, and `transactions` and `utxo` arrays won't include unconfirmed data.
 
 **Output:**
 
@@ -1779,7 +1779,7 @@ Address object specification:
 
 * `type` — address type (the same as `type` [here](#link_400), can be one of these: `pubkey`, `pubkeyhash`, `scripthash`, `multisig`, `nulldata`, `nonstandard`, `witness_v0_scripthash`, `witness_v0_keyhash`, `witness_unknown`)
 * `script_hex` — output script (in hex) corresponding to the address
-* `balance` — address balance in satoshi (hereinafter - including unconfirmed outputs)
+* `balance` — address balance in satoshi (hereinafter — including unconfirmed outputs unless `?state=latest` option is used)
 * `balance_usd` — address balance in USD
 * `received` — total received in satoshi
 * `received_usd` — total received in USD
@@ -2266,7 +2266,7 @@ Address object specification:
 
 **Request cost formula:**
 
-- `1` for the `address` endpoint (add `1` for every of these options used: `?transaction_details=true`, `?omni=true`, `?wormhole=true`)
+- `1` for the `address` endpoint (add `1` for every of these options used: `?transaction_details=true`, `?omni=true`)
 - `1 + (0.1 * (entity count - 1))`  for the `addresses` endpoint (e.g. it's `1 + (0.1 * (100 - 1)) = 10.9` for requesting 100 addresses)
 - `1 + 2 * depth - 0.1` for the `xpub` endpoint, where `depth` is the number of 20-addresses iterations (BIP 32 standard). The minimum number of iterations is 1 (the cost would be `2.9` in that case), if there are 5 iterations required, 100 addresses will be checked in total (the cost would be `10.9`)
 
