@@ -27,7 +27,7 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 ### Changelog
 
 * v.2.0.49 - April 26th, 2020
-    * It's now possible to discard unconfirmed transactions from the address dashboard by applying `?state=latest` option. If this option is applied, `balance` will show only confirmed balance, and `transactions` and `utxo` arrays won't include unconfirmed data. Affected endpoints `{:btc_chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `zcash`, `bitcoin/testnet`): 
+    * It's now possible to discard unconfirmed transactions from the address dashboard by applying `?state=latest` option. If this option is applied, `balance` will show only confirmed balance, and `transactions` and `utxo` arrays won't include unconfirmed data. Affected endpoints (`{:btc_chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `zcash`, `bitcoin/testnet`): 
         * `https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀?state=latest`
         * `https://api.blockchair.com/{:btc_chain}/dashboards/addresses/{:address}₀,...,{:address}ᵩ?state=latest`
         * `https://api.blockchair.com/{:btc_chain}/dashboards/xpub/{:extended_key}?state=latest`
