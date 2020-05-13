@@ -26,6 +26,8 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.50 - May 13th, 2020
+    * Removed support for Telegram Open Network (TON) as the project has been shut down (see https://telegra.ph/What-Was-TON-And-Why-It-Is-Over-05-12). All the relevant endpoints will now return a `404` error.
 * v.2.0.49 - April 26th, 2020
     * It's now possible to discard unconfirmed transactions from the address dashboard by applying `?state=latest` option. If this option is applied, `balance` will show only confirmed balance, and `transactions` and `utxo` arrays won't include unconfirmed data. Affected endpoints (`{:btc_chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `zcash`, `bitcoin/testnet`): 
         * `https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀?state=latest`
