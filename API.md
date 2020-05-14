@@ -26,6 +26,12 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.51 - May 14th, 2020
+    * Added Tezos support. New endpoints:
+        * `https://api.blockchair.com/tezos/stats`
+        * `https://api.blockchair.com/tezos/raw/block/{:id|hash}`
+        * `https://api.blockchair.com/tezos/raw/operation/{:hash}`
+        * `https://api.blockchair.com/tezos/raw/account/{:account|contract}`
 * v.2.0.50 - May 13th, 2020
     * Removed support for Telegram Open Network (TON) as the project has been shut down (see https://telegra.ph/What-Was-TON-And-Why-It-Is-Over-05-12). All the relevant endpoints will now return a `404` error.
 * v.2.0.49 - April 26th, 2020
