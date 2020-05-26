@@ -26,6 +26,9 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.53 - May 26th, 2020
+    * Improved stability of our Omni Layer explorer
+    * The `https://api.blockchair.com/bitcoin/dashboads/transaction/{:hash}?omni=true` endpoint now returns info for unconfirmed Omni Layer transfers. In case there are any, the `valid` field will yield `null`. Please note that it's not possible to know if an Omni Layer transfer is valid before it has at least 1 confirmation.
 * v.2.0.52 - May 22th, 2020
     * Fixed a bug where it wasn't possible to filter Ethereum mempool tables by sender and recipient (thanks @emilianobonassi for noticing)
     * `https://api.blockchair.com/{:btc_chain}/dashboards/transaction/{:hash}/priority` endpoint now yields `confirmed` in the `position` field for confirmed transactions. Previously it wasn't possible to differ confirmed transactions from transactions that have completely fallen out of the mempool.
