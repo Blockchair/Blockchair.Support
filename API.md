@@ -26,6 +26,10 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.55 - May 28th, 2020
+    * Added `circulation` and `circulation_approximate` fields to the `https://api.blockchair.com/ethereum/erc-20/{:token}/stats` endpoint output. These values yield total circulating supply of the token (`null` if the contract doesn't have the `totalSuply` function).
+    * Fixed a precision issue in the `https://api.blockchair.com/ethereum/erc-20/{:contract}/dashboards/address/{:address}` endpoint, now `balance` returns precise value.
+    * Added `?nonce=true` option to the `https://api.blockchair.com/ethereum/dashboards/address/{:address}` endpoint. If enabled, `nonce` will yield account's current transaction nonce.
 * v.2.0.54 - May 27th, 2020
     * The limit on xpub discovery is raised to 20.000 (10.000 main addresses and 10.000 change addresses) for Premium API customers. Please note that according to the request cost formula for `xpub` endpoints, the cost of fetching an xpub consisting of 10.000 addresses is `1 + 2 * (10000 / 20) - 0.1 = 1000.9`
     * Fixed a bug with complex aggregation queries. Now instead throwing a `500` error, the following example works: `https://api.blockchair.com/bitcoin/transactions?q=has_witness(true),has_witness(false),time(2020-05),input_count(1),output_count(1),is_coinbase(false)&a=date,f(avg(fee)/avg(fee))&aq=0:0;1:1` (this particular example returns data on how many times more SegWit transactions with a single input and a single outputs pay in fees on average).
