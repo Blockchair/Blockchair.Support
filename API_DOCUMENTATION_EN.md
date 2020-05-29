@@ -1,4 +1,4 @@
-# [Blockchair.com](https://blockchair.com/) API v.2.0.49 Documentation
+# [Blockchair.com](https://blockchair.com/) API v.2.0.55 Documentation
 
 ```
     ____  __           __        __          _     
@@ -17,17 +17,17 @@
   + [Basic API request](#link_M03)
   + [Basic API response](#link_M04)
   + [API rate limits, API keys, and Premium API](#link_M05)
-  + [API versioning](#link_M06)
+  + [API versioning and changelog](#link_M06)
 + [General stats endpoints](#link_M1) (Retrieve overall information about blockchains and tokens)
     + [Stats on multiple blockchains at once](#link_000)
     + [Bitcoin-like blockchain stats](#link_001)
     + [Ethereum-like blockchain stats](#link_002)
     + [Ripple-like blockchain stats](#link_003)
     + [Stellar-like blockchain stats](#link_004)
-    + [TON-like blockchain stats](#link_005)
     + [Monero-like blockchain stats](#link_006)
     + [Cardano-like blockchain stats](#link_007)
     + [Mixin-like DAG stats](#link_008)
+    + [Tezos-like blockchain stats](#link_009)
     + [Omni Layer stats](#link_500)
     + [ERC-20 stats](#link_509)
 + [Dashboard endpoints](#link_M2) (Retrieve information about various entities in a neat format from our databases)
@@ -59,10 +59,6 @@
       - [Ledger](#link_107)
       - [Transaction](#link_208)
       - [Account](#link_304)
-    - [Telegram Open Network](#link_M35)
-      - [Ledger](#link_108)
-      - [Transaction](#link_209)
-      - [Account](#link_305)
     - [Monero](#link_M36)
       - [Block](#link_109)
       - [Transaction](#link_210)
@@ -77,6 +73,10 @@
       - [Transaction](#link_212)
       - [Node](#link_405)
       - [Graph](#link_406)
+    - [Tezos](#link_M39)
+      - [Block](#link_112)
+      - [Operation](#link_213)
+      - [Account](#link_308)
 + [Infinitable endpoints](#link_05) (SQL-like queries: filter, sort, and aggregate blockchain data)
     + [Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Zcash, and Bitcoin Testnet](#link_M41)
       + [Blocks](#link_102) (table)
@@ -135,15 +135,15 @@ Our API is free to try under some limitations, and we have a variety of premium 
 
 ## <a name="link_M01"></a> Supported blockchains and second layers
 
-As of today, our API supports **16 blockchains** (14 mainnets and 2 testnets) divided into 7 groups:
+As of today, our API supports **16 blockchains** (15 mainnets and 1 testnet) divided into 7 groups:
 * Bitcoin-like blockchains (Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Zcash, Bitcoin Testnet), also known as UTXO-based blockchains
 * Ethereum-like blockchains (Ethereum)
 * Ripple-like blockchains (Ripple)
 * Stellar-like blockchains (Stellar)
-* TON-like blockchains (Telegram Open Network Testnet)
 * Monero-like blockchains (Monero)
 * Cardano-like blockchains (Cardano)
 * Mixin-like DAGs (Mixin) — technically, it's a DAG rather than a blockchain, but for the sake of unification it may be mentioned as a blockchain further in this documentation
+* Tezos-like blockchains (Tezos)
 
 Within a group, there's no or little difference between the set of available endpoints and their output. 
 
@@ -165,13 +165,13 @@ Here's the list of available mainnets:
 | Cardano | Cardano-like | `https://api.blockchair.com/cardano` | Alpha mode, possible compatibility-breaking changes |
 | Zcash | Bitcoin-like | `https://api.blockchair.com/zcash` | Full support |
 | Mixin | Mixin-like | `https://api.blockchair.com/mixin` | Full support |
+| Tezos | Tezos-like | `https://api.blockchair.com/tezos` | Alpha mode, possible compatibility-breaking changes |
 
 There are also following testnets supported which are technically considered as separate blockchains:
 
 | Blokchain | Group | API path prefix | Support status |
 |-----------|------|----------|-------------|
 | Bitcoin Testnet | Bitcoin-like | `https://api.blockchair.com/bitcoin/testnet` | Full support |
-| Telegram Open Network Testnet | TON-like | `https://api.blockchair.com/ton/testnet` | Alpha mode, possible compatibility-breaking changes |
 
 We aim to support more blockchains (and their testnets) in future to cover as many users as possible. We don't disclose which blockchains we'll add next and how we choose them, but our main markers are daily number of real transactions and market capitalization. If you're representing a coin community which would like to add its blockchain to our platform, we'd be happy to talk.
 
@@ -210,10 +210,10 @@ This is the full list of available API endpoints.
 - `{:eth_chain}` can be only `ethereum`
 - `{:xrp_chain}` can be only `ripple`
 - `{:xlm_chain}` can be only `stellar`
-- `{:ton_chain}` can be only `ton/testnet`
 - `{:xmr_chain}` can be only `monero`
 - `{:ada_chain}` can be only `cardano`
 - `{:xin_chain}` can be only `mixin`
+- `{:xtz_chain}` can be only `tezos`
 
 | Endpoint path                             | Docs | Base request cost | Status |
 | ----------------------------------------------- | :----------------: | -----------------------------: | :---------------------------------------------: |
@@ -223,10 +223,10 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:eth_chain}/stats` | [👉](#link_002) | `1` | Stable |
 | `https://api.blockchair.com/{:xrp_chain}/stats` | [👉](#link_003) | `1` | Stable |
 | `https://api.blockchair.com/{:xlm_chain}/stats` | [👉](#link_004) | `1` | Stable |
-| `https://api.blockchair.com/{:ton_chain}/stats` | [👉](#link_005) | `1` | Stable |
 | `https://api.blockchair.com/{:xmr_chain}/stats` | [👉](#link_006) | `1` | Stable |
 | `https://api.blockchair.com/{:ada_chain}/stats` | [👉](#link_007) | `1` | Stable |
 | `https://api.blockchair.com/{:xin_chain}/stats` | [👉](#link_008) | `1` | Stable |
+| `https://api.blockchair.com/{:xtz_chain}/stats` | [👉](#link_009) | `1` | Stable |
 | **Block-related information** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/block/{:height}₀` | [👉](#link_100) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/block/{:hash}₀` | [👉](#link_100) | `1` | Stable |
@@ -245,13 +245,14 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:xrp_chain}/raw/ledger/{:height}₀` | [👉](#link_106) | `1` | Alpha |
 | `https://api.blockchair.com/{:xrp_chain}/raw/ledger/{:hash}₀` | [👉](#link_106) | `1` | Alpha |
 | `https://api.blockchair.com/{:xlm_chain}/raw/ledger/{:height}₀` | [👉](#link_107) | `1` | Alpha |
-| `https://api.blockchair.com/{:ton_chain}/raw/block/{:tuple}₀` | [👉](#link_108) | `1` | Alpha |
 | `https://api.blockchair.com/{:xmr_chain}/raw/block/{:height}₀` | [👉](#link_109) | `1` | Alpha |
 | `https://api.blockchair.com/{:xmr_chain}/raw/block/{:hash}₀` | [👉](#link_109) | `1` | Alpha |
 | `https://api.blockchair.com/{:ada_chain}/raw/block/{:height}₀` | [👉](#link_110) | `1` | Alpha |
 | `https://api.blockchair.com/{:ada_chain}/raw/block/{:hash}₀` | [👉](#link_110) | `1` | Alpha |
 | `https://api.blockchair.com/{:xin_chain}/raw/snapshot/{:height}₀` | [👉](#link_111) | `1` | Alpha |
 | `https://api.blockchair.com/{:xin_chain}/raw/snapshot/{:hash}₀` | [👉](#link_111) | `1` | Alpha |
+| `https://api.blockchair.com/{:xtz_chain}/raw/block/{:height}₀` | [👉](#link_112) | `1` | Alpha |
+| `https://api.blockchair.com/{:xtz_chain}/raw/block/{:hash}₀` | [👉](#link_112) | `1` | Alpha |
 | **Transaction-related information and actions** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/transaction/{:hash}₀` | [👉](#link_200) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/transactions/{:hash}₀,...,{:hash}ᵩ` | [👉](#link_200) | `1 + 0.1*c` | Stable |
@@ -267,11 +268,11 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:eth_chain}/mempool/transactions?{:query}` | [👉](#link_206) | `2` | Stable |
 | `https://api.blockchair.com/{:xrp_chain}/raw/transaction/{:hash}₀` | [👉](#link_207) | `1` | Alpha |
 | `https://api.blockchair.com/{:xlm_chain}/raw/transaction/{:hash}₀` | [👉](#link_208) | `1` | Alpha |
-| `https://api.blockchair.com/{:ton_chain}/raw/transaction/{:tuple}₀` | [👉](#link_209) | `1` | Alpha |
 | `https://api.blockchair.com/{:xmr_chain}/raw/transaction/{:hash}₀` | [👉](#link_210) | `1` | Alpha |
 | `https://api.blockchair.com/{:ada_chain}/raw/transaction/{:hash}₀` | [👉](#link_211) | `1` | Alpha |
 | `https://api.blockchair.com/{:xin_chain}/raw/transaction/{:hash}₀` | [👉](#link_212) | `1` | Alpha |
 | `https://api.blockchair.com/{:xin_chain}/push/transaction` (`POST`) | [👉](#link_202) | `1` | Stable |
+| `https://api.blockchair.com/{:xtz_chain}/raw/operation/{:hash}₀` | [👉](#link_213) | `1` | Alpha |
 | **Address-related information** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀` | [👉](#link_300) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/addresses/{:address}₀,...,{:address}ᵩ` | [👉](#link_300) | `1 + 0.1*c` | Stable |
@@ -280,8 +281,8 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:eth_chain}/dashboards/address/{:address}₀` | [👉](#link_302) | `1` | Stable |
 | `https://api.blockchair.com/{:xrp_chain}/raw/account/{:address}₀` | [👉](#link_303) | `1` | Alpha |
 | `https://api.blockchair.com/{:xlm_chain}/raw/account/{:address}₀` | [👉](#link_304) | `1` | Alpha |
-| `https://api.blockchair.com/{:ton_chain}/raw/account/{:address}₀` | [👉](#link_305) | `1` | Alpha |
 | `https://api.blockchair.com/{:ada_chain}/raw/address/{:address}₀` | [👉](#link_307) | `1` | Alpha |
+| `https://api.blockchair.com/{:xtz_chain}/raw/account/{:address}₀` | [👉](#link_308) | `1` | Alpha |
 | **Special entities** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/outputs?{:query}` | [👉](#link_400) | `10` | Beta |
 | `https://api.blockchair.com/{:btc_chain}/mempool/outputs?{:query}` | [👉](#link_400) | `2` | Beta |
@@ -290,6 +291,7 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:eth_chain}/uncles?{:query}` | [👉](#link_402) | `2` | Stable |
 | `https://api.blockchair.com/{:eth_chain}/calls?{:query}` | [👉](#link_403) | `10` | Stable |
 | `https://api.blockchair.com/{:xmr_chain}/outputs?{:query}` | [👉](#link_306) | `1` | Alpha |
+| `https://api.blockchair.com/zcash/validate?paymentdisclosure={:disclosure}` | N/A | `1` | Alpha |
 | `https://api.blockchair.com/{:xin_chain}/raw/round/{:hash}` | [👉](#link_404) | `1` | Alpha |
 | `https://api.blockchair.com/{:xin_chain}/raw/round/({:node_hash},{:id})` | [👉](#link_404) | `1` | Alpha |
 | `https://api.blockchair.com/{:xin_chain}/raw/node/{:hash}` | [👉](#link_405) | `1` | Alpha |
@@ -338,7 +340,7 @@ Here are some considerations:
 
 * If you're building a web app, your users shouldn't make direct API requests from there. While we don't have any limitations in our CORS policy (API currently responds with a `Access-Control-Allow-Origin: *` header), that policy may be changed in the future without any warnings
 * Please don't use some random keys in your requests (e.g. `?random_key=random_value`) as this can result in a `400` error (though we don't force this rule at the moment for most of our endpoints)
-* If you're using the API with an API key, you should keep it in secret. In order to build an app for public use using our API, you should build a proxy, so the requrst flow will look like the following: `user → https://your-proxy/{:request_string} → http://api.blockchair.com/{:request_string}?key={:api_key}` — that way you won't disclose the key to your users
+* If you're using the API with an API key, you should keep it in secret. In order to build an app for public use using our API, you should build a proxy, so the requrst flow will look like the following: `user → https://your-proxy/{:request_string} → https://api.blockchair.com/{:request_string}?key={:api_key}` — that way you won't disclose the key to your users
 * The only exception to the "requests should be made using GET" rule is the [Broadcasting transactions](#link_202) endpoint accepting POST requests
 
 
@@ -449,7 +451,7 @@ There's an extra API endpoint for those who have an API key allowing to [track t
 
 
 
-## <a name="link_M06"></a> API versioning
+## <a name="link_M06"></a> API versioning and changelog
 
 As a reminder, there's the `context.api` array in every API response which contains the following data:
 
@@ -461,7 +463,7 @@ As a reminder, there's the `context.api` array in every API response which conta
 
 When we change something, or add new functions, we bump the API version number. Generally, we try as hard as possible not to bring any compatibility-breaking changes in API updates, but sometimes this is needed as some blockchains change their features themselves, we're fixing various bugs, etc. This doesn't apply, however, to changes to endpoints which are either marked as alpha- or beta-stage functions, or unstable in nature (e.g. all raw endpoints where the API returns data directly from our nodes, and the response may change as we upgrade the nodes). These marks are reflected in the [Quick endpoint reference](#link_M02).
 
-The changelog is available here: https://github.com/Blockchair/Blockchair.Support/blob/master/API.md
+**The changelog is available here: https://github.com/Blockchair/Blockchair.Support/blob/master/API.md**
 
 It makes sense to check if `context.api.version` has increased and/or just whether `context.api.next_major_update` is not `null` or larger than the latest update date known to you. If that's the case — you can send yourself a notification and review the changelog to make your application compatible with the changes starting from `context.api.next_major_update`.
 
@@ -495,13 +497,13 @@ If you require data on just one blockchain, please use `https://api.blockchair.c
 - Ripple
 - Groestlcoin
 - Stellar
-- Telegram Open Network Testnet
 - Monero
 - Cardano
 - Zcash
 - Mixin
+- Tezos
 
-Note that Bitcoin Testnet stats are not included in this output, and TON Testnet will be changed to TON Mainnet as soon as it's launched.
+Note that Bitcoin Testnet stats are not included in this output.
 
 Description of the fields is available in the next three sections of documentation.
 
@@ -572,12 +574,6 @@ Description of the fields is available in the next three sections of documentati
         ...
       }
     },
-    "ton": {
-      "data": {
-        "blocks": 475753,
-        ...
-      }
-    },
     "monero": {
       "data": {
         "blocks": 2014108,
@@ -599,6 +595,12 @@ Description of the fields is available in the next three sections of documentati
     "mixin": {
       "data": {
         "snapshots": 18632532,
+        ...
+      }
+    },
+    "tezos": {
+      "data": {
+        "blocks": 974144,
         ...
       }
     }
@@ -1034,58 +1036,6 @@ Always `1`.
 
 
 
-## <a name="link_005"></a> TON-like blockchain stats
-
-**Endpoint:**
-
-- `https://api.blockchair.com/ton/testnet/stats`
-
-**Output:**
-
-`data` contains an array with blockchain statistics:
-
-- `blocks` — total number of blocks
-- `best_block_height` — the latest block number in the default workchain
-- `best_block_file_hash` — its filehash…
-- `best_block_root_hash` — … roothash…
-- `best_block_time` — … and timestamp
-- `fist_block_time` — timestamp of the first block (when the current testnet was launched)
-- `blocks_24h` — number of blocks over the last 24 hours
-- `transactions_24h` — number of transactions over the last 24 hours
-
-**Example output:**
-
-`https://api.blockchair.com/ton/testnet/stats`:
-
-```json
-{
-  "data": {
-    "blocks": 475780,
-    "best_block_height": 475780,
-    "best_block_file_hash": "106BF11CFA87F20CF3310F200024D98344B3EC318803734857A5C5AEBF037E53",
-    "best_block_root_hash": "6A6B38C7A29315545271CA0C6FB1F04FB8DB6950EA24CEB3F81C86229FE7F370",
-    "best_block_time": "2019-12-03 18:36:55",
-    "first_block_time": "2019-11-15 12:53:05",
-    "blocks_24h": 26000,
-    "transactions_24h": 130000
-  },
-  "context": {
-    "code": 200,
-    ...
-  }
-}
-```
-
-**Request cost formula:**
-
-Always `1`.
-
-**Explore visualization on our front-end:**
-
-- https://blockchair.com/ton
-
-
-
 ## <a name="link_006"></a> Monero-like blockchain stats
 
 **Endpoint:**
@@ -1255,7 +1205,7 @@ Always `1`.
 
 **Example output:**
 
-`https://api.blockchair.com/cardano/stats`:
+`https://api.blockchair.com/mixin/stats`:
 
 ```json
 {
@@ -1293,6 +1243,73 @@ Always `1`.
 **Explore visualizations on our front-end:**
 
 - https://blockchair.com/mixin
+
+
+
+## <a name="link_009"></a> Tezos-like blockchain stats
+
+**Endpoint:**
+
+- `https://api.blockchair.com/tezos/stats`
+
+**Output:**
+
+`data` contains an array with blockchain statistics:
+
+- `blocks` — total number of blocks
+- `operations` — total number of operations
+- `operations_24h` — number of operations over the last 24 hours
+- `volume_24h` — volume transacted over the last 24 hours
+- `inflation_24h` — newly minted coin count over the last 24 hours
+- `best_block_height` — the latest block number in the default workchain
+- `best_block_hash` — its hash…
+- `best_block_time` — … and timestamp
+- `circulation` and `circulation_xtz` — total circulating supply
+- `market_price_usd` — average market price of 1 coin in USD (market data source: CoinGecko)
+- `market_price_btc` — average market price of 1 coin in BTC
+- `market_price_usd_change_24h_percentage` — market price change in percent for 24 hours
+- `market_cap_usd` — market capitalization (coins in circulation * price per coin in USD)
+- `market_dominance_percentage` — dominance index (how much % of the total cryptocurrency market is the market capitalization of the coin)
+- `countdowns` (optional) — an optional array of events ([`event`, `time_left`] format), where `time_left` is the number of seconds till the `event`
+
+**Example output:**
+
+`https://api.blockchair.com/tezos/stats`:
+
+```json
+{
+  "data": {
+    "blocks": 974146,
+    "operations": 25664439,
+    "operations_24h": 41556,
+    "volume_24h": 19467451942626,
+    "inflation_24h": 114867833312,
+    "best_block_height": 974145,
+    "best_block_hash": "BL5GrLjJVpKfDGBxh3GgVKE25hYcX8FJEN7LmmohyXrS42H2Yx1",
+    "best_block_time": "2020-05-29 22:31:38",
+    "circulation_xtz": 712341492.340773,
+    "circulation": 712341492340773,
+    "market_price_usd": 2.86,
+    "market_price_btc": 0.00030425564282515,
+    "market_price_usd_change_24h_percentage": 2.51544,
+    "market_cap_usd": 2033457725,
+    "market_dominance_percentage": 0.77
+  },
+  "context": {
+    "code": 200,
+    "state": 974145,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/tezos
 
 
 
@@ -1688,7 +1705,7 @@ In case transaction is confirmed on the blockchain, `data.{:hash}ᵢ.transaction
 
 - `https://api.blockchair.com/{:btc_chain}/dashboards/transaction/{:hash}₀/priority`
 
-For mempool transactions shows priority (`position`) — for chains supporting SegWit by `fee_per_kwu`,  for others by `fee_per_kb`— over other transactions (`out_of` mempool transactions). `position` is `null` if the transaction is not in the mempool. Cost: `1`.
+For mempool transactions shows priority (`position`) — for chains supporting SegWit by `fee_per_kwu`,  for others by `fee_per_kb`— over other transactions (`out_of` mempool transactions). `position` is `null` if the transaction is neither in the mempool nor in the blockchain, `confirmed` if it's in the blockchain. Cost: `1`.
 
 **Request cost formula:**
 
@@ -1771,7 +1788,7 @@ Here's how these three dashboard calls structured (see more detailed examples be
     * `utxo` — the UTXO set for the address set
 * `context` — some context info
 
-Note that currently the maximum depth for xpub address discovery is 250 (larger limits are available on Premium plans). According to BIP 32, our engine looks for 20 addresses at once, and if there's no transactions associated with this set, it stops looking.
+Note that currently the maximum depth for xpub address discovery is 250 main addresses and 250 change addresses (larger limits up to 10.000 main / 10.000 change are available on Premium plans). According to BIP 32, our engine looks for 20 addresses at once, and if there's no transactions associated with this set, it stops looking.
 
 `data.addresses` for both the `addresses` and the `xpub` endpoints don't include addresses which don't participate in transactions.
 
@@ -2685,7 +2702,8 @@ For mempool transactions shows priority (`position`) by `gas_price` over other t
 
 - `?limit={:call_limit}` — limits the number of returned latest calls associated with the address. Default is `100`. Maximum is `10000`.
 - `?offset={:call_offset}` — allows to paginate calls. Default is `0`, and the maximum is `1000000`.  
-- `?erc_20=true` — return information about ERC-20 token balances of the address
+- `?erc_20=true` — returns information about ERC-20 token balances of the address
+- `?nonce=true` — returns current account nonce 
 
 **Output:**
 
@@ -2712,6 +2730,7 @@ In case the address has been found, `data.{:address}₀` returns an array consis
   - `address.last_seen_receiving` — timestamp (UTC) when the address received a successful incoming call for the last time
   - `address.first_seen_spending` — timestamp (UTC) when the address sent a successful call for the first time
   - `address.last_seen_spending` — timestamp (UTC) when the address sent a successful call for the last time
+  - `address.nonce` — current account nonce (only if `?nonce=true` is set, `null` otherwise)
 - `calls` — an array of the latest address call, each element of an array containing the following elements: `block_id`, `transaction_hash`,` index`, `time`,` sender`, `recipient`, `value`,` value_usd`, `transferred` (see the description [here](#link_403))
 - `layer_2.erc_20` (only if `?erc_20=true` is set) — the array of ERC-20 token balances of the address, each element contains the following fields: `token_address`, `token_name`, `token_symbol`, `token_decimals`, `balance_approximate` (number of tokens), `balance` (exact number of tokens in the smallest denomination). Note that `balance ≈ balance_approximate * 10 ^ token_decimals`.
 
@@ -2738,7 +2757,7 @@ Notes:
 
 - `https://api.blockchair.com/ethereum/dashboards/address/0x3282791d6fd713f1e94f4bfd565eaa78b3a0599d`
 - `https://api.blockchair.com/ethereum/dashboards/address/0x3282791d6fd713f1e94f4bfd565eaa78b3a0599d?limit=1&offset=0`
-- `https://api.blockchair.com/ethereum/dashboards/address/0x3282791d6fd713f1e94f4bfd565eaa78b3a0599d?erc_20=true`
+- `https://api.blockchair.com/ethereum/dashboards/address/0x3282791d6fd713f1e94f4bfd565eaa78b3a0599d?erc_20=true&nonce=true`
 
 **Example output:**
 
@@ -2831,7 +2850,7 @@ Notes:
 
 **Request cost formula:**
 
-- `1` or `2` if the `?erc_20=true` option is used
+- `1` + `1` for each of the options used: `?erc_20=true`, `?nonce=true`
 
 **Explore visualizations on our front-end:**
 
@@ -2931,6 +2950,8 @@ Allows to retrieve the some basic information on an ERC-20 token. Note that this
 * `transactions_24h` — the same over the last 24 hours
 * `volume_24h_approximate` — transacted monetary volume in the number of tokens
 * `volume_24h` — the same in the token's smallest denomination (`volume_24h ≈ volume_24h_approximate * (10 ^ decimals )`)
+* `circulation_approximate` — circulating supply in the number of tokens
+* `circulation` — the same in the token's smallest denomination (`circulation ≈ circulation_approximate * (10 ^ decimals )`)
 
 **Example requests:**
 
@@ -2949,16 +2970,18 @@ Allows to retrieve the some basic information on an ERC-20 token. Note that this
     "time": "2017-11-28 00:41:21",
     "creating_block_id": 4634748,
     "creating_transaction_hash": "0x2f1c5c2b44f771e942a8506148e256f94f1a464babc938ae0690c6e34cd79190",
-    "transactions": 8898558,
-    "transactions_24h": 95437,
-    "volume_24h_approximate": 507067165.4109063,
-    "volume_24h": "507067165410910"
+    "transactions": 32295106,
+    "transactions_24h": 206963,
+    "volume_24h_approximate": 1629851234.6590867,
+    "volume_24h": "1629851234659100",
+    "circulation": "5737970410922098",
+    "circulation_approximate": 5737970410.922098
   },
   "context": {
     "code": 200,
     "results": 1,
-    "state": 8766954,
-    "state_layer_2": 8766944,
+    "state": 10163626,
+    "state_layer_2": 10163616,
     ...
   }
 }
@@ -4167,322 +4190,6 @@ If there's no `{:account}ᵢ` has been found on the blockchain, returns an empty
 **Explore visualizations on our front-end:**
 
 - https://blockchair.com/stellar/account/GBOLDCYKDFVCG2UG3OLPY6GMZUAQAX445UM3RCXGBVW37RMQEYXZ4HD7
-
-
-
-## <a name="link_M35"></a> Raw data endpoints for Telegram Open Network
-
-
-
-### <a name="link_108"></a> Raw block data
-
-Returns raw block data directly from our back end. Please note that as the TON network is highly unstable at the moment, we don't really provide anyone with any guarantees, and the documentation is limited for this section as many things can change very fast.
-
-**Endpoint:**
-
-- `https://api.blockchair.com/{:ton_chain}/raw/block/{:tuple}₀`
-
-**Where:**
-
-- `{:ton_chain}` can only be `ton/testnet`
-- `{:tuple}ᵢ` is either a block number, or a tuple; possible formats are:
-  - `id` (e.g. `123456`), this will return info on the block no. 123456 in the default workchain (`-1`) and in the default shard (`8000000000000000`)
-  - `(workchain, shard, id)` tuple
-  - `(workchain, shard, id, roothash, filehash)` tuple
-
-**Output:**
-
-`data` contains an associative array:
-
-- `data.{:tuple}ᵢ.block` — block data. We don't provide field descriptions at the moment as they can change at any time. Most of the key names are self-explanatory.
-
-**Example requests:**
-
-- `https://api.blockchair.com/ton/testnet/raw/block/357290`
-- `https://api.blockchair.com/ton/testnet/raw/block/(357290)`
-- `https://api.blockchair.com/ton/testnet/raw/block/(-1,8000000000000000,357290)`
-- `https://api.blockchair.com/ton/testnet/raw/block/(-1,8000000000000000,357290,69179AE3C3B5D3A007B397FD2774F4CCA7A43FC467B701469CC6081B55A72239,8645D68C3655493DB1F8B9AB7CFAC5602672012CC8419BF61EF365A7127C78CD)`
-
-Please note that some of these requests may stop working if the testnet gets reset.
-
-**Example output:**
-
-`https://api.blockchair.com/ton/testnet/raw/block/357290`:
-
-```json
-{
-  "data": {
-    "357290": {
-      "block": {
-        "end_lt": 483827000004,
-        "filehash": "8645D68C3655493DB1F8B9AB7CFAC5602672012CC8419BF61EF365A7127C78CD",
-        "global_id": -239,
-        "prev_block_info": {
-          "end_lt": 483825000004,
-          "filehash": "0x5f8a4eed5c77a717874544292269ada101535cac362ce347f85bea5a441403ef",
-          "roothash": "0xf8990cf733bad398761ee3337a731cd063a3825a5c21337cfe03a9ebb902bcb0",
-          "seqno": 357289
-        },
-        "roothash": "69179AE3C3B5D3A007B397FD2774F4CCA7A43FC467B701469CC6081B55A72239",
-        "seqno": 357290,
-        "shard": "8000000000000000",
-        "shards": [
-          {
-            "filehash": "ECCEDDA9623423B55C711D73A5D33729BB7752AFA5EF5150F9EBF66180B37BED",
-            "roothash": "5DFABF07E43B23102C316FE2FD761495C511CEEF02805A64E0D50DD72D8BF5DF",
-            "seqno": 450944,
-            "shard": "2000000000000000",
-            "workchain": 0
-          },
-          {
-            "filehash": "F7BCEA34AB619443B8401A560F6CC5081B8402600CFE0E21AC97BF3CDD7C2FEB",
-            "roothash": "1E9C27FA21865B468B131949DF45A7E6BB3CFA206392DDC9BD1EDD825A371B30",
-            "seqno": 451222,
-            "shard": "6000000000000000",
-            "workchain": 0
-          },
-          {
-            "filehash": "A5E716AEC2CAC1F02E4C1624179D6A1D32A387E8D189FC77C9E923CDD4BE82F7",
-            "roothash": "E5FA8F81395ECFC6DA85A81052DCB5BF2E005FFECE693C8E54B45AAD5A594630",
-            "seqno": 451025,
-            "shard": "a000000000000000",
-            "workchain": 0
-          },
-          {
-            "filehash": "64307A2B7EC58A85E53F677FC066E577B8A8DF8E4CC8DB8580690939C2BDB846",
-            "roothash": "BA040777090B248B54B334ADA1A0A499822C8E7F5EBDA411DE5DDE9290AC75CB",
-            "seqno": 451462,
-            "shard": "e000000000000000",
-            "workchain": 0
-          }
-        ],
-        "start_lt": 483827000000,
-        "time": "2019-11-29 00:27:17",
-        "transactions": [
-          {
-            "hash": "045740A8D2400EEBFB6EBB9BDB1EE23AB2EBC0693B718C0AF0E04A3498A2934A",
-            "lt": 483827000001,
-            "userfriendly_address": "Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF"
-          },
-          {
-            "hash": "4533BD6576FD34204B7A6DFB2576FDF3BB395917BC8C17A3208F292CDACE34BC",
-            "lt": 483827000002,
-            "userfriendly_address": "Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF"
-          },
-          {
-            "hash": "6F7A37CF43604381C35153CA07E49140AE33C0A8AB3747439508A64E034F1858",
-            "lt": 483827000001,
-            "userfriendly_address": "Ef80UXx731GHxVr0-LYf3DIViMerdo3uJLAG3ykQZFjXz2kW"
-          },
-          {
-            "hash": "7B4876DB8EA7DF3E06D34DAF287B8D94728CC125A8F7C915911A831EA1C86FCD",
-            "lt": 483827000003,
-            "userfriendly_address": "Ef80UXx731GHxVr0-LYf3DIViMerdo3uJLAG3ykQZFjXz2kW"
-          },
-          {
-            "hash": "70E5BA410D9CCFDA457442661CCED8B42B0587158E130C85D7EC4BBA9335FFCC",
-            "lt": 483827000003,
-            "userfriendly_address": "Ef9VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVbxn"
-          }
-        ],
-        "value_flow": {
-          "created": {
-            "nanograms": 1700000000
-          },
-          "exported": {
-            "nanograms": 0
-          },
-          "fees_collected": {
-            "nanograms": 2950000000
-          },
-          "fees_imported": {
-            "nanograms": 1250000000
-          },
-          "from_prev_blk": {
-            "nanograms": 4990184927132822000
-          },
-          "imported": {
-            "nanograms": 0
-          },
-          "minted": {
-            "nanograms": 0
-          },
-          "recovered": {
-            "nanograms": 2950000000
-          },
-          "to_next_blk": {
-            "nanograms": 4990184930082821000
-          }
-        },
-        "workchain_id": -1
-      }
-    }
-  },
-  "context": {
-    "results": 1,
-    "state": 475783,
-    ...
-  }
-}
-```
-
-**Request cost formula:**
-
-Always `1`.
-
-**Explore visualization on our front-end:**
-
-- https://blockchair.com/ton/block/357290
-
-
-
-### <a name="link_209"></a> Raw transaction data
-
-Returns raw transaction data directly from our back end. Please note that as the TON network is highly unstable at the moment, we don't really provide anyone with any guarantees, and the documentation is limited for this section as many things can change very fast.
-
-**Endpoint:**
-
-- `https://api.blockchair.com/{:ton_chain}/raw/transaction/{:tuple}₀`
-
-**Where:**
-
-- `{:ton_chain}` can only be `ton/testnet`
-- `{:tuple}ᵢ` is a tuple in the following format: `(account, logical time, transaction hash)`, where `account` can be in two different formats (see the examples)
-
-**Output:**
-
-`data` contains an associative array:
-
-- `data.{:tuple}ᵢ.transaction` — transaction data. We don't provide field descriptions at the moment as they can change at any time. Most of the key names are self-explanatory.
-
-**Example requests:**
-
-- `https://api.blockchair.com/ton/testnet/raw/transaction/(Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF,483716000001,809A932E2AD8C307A5E69B427762AA1BE0EC57D9A246A7CE4E7D4CE49F00C4AE)`
-- `https://api.blockchair.com/ton/testnet/raw/transaction/(0x3333333333333333333333333333333333333333333333333333333333333333,483716000001,809A932E2AD8C307A5E69B427762AA1BE0EC57D9A246A7CE4E7D4CE49F00C4AE)`
-
-Please note that some of these requests may stop working if the testnet gets reset.
-
-**Example output:**
-
-`https://api.blockchair.com/ton/testnet/raw/transaction/(Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF,483716000001,809A932E2AD8C307A5E69B427762AA1BE0EC57D9A246A7CE4E7D4CE49F00C4AE)`:
-
-```json
-{
-  "data": {
-    "(Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF,483716000001,809A932E2AD8C307A5E69B427762AA1BE0EC57D9A246A7CE4E7D4CE49F00C4AE)": {
-      "transaction": {
-        "account": "Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF",
-        "block": {
-          "filehash": "B3F4BA8B1C2FDC10F5F04C43B0FB226585E1F0EE170290DD3FC331D95DF5D9B2",
-          "roothash": "826176479B470808ED6CA721559000DF5E90602E05B5E7A8DBA7994A1C143AEB",
-          "seqno": 357220,
-          "shard": "8000000000000000",
-          "workchain": -1
-        },
-        "end_status": "acc_state_active",
-        "lt": 483716000001,
-        "orig_status": "acc_state_active",
-        "prev_transaction_hash": "0xc7ab8c6aea7f14c949ccb16230b9d18f12424fcceb9055e1775fc4f654f9b13b",
-        "prev_transaction_lt": 483714000002,
-        "raw_account": "0x3333333333333333333333333333333333333333333333333333333333333333",
-        "state_update": {
-          "new_hash": "0xfe41f7e87cd0b5df7ce677b4ba8d0939316c8a2968fa7c532d073e131969a60e",
-          "old_hash": "0x27906825005713fcec1602b4f16d16e29c38aac18623f80d256e177680d72af4"
-        },
-        "time": "2019-11-29 00:22:55",
-        "total_fee": 0,
-        "tx_hash": "809A932E2AD8C307A5E69B427762AA1BE0EC57D9A246A7CE4E7D4CE49F00C4AE"
-      }
-    }
-  },
-  "context": {
-    "results": 1,
-    "state": 475783,
-    ...
-  }
-}
-```
-
-**Request cost formula:**
-
-Always `1`.
-
-**Explore visualization on our front-end:**
-
-- https://blockchair.com/ton/transaction/(Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF,483716000001,809A932E2AD8C307A5E69B427762AA1BE0EC57D9A246A7CE4E7D4CE49F00C4AE)
-
-
-
-### <a name="link_305"></a> Raw account data
-
-Returns raw account data directly from our back end. Please note that as the TON network is highly unstable at the moment, we don't really provide anyone with any guarantees, and the documentation is limited for this section as many things can change very fast.
-
-**Endpoint:**
-
-- `https://api.blockchair.com/{:ton_chain}/raw/account/{:address}₀`
-
-**Where:**
-
-- `{:ton_chain}` can only be `ton/testnet`
-- `{:address}ᵢ` can be an address in two different formats (hex or "user-friendly", see the examples below)
-
-**Output:**
-
-`data` contains an associative array:
-
-- `data.{:tuple}ᵢ.account` — account data. We don't provide field descriptions at the moment as they can change at any time. Most of the key names are self-explanatory.
-
-**Example requests:**
-
-- `https://api.blockchair.com/ton/testnet/raw/account/Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF`
-- `https://api.blockchair.com/ton/testnet/raw/account/0x3333333333333333333333333333333333333333333333333333333333333333`
-
-Please note that some of these requests may stop working if the testnet gets reset.
-
-**Example output:**
-
-`https://api.blockchair.com/ton/testnet/raw/account/Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF`:
-
-```json
-{
-  "data": {
-    "Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF": {
-      "account": {
-        "address": {
-          "last_trans_hash": "8CC5546C7D770ECF0A0538B5A477D034403A7004124E00A7EE674CFF8ED0CFB8",
-          "last_trans_lt": 658854000002,
-          "raw_address": "0x3333333333333333333333333333333333333333333333333333333333333333",
-          "userfrienly_address": "Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF",
-          "workchain_id": -1
-        },
-        "balances": {
-          "nanograms": 2086443035892730
-        },
-        "storage_stat": {
-          "bits": 74434,
-          "cells": 228,
-          "due_payment": null,
-          "last_paid": 0,
-          "public_cells": 0
-        }
-      }
-    }
-  },
-  "context": {
-    "results": 1,
-    "state": 475783,
-    ...
-  }
-}
-```
-
-**Request cost formula:**
-
-Always `1`.
-
-**Explore visualization on our front-end:**
-
-- https://blockchair.com/ton/account/Ef8zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0vF
 
 
 
@@ -5828,6 +5535,473 @@ Always `1`.
 **Explore visualization on our front-end:**
 
 - https://blockchair.com/mixin/graph
+
+
+
+## <a name="link_M39"></a> Raw data endpoints for Tezos
+
+
+
+### <a name="link_112"></a> Raw block data
+
+Returns raw block data from our `tzindex` instance. See https://github.com/blockwatch-cc/tzindex/blob/master/README.md for field descriptions, but mostly they are self-describing.
+
+**Endpoints:**
+
+- `https://api.blockchair.com/{:xtz_chain}/raw/block/{:height}₀`
+- `https://api.blockchair.com/{:xtz_chain}/raw/block/{:hash}₀`
+
+**Where:**
+
+- `{:xtz_chain}` can only be `tezos`
+- `{:height}ᵢ` is the block height (integer value), also known as block id
+- `{:hash}ᵢ` is the block hash
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:id}ᵢ.block` — block data.
+
+**Example requests:**
+
+- `https://api.blockchair.com/tezos/raw/block/888888`
+- `https://api.blockchair.com/tezos/raw/block/BMSY7Rvss3to1HGuCVLJsbAyCgghXzML8M3XD8kzoaCc2LLVEoM`
+
+**Example output:**
+
+`https://api.blockchair.com/tezos/raw/block/888888`:
+
+```json
+{
+  "data": {
+    "888888": {
+      "block": {
+        "hash": "BMSY7Rvss3to1HGuCVLJsbAyCgghXzML8M3XD8kzoaCc2LLVEoM",
+        "predecessor": "BLv7JH7gMfVqbnMQ6GsqSfXvRu5bKeVZTCCRKqzrz9WyjLYfKtG",
+        "successor": "BL8688QdRQgoEmoSr9QdLRdpyTk31kmojDwoQ1kYWsX3SNH5ch3",
+        "baker": "tz3VEZ4k6a4Wx42iyev6i2aVAptTRLEAivNN",
+        "height": 888888,
+        "cycle": 217,
+        "is_cycle_snapshot": false,
+        "time": "2020-03-31T10:33:31Z",
+        "solvetime": 60,
+        "version": 6,
+        "validation_pass": 4,
+        "fitness": 233528,
+        "priority": 0,
+        "nonce": 8461818875301725000,
+        "voting_period_kind": "proposal",
+        "endorsed_slots": 4293918719,
+        "n_endorsed_slots": 31,
+        "n_ops": 67,
+        "n_ops_failed": 0,
+        "n_ops_contract": 0,
+        "n_tx": 46,
+        "n_activation": 0,
+        "n_seed_nonce_revelations": 0,
+        "n_double_baking_evidences": 0,
+        "n_double_endorsement_evidences": 0,
+        "n_endorsement": 21,
+        "n_delegation": 0,
+        "n_reveal": 0,
+        "n_origination": 0,
+        "n_proposal": 0,
+        "n_ballot": 0,
+        "volume": 0.967347,
+        "fees": 0.081556,
+        "rewards": 80,
+        "deposits": 2560,
+        "unfrozen_fees": 0,
+        "unfrozen_rewards": 0,
+        "unfrozen_deposits": 0,
+        "activated_supply": 0,
+        "burned_supply": 0,
+        "n_accounts": 73,
+        "n_new_accounts": 0,
+        "n_new_implicit": 0,
+        "n_new_managed": 0,
+        "n_new_contracts": 0,
+        "n_cleared_accounts": 0,
+        "n_funded_accounts": 0,
+        "gas_limit": 697462,
+        "gas_used": 484756,
+        "gas_price": 0.16824,
+        "storage_size": 696,
+        "days_destroyed": 0.036068,
+        "pct_account_reuse": 100,
+        "endorsers": [
+          "tz3RDC3Jdn4j15J7bBHZd29EUee9gVB1CxD9",
+          "tz1LcuQHNVQEWP2fZjk1QYZGNrfLDwrT3SyZ",
+          ...
+        ]
+      },
+      "operations": [
+        {
+          "hash": "op2UfeUHiVdu91c6G9GFC646FKW1tQmNXgs7BcbxUFuTrj3gUMg",
+          "type": "endorsement",
+          "status": "applied",
+          "is_success": 1,
+          "volume": 0,
+          "data": "1073742880",
+          "sender": "tz1gfArv665EUkSg2ojMBzcbfwuPxAvqPvjo",
+          "receiver": null,
+          "manager": null,
+          "delegate": null
+        },
+        ...
+      ]
+    }
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 974152,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/tezos/block/888888
+
+
+
+### <a name="link_213"></a> Raw operation data
+
+Returns raw operation data from our `tzindex` instance. See https://github.com/blockwatch-cc/tzindex/blob/master/README.md for field descriptions, but mostly they are self-describing.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:xtz_chain}/raw/operation/{:hash}₀`
+
+**Where:**
+
+- `{:xtz_chain}` can only be `tezos`
+- `{:hash}ᵢ` is the operation hash
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:id}ᵢ.operations` — an array of internal operations.
+
+**Example output:**
+
+`https://api.blockchair.com/tezos/raw/operation/ooe4aYfzRkGUS4UdXeRThNCsv5NkqeMLdKtfL7bzL3y7TGZzgGE`:
+
+```json
+{
+  "data": {
+    "ooe4aYfzRkGUS4UdXeRThNCsv5NkqeMLdKtfL7bzL3y7TGZzgGE": {
+      "operations": [
+        {
+          "hash": "ooe4aYfzRkGUS4UdXeRThNCsv5NkqeMLdKtfL7bzL3y7TGZzgGE",
+          "type": "transaction",
+          "block": "BMSY7Rvss3to1HGuCVLJsbAyCgghXzML8M3XD8kzoaCc2LLVEoM",
+          "time": "2020-03-31T10:33:31Z",
+          "height": 888888,
+          "cycle": 217,
+          "counter": 2493708,
+          "op_n": 24,
+          "op_c": 0,
+          "op_i": 0,
+          "status": "applied",
+          "is_success": true,
+          "is_contract": false,
+          "gas_limit": 15385,
+          "gas_used": 10207,
+          "gas_price": 0.17557,
+          "storage_limit": 257,
+          "storage_size": 0,
+          "storage_paid": 0,
+          "volume": 0.014931,
+          "fee": 0.001792,
+          "reward": 0,
+          "deposit": 0,
+          "burned": 0,
+          "is_internal": false,
+          "has_data": false,
+          "days_destroyed": 0.000083,
+          "sender": "tz1bd5Pn5DxPinvCtkeJmoneyYiLeUebvUa5",
+          "receiver": "tz1ZnXzwGtyjGVEqRJgEgJK9z2vrrq1AooaA",
+          "branch_id": 888888,
+          "branch_height": 888887,
+          "branch_depth": 1,
+          "branch": "BLv7JH7gMfVqbnMQ6GsqSfXvRu5bKeVZTCCRKqzrz9WyjLYfKtG"
+        },
+        {
+          "hash": "ooe4aYfzRkGUS4UdXeRThNCsv5NkqeMLdKtfL7bzL3y7TGZzgGE",
+          "type": "transaction",
+          "block": "BMSY7Rvss3to1HGuCVLJsbAyCgghXzML8M3XD8kzoaCc2LLVEoM",
+          "time": "2020-03-31T10:33:31Z",
+          "height": 888888,
+          "cycle": 217,
+          "counter": 2493709,
+          "op_n": 24,
+          "op_c": 1,
+          "op_i": 0,
+          "status": "applied",
+          "is_success": true,
+          "is_contract": false,
+          "gas_limit": 15385,
+          "gas_used": 10207,
+          "gas_price": 0.17557,
+          "storage_limit": 257,
+          "storage_size": 0,
+          "storage_paid": 0,
+          "volume": 0.014924,
+          "fee": 0.001792,
+          "reward": 0,
+          "deposit": 0,
+          "burned": 0,
+          "is_internal": false,
+          "has_data": false,
+          "days_destroyed": 0.000083,
+          "sender": "tz1bd5Pn5DxPinvCtkeJmoneyYiLeUebvUa5",
+          "receiver": "tz1ekJGKM5wvKPMfWfCqXdeydinq3Mv85qHd",
+          "branch_id": 888888,
+          "branch_height": 888887,
+          "branch_depth": 1,
+          "branch": "BLv7JH7gMfVqbnMQ6GsqSfXvRu5bKeVZTCCRKqzrz9WyjLYfKtG"
+        },
+        ...
+      ]
+    }
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 974156,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/tezos/operation/ooe4aYfzRkGUS4UdXeRThNCsv5NkqeMLdKtfL7bzL3y7TGZzgGE
+
+
+
+### <a name="link_308"></a> Raw account data
+
+Returns raw account data from our `tzindex` instance. See https://github.com/blockwatch-cc/tzindex/blob/master/README.md for field descriptions, but mostly they are self-describing.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:xtz_chain}/raw/account/{:address}₀`
+
+**Where:**
+
+- `{:xtz_chain}` can only be `tezos`
+- `{:address}ᵢ` is the address
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:address}ᵢ.account` — account information.
+
+**Example output:**
+
+`https://api.blockchair.com/tezos/raw/account/tz1ekJGKM5wvKPMfWfCqXdeydinq3Mv85qHd`:
+
+```json
+{
+  "data": {
+    "tz1ekJGKM5wvKPMfWfCqXdeydinq3Mv85qHd": {
+      "account": {
+        "address": "tz1ekJGKM5wvKPMfWfCqXdeydinq3Mv85qHd",
+        "address_type": "ed25519",
+        "delegate": "tz1NEKxGEHsFufk87CVZcrqWu8o22qh46GK6",
+        "manager": "",
+        "pubkey": "edpktp1ih5KKrct18BgCS5inC3sJf3EKrSAAEa4poQiH6G7CeuaGaY",
+        "first_in": 836128,
+        "first_out": 836134,
+        "last_in": 965984,
+        "last_out": 965988,
+        "first_seen": 836128,
+        "last_seen": 965988,
+        "delegated_since": 965988,
+        "delegate_since": 0,
+        "first_in_time": "2020-02-22T23:33:26Z",
+        "first_out_time": "2020-02-22T23:39:26Z",
+        "last_in_time": "2020-05-24T05:39:34Z",
+        "last_out_time": "2020-05-24T05:43:34Z",
+        "first_seen_time": "2020-02-22T23:33:26Z",
+        "last_seen_time": "2020-05-24T05:43:34Z",
+        "delegated_since_time": "2020-05-24T05:43:34Z",
+        "delegate_since_time": "0001-01-01T00:00:00Z",
+        "total_received": 126.580209,
+        "total_sent": 27.58424,
+        "total_burned": 0.257,
+        "total_fees_paid": 0.0275,
+        "total_rewards_earned": 0,
+        "total_fees_earned": 0,
+        "total_lost": 0,
+        "frozen_deposits": 0,
+        "frozen_rewards": 0,
+        "frozen_fees": 0,
+        "unclaimed_balance": 0,
+        "spendable_balance": 98.711469,
+        "total_balance": 98.711469,
+        "delegated_balance": 0,
+        "total_delegations": 0,
+        "active_delegations": 0,
+        "is_funded": true,
+        "is_activated": false,
+        "is_vesting": false,
+        "is_spendable": true,
+        "is_delegatable": false,
+        "is_delegated": true,
+        "is_revealed": true,
+        "is_delegate": false,
+        "is_active_delegate": false,
+        "is_contract": false,
+        "blocks_baked": 0,
+        "blocks_missed": 0,
+        "blocks_stolen": 0,
+        "blocks_endorsed": 0,
+        "slots_endorsed": 0,
+        "slots_missed": 0,
+        "n_ops": 14,
+        "n_ops_failed": 0,
+        "n_tx": 10,
+        "n_delegation": 3,
+        "n_origination": 0,
+        "n_proposal": 0,
+        "n_ballot": 0,
+        "token_gen_min": 3,
+        "token_gen_max": 26171,
+        "grace_period": 0,
+        "staking_balance": 0,
+        "rolls": 0,
+        "rich_rank": 33881,
+        "traffic_rank": 0,
+        "flow_rank": 0,
+        "last_bake_height": 0,
+        "last_bake_block": "",
+        "last_bake_time": "0001-01-01T00:00:00Z",
+        "last_endorse_height": 0,
+        "last_endorse_block": "",
+        "last_endorse_time": "0001-01-01T00:00:00Z",
+        "next_bake_height": 0,
+        "next_bake_priority": 0,
+        "next_bake_time": "0001-01-01T00:00:00Z",
+        "next_endorse_height": 0,
+        "next_endorse_time": "0001-01-01T00:00:00Z",
+        "delegate_account": {
+          "address": "tz1NEKxGEHsFufk87CVZcrqWu8o22qh46GK6",
+          "address_type": "ed25519",
+          "delegate": "tz1NEKxGEHsFufk87CVZcrqWu8o22qh46GK6",
+          "manager": "",
+          "pubkey": "edpkthjojh2oARHALyYMfb7CtCjcr1FxknAyRVPCSJQXXmB3mEpTaq",
+          "first_in": 787242,
+          "first_out": 787244,
+          "last_in": 974156,
+          "last_out": 974156,
+          "first_seen": 787242,
+          "last_seen": 974156,
+          "delegated_since": 0,
+          "delegate_since": 787244,
+          "first_in_time": "2020-01-19T17:54:08Z",
+          "first_out_time": "2020-01-19T17:56:08Z",
+          "last_in_time": "2020-05-29T22:40:38Z",
+          "last_out_time": "2020-05-29T22:40:38Z",
+          "first_seen_time": "2020-01-19T17:54:08Z",
+          "last_seen_time": "2020-05-29T22:40:38Z",
+          "delegated_since_time": "0001-01-01T00:00:00Z",
+          "delegate_since_time": "2020-01-19T17:56:08Z",
+          "total_received": 187327.25126,
+          "total_sent": 8026.499705,
+          "total_burned": 0.269,
+          "total_fees_paid": 0.012091,
+          "total_rewards_earned": 9020.066654,
+          "total_fees_earned": 6.466546,
+          "total_lost": 0,
+          "frozen_deposits": 100544,
+          "frozen_rewards": 3301.666664,
+          "frozen_fees": 2.432551,
+          "unclaimed_balance": 0,
+          "spendable_balance": 84478.904449,
+          "total_balance": 185025.337,
+          "delegated_balance": 1360415.547819,
+          "total_delegations": 4665,
+          "active_delegations": 2909,
+          "is_funded": true,
+          "is_activated": false,
+          "is_vesting": false,
+          "is_spendable": true,
+          "is_delegatable": false,
+          "is_delegated": false,
+          "is_revealed": true,
+          "is_delegate": true,
+          "is_active_delegate": true,
+          "is_contract": false,
+          "blocks_baked": 117,
+          "blocks_missed": 1,
+          "blocks_stolen": 0,
+          "blocks_endorsed": 3433,
+          "slots_endorsed": 3486,
+          "slots_missed": 64,
+          "n_ops": 3459,
+          "n_ops_failed": 0,
+          "n_tx": 21,
+          "n_delegation": 1,
+          "n_origination": 0,
+          "n_proposal": 0,
+          "n_ballot": 1,
+          "token_gen_min": 3,
+          "token_gen_max": 25443,
+          "grace_period": 243,
+          "staking_balance": 1545440.884819,
+          "rolls": 193,
+          "rich_rank": 397,
+          "traffic_rank": 0,
+          "flow_rank": 0,
+          "last_bake_height": 0,
+          "last_bake_block": "",
+          "last_bake_time": "0001-01-01T00:00:00Z",
+          "last_endorse_height": 0,
+          "last_endorse_block": "",
+          "last_endorse_time": "0001-01-01T00:00:00Z",
+          "next_bake_height": 0,
+          "next_bake_priority": 0,
+          "next_bake_time": "0001-01-01T00:00:00Z",
+          "next_endorse_height": 0,
+          "next_endorse_time": "0001-01-01T00:00:00Z"
+        }
+      }
+    }
+  },
+  "context": {
+    "code": 200,
+    "source": "D",
+    "time": 0.49178099632263184,
+    "results": 1,
+    "state": 974165,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/tezos/account/tz1ekJGKM5wvKPMfWfCqXdeydinq3Mv85qHd
 
 
 
@@ -7819,7 +7993,7 @@ See [request costs for infinitables](#link_05)
 
 Broadcast a transaction to the network
 
-**Endpoint:**
+**Endpoints:**
 
 - `https://api.blockchair.com/{:chain}/push/transaction` (`POST` request)
 
@@ -7830,7 +8004,7 @@ Broadcast a transaction to the network
 
 **Output:**
 
-If the transaction has been successfully broadcast to the network, API will return a JSON response (code `200`) containing `data` array with `transaction_hash` key holding the hash of the received transaction. In case of any error (wrong transaction format, spending already spent outputs, etc.) API returns status code `400`.
+If the transaction has been successfully broadcast to the network, API will return a JSON response (code `200`) containing `data` array with `transaction_hash` key holding the hash of the received transaction. In case of any error (wrong transaction format, spending already spent outputs, etc.) API returns status code `400` and an error desription if available (descriptions aren't shown for `ethereum` and `mixin`).
 
 Example of a successful response:
 
@@ -7853,7 +8027,7 @@ Example of a response to an invalid transaction:
   "data": null,
   "context": {
     "code": 400,
-    "error": "Invalid transaction"
+    "error": "Invalid transaction. Error: 16: mandatory-script-verify-flag-failed (Signature must use SIGHASH_FORKID)"
     ...
   }
 }
@@ -7864,6 +8038,8 @@ Example of a response to an invalid transaction:
 ```bash
 > curl -v --data "data=01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0704ffff001d0104ffffffff0100f2052a0100000043410496b538e853519c726a2c91e61ec11600ae1390813a627c66fb8be7947be63c52da7589379515d4e0a604f8141781e62294721166bf621e73a82cbf2342c858eeac00000000" https://api.blockchair.com/bitcoin/push/transaction
 ```
+
+**Tip:** for testing purpose it's possible to use GET request instead of POST like this: `https://api.blockchair.com/bitcoin/push/transaction?data=0100000001000000000000000000000000...`
 
 **Request cost formula:**
 
@@ -8155,13 +8331,6 @@ The response contains an array where the keys are blockchains, and the values ar
       "blockchair_first_entry_date": "2011-02-02",
       "is_full": true
     },
-    "ton/testnet": {
-      "blockchain_first_entry": 1,
-      "blockchain_first_entry_date": "2019-11-15",
-      "blockchair_first_entry": 1,
-      "blockchair_first_entry_date": "2019-11-15",
-      "is_full": true
-    },
     "cardano": {
       "blockchain_first_entry": 1,
       "blockchain_first_entry_date": "2017-09-23",
@@ -8181,6 +8350,13 @@ The response contains an array where the keys are blockchains, and the values ar
       "blockchain_first_entry_date": "2019-02-28",
       "blockchair_first_entry": 0,
       "blockchair_first_entry_date": "2019-02-28",
+      "is_full": true
+    },
+    "tezos": {
+      "blockchain_first_entry": 0,
+      "blockchain_first_entry_date": "2018-06-30",
+      "blockchair_first_entry": 0,
+      "blockchair_first_entry_date": "2018-06-30",
       "is_full": true
     }
   },
@@ -8319,7 +8495,7 @@ While `{:chain}/stats` endpoints already include info on various countdowns (i.e
 
 **Endpoint:**
 
-- `https://api.blockchair.com/tools/halvening
+- `https://api.blockchair.com/tools/halvening`
 
 **Output:**
 
