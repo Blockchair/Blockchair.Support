@@ -26,6 +26,11 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.56 - Jun 4th, 2020
+    * Improved the `https://api.blockchair.com/{:btc_chain}/dashboards/xpub/{:extended_key}` endpoint response time when requesting the same xpub for the second and subsequent times -- we now cache the minimum number of needed derivation cycles (e.g. now if an xpub contains 59 addresses on the first request API goes through 3 cycles -- 20 addresses each -- and then remembers that there are at least 60 addresses should be checked -- and on subsequent requests these 60 addresses will be checked using 1 database request instead of 3.
+    * Fixed API returning error `500` for very large xpubs
+    * Improved Cardano explorer stability
+    * Improved `https://api.blockchair.com/{:chain}/stats` and `https://api.blockchair.com/stats` endpoints response time
 * v.2.0.55 - May 28th, 2020
     * Added `circulation` and `circulation_approximate` fields to the `https://api.blockchair.com/ethereum/erc-20/{:token}/stats` endpoint output. These values yield total circulating supply of the token (`null` if the contract doesn't have the `totalSuply` function).
     * Fixed a precision issue in the `https://api.blockchair.com/ethereum/erc-20/{:contract}/dashboards/address/{:address}` endpoint, now `balance` returns precise value.
