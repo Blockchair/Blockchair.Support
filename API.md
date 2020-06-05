@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.49)
+* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.56)
 
 ### Please apply for an API key first
 
@@ -26,6 +26,11 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.57 - Jun 5th, 2020
+    * We now show multisig types for P2SH and P2WSH addresses. The type has the following format: `multisig_{:m}_of_{:n}`. If the script is not P2SH or P2WSH multisig, the type is `null`. Affected endpoints:
+        * `https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}` now has the `scripthash_type` field (example: `https://api.blockchair.com/bitcoin/dashboards/address/37cmSuMp7CuLDhjYkNJiTSewmbPuv8RBt1`). If address hasn't been seen spending, it's not possible to derive the multisig type, and `scripthash_type` will be `null`.
+        * `https://api.blockchair.com/{:btc_chain}/dashboards/transaction/{:hash}₀` and `https://api.blockchair.com/{:btc_chain}/dashboards/transactions/{:hash}₀,...,{:hash}ᵩ` now have `scripthash_type` field for inputs and outputs (example: `https://api.blockchair.com/bitcoin/dashboards/transaction/4d41241148a7cb8f4e2820d4393415ccd3d0793053a3855b44c33e5053c231ff`). Please note that if output is unspent, `scripthash_type` will always be `null`, even if the associated address multisig type can be derived from some other spent output.
+    * Fixed bug in the `https://api.blockchair.com/{:btc_chain}/mempool/outputs` infinitable where `spending_witness` returned values in an incorrect format for SegWit-enabled chains (this closes Issue #157)
 * v.2.0.56 - Jun 4th, 2020
     * Improved the `https://api.blockchair.com/{:btc_chain}/dashboards/xpub/{:extended_key}` endpoint response time when requesting the same xpub for the second and subsequent times -- we now cache the minimum number of needed derivation cycles (e.g. now if an xpub contains 59 addresses on the first request API goes through 3 cycles -- 20 addresses each -- and then remembers that there are at least 60 addresses should be checked -- and on subsequent requests these 60 addresses will be checked using 1 database request instead of 3.
     * Fixed API returning error `500` for very large xpubs
