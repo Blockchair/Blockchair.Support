@@ -1,4 +1,4 @@
-# [Blockchair.com](https://blockchair.com/) API v.2.0.55 Documentation
+# [Blockchair.com](https://blockchair.com/) API v.2.0.57 Documentation
 
 ```
     ____  __           __        __          _     
@@ -463,7 +463,7 @@ As a reminder, there's the `context.api` array in every API response which conta
 
 When we change something, or add new functions, we bump the API version number. Generally, we try as hard as possible not to bring any compatibility-breaking changes in API updates, but sometimes this is needed as some blockchains change their features themselves, we're fixing various bugs, etc. This doesn't apply, however, to changes to endpoints which are either marked as alpha- or beta-stage functions, or unstable in nature (e.g. all raw endpoints where the API returns data directly from our nodes, and the response may change as we upgrade the nodes). These marks are reflected in the [Quick endpoint reference](#link_M02).
 
-**The changelog is available here: https://github.com/Blockchair/Blockchair.Support/blob/master/API.md**
+**The changelog is available here: [https://github.com/Blockchair/Blockchair.Support/blob/master/API.md](https://github.com/Blockchair/Blockchair.Support/blob/master/API.md)**
 
 It makes sense to check if `context.api.version` has increased and/or just whether `context.api.next_major_update` is not `null` or larger than the latest update date known to you. If that's the case — you can send yourself a notification and review the changelog to make your application compatible with the changes starting from `context.api.next_major_update`.
 
@@ -1437,7 +1437,7 @@ Note that the total number of transactions in the block is contained in `data.{:
 * `context.results` — number of found blocks
 * `context.limit` — applied limit
 * `context.offset` — applied offset
-* `context.state` — best block height on the `{:btc_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = data.{:id}ᵢ.block.id - context.state + 1`)
+* `context.state` — best block height on the `{:btc_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = context.state - data.{:id}ᵢ.block.id + 1`)
 
 **Example requests:**
 
@@ -1552,6 +1552,7 @@ Note that the total number of transactions in the block is contained in `data.{:
 
 Additional data:
 * `data.{:hash}ᵢ.layer_2.omni` (for `bitcoin` only; in alpha test mode) — Omni layer transaction data in case there's any
+* `scripthash_type` field for inputs and outputs (example: `https://api.blockchair.com/bitcoin/dashboards/transaction/4d41241148a7cb8f4e2820d4393415ccd3d0793053a3855b44c33e5053c231ff`) in the `multisig_{:m}_of_{:n}` format. Please note that if output is unspent, `scripthash_type` will always be `null`, even if the associated address multisig type can be derived from some other spent output.
 
 In case transaction is confirmed on the blockchain, `data.{:hash}ᵢ.transaction.block_id` contains the block number it's included in. If the transaction is in the mempool, `data.{:hash}ᵢ.transaction.block_id` yields `-1`. If the transaction is neither present in the blockchain, nor in the mempool, there won't be `data.{:hash}ᵢ` key with data.
 
@@ -1600,7 +1601,8 @@ In case transaction is confirmed on the blockchain, `data.{:hash}ᵢ.transaction
         "fee_per_kb_usd": 0,
         "fee_per_kwu": 0,
         "fee_per_kwu_usd": 0,
-        "cdd_total": 149.15856481481
+        "cdd_total": 149.15856481481,
+        "scripthash_type": null
       },
       "inputs": [
         {
@@ -1629,7 +1631,8 @@ In case transaction is confirmed on the blockchain, `data.{:hash}ᵢ.transaction
           "spending_signature_hex": "47304402204e45e16932b8af514961a1d3a1a25fdf3f4f7732e9d624c6c61548ab5fb8cd410220181522ec8eca07de4860a4acdd12909d831cc56cbbac4622082221a8768d1d0901",
           "spending_witness": "",
           "lifespan": 257746,
-          "cdd": 149.158564814815
+          "cdd": 149.158564814815,
+          "scripthash_type": null
         }
       ],
       "outputs": [
@@ -1659,7 +1662,8 @@ In case transaction is confirmed on the blockchain, `data.{:hash}ᵢ.transaction
           "spending_signature_hex": "4730440220576497b7e6f9b553c0aba0d8929432550e092db9c130aae37b84b545e7f4a36c022066cb982ed80608372c139d7bb9af335423d5280350fe3e06bd510e695480914f01",
           "spending_witness": "",
           "lifespan": 58208942,
-          "cdd": 6737.14606481481
+          "cdd": 6737.14606481481,
+          "scripthash_type": null
         },
         {
           "block_id": 170,
@@ -1687,7 +1691,8 @@ In case transaction is confirmed on the blockchain, `data.{:hash}ᵢ.transaction
           "spending_signature_hex": "473044022027542a94d6646c51240f23a76d33088d3dd8815b25e9ea18cac67d1171a3212e02203baf203c6e7b80ebd3e588628466ea28be572fe1aaa3f30947da4763dd3b3d2b01",
           "spending_witness": "",
           "lifespan": 9108,
-          "cdd": 4.21666666666667
+          "cdd": 4.21666666666667,
+          "scripthash_type": null
         }
       ]
     }
@@ -1794,7 +1799,7 @@ Note that currently the maximum depth for xpub address discovery is 250 main add
 
 Address object specification:
 
-* `type` — address type (the same as `type` [here](#link_400), can be one of these: `pubkey`, `pubkeyhash`, `scripthash`, `multisig`, `nulldata`, `nonstandard`, `witness_v0_scripthash`, `witness_v0_keyhash`, `witness_unknown`)
+* `type` — address type (the same as `type` [here](#link_400), can be one of these: `pubkey` (P2PK), `pubkeyhash` (P2PKH), `scripthash` (P2SH), `multisig`, `nulldata` (OP_RETURN), `nonstandard`, `witness_v0_keyhash` (P2WPKH), `witness_v0_scripthash` (P2WSH), `witness_unknown`)
 * `script_hex` — output script (in hex) corresponding to the address
 * `balance` — address balance in satoshi (hereinafter — including unconfirmed outputs unless `?state=latest` option is used)
 * `balance_usd` — address balance in USD
@@ -1810,13 +1815,14 @@ Address object specification:
 * `last_seen_spending` — timestamp (UTC) when the last time this address sent coins
 * `transaction_count` — number of unique transactions this address participating in (available only in the `address` endpoint)
 * `path` — derived address path (available only in the `xpub` endpoint)
+* `scripthash_type` — in case the `type` is either `scripthash` (P2SH) or `witness_v0_scripthash` (P2WSH) — yields multisig type in the following format: `multisig_{:m}_of_{:n}`. If it's not multisig, or it's not possible to derive the type because there has been no spendings from this address — yields `null`. Available only in the `address` endpoint.
 
 **Context keys:**
 
 * `context.results` — number of found addresses
 * `context.limit` — applied limit
 * `context.offset` — applied offset
-* `context.state` — best block height on the `{:btc_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = data.{:id}ᵢ.block.id - context.state + 1`)
+* `context.state` — best block height on the `{:btc_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = context.state - data.{:id}ᵢ.block.id + 1`)
 * `context.checked` (for the `xpub` endpoint only) — lists the addresses checked by our engine with their paths
 
 **Example requests:**
@@ -1850,8 +1856,9 @@ Address object specification:
         "last_seen_receiving": "2019-10-24 18:47:23",
         "first_seen_spending": null,
         "last_seen_spending": null,
-        "transaction_count": 1820
-      },
+        "transaction_count": 1820,
+        "scripthash_type": null
+,      },
       "transactions": [
         {
           "block_id": 600890,
@@ -2338,7 +2345,7 @@ Note that the total number of transactions in the block is contained in `data.{:
 - `context.results` — number of found blocks
 - `context.limit` — applied limit
 - `context.offset` — applied offset
-- `context.state` — best block height on the `{:eth_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = data.{:id}ᵢ.block.id - context.state + 1`)
+- `context.state` — best block height on the `{:eth_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = context.state - data.{:id}ᵢ.block.id + 1`)
 
 **Example requests:**
 
@@ -3128,7 +3135,7 @@ Where `{:id}ᵢ` is either `{:height}ᵢ` or `{:hash}ᵢ` from the query string.
 
 **Context keys:**
 
-- `context.state`: best block height on the `{:btc_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = data.{:id}ᵢ.block.id - context.state + 1`)
+- `context.state`: best block height on the `{:btc_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = context.state - data.{:id}ᵢ.block.id + 1`)
 
 **Example requests:**
 
@@ -3206,7 +3213,7 @@ If there's no `{:hash}ᵢ` has been found on the blockchain, returns an empty ar
 
 **Context keys:**
 
-- `context.state`: best block height on the `{:btc_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = data.{:id}ᵢ.block.id - context.state + 1`)
+- `context.state`: best block height on the `{:btc_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = context.state - data.{:id}ᵢ.block.id + 1`)
 
 **Example requests:**
 
@@ -3315,7 +3322,7 @@ Where `{:id}ᵢ` is either `{:height}ᵢ` or `{:hash}ᵢ` from the query string.
 
 **Context keys:**
 
-- `context.state`: best block height on the `{:eth_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = data.{:id}ᵢ.block.id - context.state + 1`)
+- `context.state`: best block height on the `{:eth_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = context.state - data.{:id}ᵢ.block.id + 1`)
 
 **Example requests:**
 
@@ -3399,7 +3406,7 @@ If there's no `{:hash}ᵢ` has been found on the blockchain, returns an empty ar
 
 **Context keys:**
 
-- `context.state`: best block height on the `{:btc_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = data.{:id}ᵢ.block.id - context.state + 1`)
+- `context.state`: best block height on the `{:btc_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = context.state - data.{:id}ᵢ.block.id + 1`)
 
 **Example requests:**
 
@@ -3902,7 +3909,7 @@ Returns raw ledger data directly from our full node.
 
 **Context keys:**
 
-- `context.state`: best ledger height on the `{:btc_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = data.{:id}ᵢ.block.id - context.state + 1`)
+- `context.state`: best ledger height on the `{:btc_chain}` chain (tip: it's possible to calculate the number of confirmation block received using this formula: `confirmations = context.state - data.{:id}ᵢ.block.id + 1`)
 
 **Example requests:**
 
