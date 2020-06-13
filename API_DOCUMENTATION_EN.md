@@ -1,4 +1,4 @@
-# [Blockchair.com](https://blockchair.com/) API v.2.0.57 Documentation
+# [Blockchair.com](https://blockchair.com/) API v.2.0.58 Documentation
 
 ```
     ____  __           __        __          _     
@@ -28,6 +28,7 @@
     + [Cardano-like blockchain stats](#link_007)
     + [Mixin-like DAG stats](#link_008)
     + [Tezos-like blockchain stats](#link_009)
+    + [EOS-like blockchain stats](#link_010)
     + [Omni Layer stats](#link_500)
     + [ERC-20 stats](#link_509)
 + [Dashboard endpoints](#link_M2) (Retrieve information about various entities in a neat format from our databases)
@@ -77,6 +78,10 @@
       - [Block](#link_112)
       - [Operation](#link_213)
       - [Account](#link_308)
+    - [EOS](#link_M3A)
+      - [Block](#link_113)
+      - [Transaction](#link_214)
+      - [Account](#link_309)
 + [Infinitable endpoints](#link_05) (SQL-like queries: filter, sort, and aggregate blockchain data)
     + [Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Zcash, and Bitcoin Testnet](#link_M41)
       + [Blocks](#link_102) (table)
@@ -111,7 +116,7 @@
 
 # <a name="link_M0"></a> Introduction
 
-Blockchair API provides developers with access to data contained in [16 different blockchains](#link_M01). Unlike other APIs, Blockchair also supports numerous analytical queries like filtering, sorting, and aggregating blockchain data.
+Blockchair API provides developers with access to data contained in [17 different blockchains](#link_M01). Unlike other APIs, Blockchair also supports numerous analytical queries like filtering, sorting, and aggregating blockchain data.
 
 Here are some examples of what you can build using our API:
 
@@ -135,7 +140,7 @@ Our API is free to try under some limitations, and we have a variety of premium 
 
 ## <a name="link_M01"></a> Supported blockchains and second layers
 
-As of today, our API supports **16 blockchains** (15 mainnets and 1 testnet) divided into 7 groups:
+As of today, our API supports **17 blockchains** (16 mainnets and 1 testnet) divided into 9 groups:
 * Bitcoin-like blockchains (Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Zcash, Bitcoin Testnet), also known as UTXO-based blockchains
 * Ethereum-like blockchains (Ethereum)
 * Ripple-like blockchains (Ripple)
@@ -144,6 +149,7 @@ As of today, our API supports **16 blockchains** (15 mainnets and 1 testnet) div
 * Cardano-like blockchains (Cardano)
 * Mixin-like DAGs (Mixin) — technically, it's a DAG rather than a blockchain, but for the sake of unification it may be mentioned as a blockchain further in this documentation
 * Tezos-like blockchains (Tezos)
+* EOS-like blockchains (EOS)
 
 Within a group, there's no or little difference between the set of available endpoints and their output. 
 
@@ -159,13 +165,14 @@ Here's the list of available mainnets:
 | Dogecoin | Bitcoin-like | `https://api.blockchair.com/dogecoin` | Full support |
 | Dash | Bitcoin-like | `https://api.blockchair.com/dash` | Full support |
 | Ripple | Ripple-like | `https://api.blockchair.com/ripple` | Alpha mode, possible compatibility-breaking changes |
-| Groestlcoin | Bitcoin-like | `https://api.blockchair.com/groestlcoin` | Full support, community-backed till June 18th, 2020 |
+| Groestlcoin | Bitcoin-like | `https://api.blockchair.com/groestlcoin` | Full support at least till June 18th, 2020 |
 | Stellar | Stellar-like | `https://api.blockchair.com/stellar` | Alpha mode, possible compatibility-breaking changes |
 | Monero | Monero-like | `https://api.blockchair.com/monero` | Alpha mode, possible compatibility-breaking changes |
 | Cardano | Cardano-like | `https://api.blockchair.com/cardano` | Alpha mode, possible compatibility-breaking changes |
 | Zcash | Bitcoin-like | `https://api.blockchair.com/zcash` | Full support |
-| Mixin | Mixin-like | `https://api.blockchair.com/mixin` | Full support |
+| Mixin | Mixin-like | `https://api.blockchair.com/mixin` | Full support at least till April 24th, 2021 |
 | Tezos | Tezos-like | `https://api.blockchair.com/tezos` | Alpha mode, possible compatibility-breaking changes |
+| EOS | EOS-like | `https://api.blockchair.com/eos` | Alpha mode, possible compatibility-breaking changes |
 
 There are also following testnets supported which are technically considered as separate blockchains:
 
@@ -182,7 +189,7 @@ As a general rule, if we add a blockchain to our platform, it means we'll suppor
 * If a blockchain is community-backed, we guarantee support till some specified date (this is reflected in the tables above). If its community decides not to prolong the agreement with Blockchair after that date, we may either continue to support that blockchain for free, or drop support for it;
 * If we see that a particular blockchain became unpopular on our platform, we may terminate its support with a 3 month notice.
 
-For some of the blockchains we support we don't store full historical data. These blockchains are: `Ripple`, `Stellar`. That means you won't be able to query some old blocks, and the transaction list for an address may not show some old transactions. See [Available block ranges](#link_510) API endpoint to get data on which blocks are available in these blockchains. All other blockchains have full historical data. It's our intent to have full historical data for all blockchains.
+For some of the blockchains we support we don't store full historical data. These blockchains are: `Ripple`, `Stellar`, `EOS`. That means you won't be able to query some old blocks, and the transaction list for an address may not show some old transactions. See [Available block ranges](#link_510) API endpoint to get data on which blocks are available in these blockchains. All other blockchains have full historical data. It's our intent to have full historical data for all blockchains.
 
 Blockchair API also supports **2 layer 2 solutions** (tokens) divided into 2 groups:
 
@@ -214,6 +221,7 @@ This is the full list of available API endpoints.
 - `{:ada_chain}` can be only `cardano`
 - `{:xin_chain}` can be only `mixin`
 - `{:xtz_chain}` can be only `tezos`
+- `{:eos_chain}` can be only `eos`
 
 | Endpoint path                             | Docs | Base request cost | Status |
 | ----------------------------------------------- | :----------------: | -----------------------------: | :---------------------------------------------: |
@@ -227,6 +235,7 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:ada_chain}/stats` | [👉](#link_007) | `1` | Stable |
 | `https://api.blockchair.com/{:xin_chain}/stats` | [👉](#link_008) | `1` | Stable |
 | `https://api.blockchair.com/{:xtz_chain}/stats` | [👉](#link_009) | `1` | Stable |
+| `https://api.blockchair.com/{:eos_chain}/stats` | [👉](#link_010) | `1` | Stable |
 | **Block-related information** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/block/{:height}₀` | [👉](#link_100) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/block/{:hash}₀` | [👉](#link_100) | `1` | Stable |
@@ -253,6 +262,7 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:xin_chain}/raw/snapshot/{:hash}₀` | [👉](#link_111) | `1` | Alpha |
 | `https://api.blockchair.com/{:xtz_chain}/raw/block/{:height}₀` | [👉](#link_112) | `1` | Alpha |
 | `https://api.blockchair.com/{:xtz_chain}/raw/block/{:hash}₀` | [👉](#link_112) | `1` | Alpha |
+| `https://api.blockchair.com/{:eos_chain}/raw/block/{:height}₀` | [👉](#link_113) | `1` | Alpha |
 | **Transaction-related information and actions** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/transaction/{:hash}₀` | [👉](#link_200) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/transactions/{:hash}₀,...,{:hash}ᵩ` | [👉](#link_200) | `1 + 0.1*c` | Stable |
@@ -273,6 +283,8 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:xin_chain}/raw/transaction/{:hash}₀` | [👉](#link_212) | `1` | Alpha |
 | `https://api.blockchair.com/{:xin_chain}/push/transaction` (`POST`) | [👉](#link_202) | `1` | Stable |
 | `https://api.blockchair.com/{:xtz_chain}/raw/operation/{:hash}₀` | [👉](#link_213) | `1` | Alpha |
+| `https://api.blockchair.com/{:eos_chain}/raw/transaction/{:hash}₀` | [👉](#link_214) | `1` | Alpha |
+| `https://api.blockchair.com/{:eos_chain}/raw/transaction/({:block_height},{:hash})` | [👉](#link_214) | `1` | Alpha |
 | **Address-related information** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀` | [👉](#link_300) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/addresses/{:address}₀,...,{:address}ᵩ` | [👉](#link_300) | `1 + 0.1*c` | Stable |
@@ -283,6 +295,7 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:xlm_chain}/raw/account/{:address}₀` | [👉](#link_304) | `1` | Alpha |
 | `https://api.blockchair.com/{:ada_chain}/raw/address/{:address}₀` | [👉](#link_307) | `1` | Alpha |
 | `https://api.blockchair.com/{:xtz_chain}/raw/account/{:address}₀` | [👉](#link_308) | `1` | Alpha |
+| `https://api.blockchair.com/{:eos_chain}/raw/account/{:address}₀` | [👉](#link_309) | `1` | Alpha |
 | **Special entities** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/outputs?{:query}` | [👉](#link_400) | `10` | Beta |
 | `https://api.blockchair.com/{:btc_chain}/mempool/outputs?{:query}` | [👉](#link_400) | `2` | Beta |
@@ -1261,7 +1274,7 @@ Always `1`.
 - `operations_24h` — number of operations over the last 24 hours
 - `volume_24h` — volume transacted over the last 24 hours
 - `inflation_24h` — newly minted coin count over the last 24 hours
-- `best_block_height` — the latest block number in the default workchain
+- `best_block_height` — the latest block number
 - `best_block_hash` — its hash…
 - `best_block_time` — … and timestamp
 - `circulation` and `circulation_xtz` — total circulating supply
@@ -1310,6 +1323,81 @@ Always `1`.
 **Explore visualization on our front-end:**
 
 - https://blockchair.com/tezos
+
+
+
+## <a name="link_010"></a> EOS-like blockchain stats
+
+**Endpoint:**
+
+- `https://api.blockchair.com/eos/stats`
+
+**Output:**
+
+`data` contains an array with blockchain statistics:
+
+- `blocks` — total number of blocks
+- `circulation_eos` — total circulating supply in EOS
+- `circulation_limit_eos` — circulating supply limit
+- `staked_eos` — staked amount of EOS
+- `staked_percentage` — `(staked_eos / circulation_eos) * 100%`
+- `best_block_height` — latest block number
+- `best_block_time` — its timestamp...
+- `best_block_producer` — and producer account name
+- `irreversible_block_height` — latest irreversible block number
+- `irreversible_block_hash` — its hash
+- `ram_max_size` — max RAM size in bytes
+- `ram_allocated_size` — allocated RAM size in bytes
+- `ram_allocated_percentage` — `(ram_allocated_size / ram_max_size) * 100%`
+- `market_price_usd` — average market price of 1 coin in USD (market data source: CoinGecko)
+- `market_price_btc` — average market price of 1 coin in BTC
+- `market_price_usd_change_24h_percentage` — market price change in percent for 24 hours
+- `market_cap_usd` — market capitalization (coins in circulation * price per coin in USD)
+- `market_dominance_percentage` — dominance index (how much % of the total cryptocurrency market is the market capitalization of the coin)
+- `countdowns` (optional) — an optional array of events ([`event`, `time_left`] format), where `time_left` is the number of seconds till the `event`
+
+**Example output:**
+
+`https://api.blockchair.com/tezos/stats`:
+
+```json
+{
+  "data": {
+    "blocks": 125855542,
+    "circulation_eos": 1020158333.6877,
+    "circulation_limit_eos": 10000000000,
+    "staked_eos": 524985046.5825,
+    "staked_percentage": 51.46113394817525,
+    "best_block_height": 125855542,
+    "best_block_time": "2020-06-13 17:33:53",
+    "best_block_producer": "newdex.bp",
+    "irreversible_block_height": 125855206,
+    "irreversible_block_hash": "078065e6d5a20d200729a117d6747761b52b9531eddb1072a62b5fe839dec3da",
+    "ram_max_size": 192171732992,
+    "ram_allocated_size": 81993066226,
+    "ram_allocated_percentage": 42.66655920171846,
+    "market_price_usd": 2.59,
+    "market_price_btc": 0.00027429815680111,
+    "market_price_usd_change_24h_percentage": 0.6576,
+    "market_cap_usd": 2433086848,
+    "market_dominance_percentage": 0.9
+  },
+  "context": {
+    "code": 200,
+    "state": 125855542,
+    "request_cost": 1,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/eos
 
 
 
@@ -6012,6 +6100,352 @@ Always `1`.
 
 
 
+## <a name="link_M3A"></a> Raw data endpoints for EOS
+
+
+
+### <a name="link_113"></a> Raw block data
+
+Returns raw block data directly from our node. Please note that we're not running a full history node for EOS, thus we store only the most recent blocks.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:eos_chain}/raw/block/{:height}₀`
+
+**Where:**
+
+- `{:eos_chain}` can only be `eos`
+- `{:height}ᵢ` is the block height (integer value), also known as block id
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:id}ᵢ.block` — raw block data with its transactions.
+
+**Example output:**
+
+`https://api.blockchair.com/eos/raw/block/125637913`:
+
+```json
+{
+  "data": {
+    "125637913": {
+      "block": {
+        "timestamp": "2020-06-12T11:20:08.000",
+        "producer": "blockpooleos",
+        "confirmed": 0,
+        "previous": "077d15183aebac5f1319426b44746fdb1340ae8bc922a630392f226ecd83f910",
+        "transaction_mroot": "7345d598bc85d6a15984f0d79129dcd5b8597b080c93799d24719765213e83a3",
+        "action_mroot": "c21a6d34f8130b1c8562dc028564d33d254969197e22b8acbfac5d67506a5ff0",
+        "schedule_version": 1717,
+        "new_producers": null,
+        "producer_signature": "SIG_K1_KaUZPdiu9f1vWhsJqUzAvF8aWRxqrJdmrXK8TxBhvZq6UbuC85VDNuR3ec9aLwaDscVYPpmZJ5PiaWtMNeEvk22mbea41W",
+        "transactions": [
+          {
+            "status": "expired",
+            "cpu_usage_us": 0,
+            "net_usage_words": 0,
+            "trx": "a8396ac4623d4d420196289d2b3b079c561bdc2eaf514a77c84fb5d54f5fd443"
+          },
+          {
+            "status": "expired",
+            "cpu_usage_us": 0,
+            "net_usage_words": 0,
+            "trx": "4e4c8b99af74ba79b165f3d3a2c2861adcf43c2fe4f4fd9cfb066a635bf2f4ff"
+          },
+          {
+            "status": "executed",
+            "cpu_usage_us": 7561,
+            "net_usage_words": 12,
+            "trx": {
+              "id": "47a31d96705c50062b5a5cc98bb6371154accd1b56fb51b0dc70747b183107f5",
+              "signatures": [
+                "SIG_K1_KW2xHSjt34Nh1zBkNhwqgHKH3CciZNmGoAJ7YNifAPKCGkbgEQdfhV82Q4goVdFmrHt9ntbkQqCfBBWmCMfZFXhKsgFzNA"
+              ],
+              "compression": "none",
+              "packed_context_free_data": "",
+              "context_free_data": [],
+              "packed_trx": "1d65e35e0a15601c8fe10000000001c0a88fca546773ad0000000000000090015048187a55f63de50000000000a0a693010000",
+              "transaction": {
+                "expiration": "2020-06-12T11:21:01",
+                "ref_block_num": 5386,
+                "ref_block_prefix": 3784252512,
+                "max_net_usage_words": 0,
+                "max_cpu_usage_ms": 0,
+                "delay_sec": 0,
+                "context_free_actions": [],
+                "actions": [
+                  {
+                    "account": "pptqipaelyog",
+                    "name": "m",
+                    "authorization": [
+                      {
+                        "actor": "woyzgpfu3145",
+                        "permission": "mine"
+                      }
+                    ],
+                    "data": {
+                      "actor": ""
+                    },
+                    "hex_data": "00"
+                  }
+                ]
+              }
+            }
+          },
+          ...
+        ],
+        "id": "077d1519d82a4a20278019953fb1788fd1c81074f4b754d29f062a93ca0cd468",
+        "block_num": 125637913,
+        "ref_block_prefix": 2501476391
+      }
+    }
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 125860293,
+    "request_cost": 1,
+    ...
+  }
+}
+```
+
+`https://api.blockchair.com/eos/raw/block/1` (pruned block):
+
+```json
+{
+  "data": null,
+  "context": {
+    "code": 400,
+    "error": "Unknown Block"
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/eos/block/125637913 (may not be available due to pruning)
+
+
+
+### <a name="link_214"></a> Raw transaction data
+
+Returns raw transaction data directly from our node. Please note that we're not running a full history node for EOS, thus we store only the most recent transactions.
+
+**Endpoints:**
+
+- `https://api.blockchair.com/{:eos_chain}/raw/transaction/{:hash}`
+- `https://api.blockchair.com/{:eos_chain}/raw/transaction/({:block_height},{:hash})`
+
+**Where:**
+
+- `{:eos_chain}` can only be `eos`
+- `{:hash}` is the transaction hash
+- `{:block_height}` is the block height (specifying it returns transaction faster)
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:id}ᵢ.transaction` — transaction data
+
+**Example output:**
+
+`https://api.blockchair.com/eos/raw/transaction/(125637913,a8396ac4623d4d420196289d2b3b079c561bdc2eaf514a77c84fb5d54f5fd443)`:
+
+```json
+{
+  "data": {
+    "a8396ac4623d4d420196289d2b3b079c561bdc2eaf514a77c84fb5d54f5fd443": {
+      "id": "a8396ac4623d4d420196289d2b3b079c561bdc2eaf514a77c84fb5d54f5fd443",
+      "trx": {
+        "receipt": {
+          "status": "expired",
+          "cpu_usage_us": 0,
+          "net_usage_words": 0,
+          "trx": [
+            0,
+            "a8396ac4623d4d420196289d2b3b079c561bdc2eaf514a77c84fb5d54f5fd443"
+          ]
+        }
+      },
+      "block_time": "2020-06-12T11:20:08.000",
+      "block_num": 125637913,
+      "last_irreversible_block": 125862330,
+      "traces": []
+    }
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 125862660,
+    "request_cost": 1,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/eos — navigate to the latest block and its transactions
+
+
+
+### <a name="link_309"></a> EOS account data
+
+Returns raw account data directly from our node.
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:eos_chain}/raw/account/{:address}₀`
+
+**Where:**
+
+- `{:eos_chain}` can only be `eos`
+- `{:address}ᵢ` is the account name
+
+**Output:**
+
+`data` contains an associative array:
+
+- `data.{:address}ᵢ.account` — account information.
+
+**Example output:**
+
+`https://api.blockchair.com/eos/raw/account/blockpooleos`:
+
+```json
+{
+  "data": {
+    "blockpooleos": {
+      "account": {
+        "account_name": "blockpooleos",
+        "head_block_num": 125863151,
+        "head_block_time": "2020-06-13T18:37:20.000",
+        "privileged": false,
+        "last_code_update": "1970-01-01T00:00:00.000",
+        "created": "2019-07-13T03:45:22.500",
+        "core_liquid_balance": "4533.2384 EOS",
+        "ram_quota": 17559,
+        "net_weight": 150100,
+        "cpu_weight": 1050619,
+        "net_limit": {
+          "used": 105,
+          "available": 15532697,
+          "max": 15532802
+        },
+        "cpu_limit": {
+          "used": 662,
+          "available": 8895,
+          "max": 9557
+        },
+        "ram_usage": 4795,
+        "permissions": [
+          {
+            "perm_name": "active",
+            "parent": "owner",
+            "required_auth": {
+              "threshold": 1,
+              "keys": [
+                {
+                  "key": "EOS6nRvuhb9gJju7tehyFdotEDVn2xwWKfhJWwyPMjG9deaCQxpxT",
+                  "weight": 1
+                }
+              ],
+              "accounts": [],
+              "waits": []
+            }
+          },
+          {
+            "perm_name": "claimer",
+            "parent": "active",
+            "required_auth": {
+              "threshold": 1,
+              "keys": [
+                {
+                  "key": "EOS6gZzNjmzWTJX2LTBrtaXB2sczuna3bQWX4YPaokVG8zBBaYP8p",
+                  "weight": 1
+                }
+              ],
+              "accounts": [],
+              "waits": []
+            }
+          },
+          {
+            "perm_name": "owner",
+            "parent": "",
+            "required_auth": {
+              "threshold": 1,
+              "keys": [
+                {
+                  "key": "EOS71Q9ZUPh6hJ8GamZ1T9vERR4dQt5aMG5jHMESGUBPNWZwQBMq5",
+                  "weight": 1
+                }
+              ],
+              "accounts": [],
+              "waits": []
+            }
+          }
+        ],
+        "total_resources": {
+          "owner": "blockpooleos",
+          "net_weight": "15.0100 EOS",
+          "cpu_weight": "105.0619 EOS",
+          "ram_bytes": 16159
+        },
+        "self_delegated_bandwidth": {
+          "from": "blockpooleos",
+          "to": "blockpooleos",
+          "net_weight": "5.0100 EOS",
+          "cpu_weight": "5.0619 EOS"
+        },
+        "refund_request": null,
+        "voter_info": {
+          "owner": "blockpooleos",
+          "proxy": "genpoolproxy",
+          "producers": [],
+          "staked": 100929,
+          "last_vote_weight": "151677066207.26217651367187500",
+          "proxied_vote_weight": "0.00000000000000000",
+          "is_proxy": 0,
+          "flags1": 0,
+          "reserved2": 0,
+          "reserved3": "0 "
+        },
+        "rex_info": null
+      }
+    }
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    "state": 125863140,
+    "request_cost": 1,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+Always `1`.
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/eos/account/blockpooleos
+
+
+
 # <a name="link_05"></a> Infinitable endpoints (SQL-like queries)
 
 These endpoints allow you to filter, sort, and aggregate blockchain data. The output is database rows. Unlike dashboard and raw endpoints, all infinitable endpoints listed in this section can be considered as just one endpoint as it has the same options and the same output structure across different blockchains and entities. Here it is: `https://api.blockchair.com/{:table}{:query}`.
@@ -6653,7 +7087,7 @@ See [request costs for infinitables](#link_05)
 | spending_value_usd        | null or float                        | Monetary value of the output in USD at the time of `spending_date` | `*`  | `+`  |      | `+`  |
 | spending_sequence         | null or int                          | Sequence field                                               | `*`  | `+`  |      |      |
 | spending_signature_hex    | null or string `[0-9a-f]*`           | Hex value of the spending script (signature)                 |      |      |      |      |
-| spending_witness †        | null or string (JSONB)               | Witness information in the escaped JSONB format              |      |      |      |      |
+| spending_witness †        | null or string                       | Witness information (comma-separated, may start with a comma if the first witness element is empty) |      |      |      |      |
 | lifespan                  | null or int                          | The number of seconds from the time of the output creation (`time`) to its spending (`spending_time`), `null` if the output hasn't been spent | `*`  | `+`  |      | `+`  |
 | cdd                       | null or float                        | The number of coindays destroyed spending the output, `null` if the output hasn't been spent | `*`  | `+`  |      | `+`  |
 
@@ -8365,6 +8799,13 @@ The response contains an array where the keys are blockchains, and the values ar
       "blockchair_first_entry": 0,
       "blockchair_first_entry_date": "2018-06-30",
       "is_full": true
+    },
+    "eos": {
+      "blockchain_first_entry": 1,
+      "blockchain_first_entry_date": "2018-06-08",
+      "blockchair_first_entry": null,
+      "blockchair_first_entry_date": null,
+      "is_full": false
     }
   },
   "context": {
@@ -8479,7 +8920,8 @@ This endpoint returns the list of latest software (core clients) releases for bl
       "monero": "Monero",
       "cardano": "Cardano SL",
       "zcash": "Zcash",
-      "mixin": "Mixin"
+      "mixin": "Mixin",
+      "eos": "EOSIO"
     },
     ...
   }
