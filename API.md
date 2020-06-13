@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.56)
+* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.58)
 
 ### Please apply for an API key first
 
@@ -26,6 +26,12 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.58 - Jun 13th, 2020
+    * Added EOS support. Please note we're not running a full history EOS node at the moment, so our API shows the most recent blocks and transactions only. New endpoints:
+        * `https://api.blockchair.com/eos/stats`
+        * `https://api.blockchair.com/eos/raw/block/{:id}`
+        * `https://api.blockchair.com/eos/raw/transaction/{:hash}`
+        * `https://api.blockchair.com/eos/raw/account/{:address}`
 * v.2.0.57 - Jun 5th, 2020
     * We now show multisig types for P2SH and P2WSH addresses. The type has the following format: `multisig_{:m}_of_{:n}`. If the script is not P2SH or P2WSH multisig, the type is `null`. Affected endpoints:
         * `https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}` now has the `scripthash_type` field (example: `https://api.blockchair.com/bitcoin/dashboards/address/37cmSuMp7CuLDhjYkNJiTSewmbPuv8RBt1`). If address hasn't been seen spending, it's not possible to derive the multisig type, and `scripthash_type` will be `null`.
