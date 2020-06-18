@@ -26,6 +26,10 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.59 - Jun 18th, 2020
+    * Enhancements for Tezos:
+        * New `blocks` infinitable: `https://api.blockchair.com/tezos/raw/blocks`
+        * `context` array for every API call to the Tezos blockchain now has `price_usd` element returning the current USD price of Tezos
 * v.2.0.58 - Jun 13th, 2020
     * Added EOS support. Please note we're not running a full history EOS node at the moment, so our API shows the most recent blocks and transactions only. New endpoints:
         * `https://api.blockchair.com/eos/stats`
