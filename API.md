@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.58)
+* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.60)
 
 ### Please apply for an API key first
 
@@ -26,6 +26,13 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.60 - Jun 19th, 2020
+    * New way to fetch balances for multiple addresses: `https://api.blockchair.com/{:btc_chain}/addresses/balances` (`POST` or `GET`) with `addresses` key in a `POST` request (or `?addresses={:list}` in a `GET` request) as a comma-separated list of addresses (up to 25.000 at once). This endpoint returns confirmed balances only. If address hasn't been recorded on the blockchain or has a balance of zero, it won't be displayed in the results. This endpoint is extremely fast (under 1 second for 25.000 addresses) and cheap (it costs only 26 request points to fetch 25.000 addresses). See documentation here: https://blockchair.com/api/docs#link_390 (supported chains: Bitcoin, Bitcoin Cash, Bitcoin SV, Litecoin, Dash, Zcash, Dogecoin, Groestlcoin)
+    * On Oct 26th, 2019 with v.2.0.38 we announced the "request cost" concept by which some requests cost more than others (i.e. requesting the data on 10 transactions costs more than requesting it for just 1 transaction, but since the request is done in bulk, it is cheaper for the API user in the end). Up until now we didn't enforce that policy counting each request as 1.
+        * Starting July 19th, 2020 at 00:00 UTC we'll start enforcing this rule
+        * As this is a somewhat compatibility-breaking change, we activate `context.api.next_major_update` and set it to `2020-07-19 00:00:00` (see [General Provisions](https://blockchair.com/api/docs#link_M06) for our policy on compatibility-breaking changes)
+        * `context` array for all requests now has the `request_cost` field yielding the request cost
+        * Premium API clients can track thier usage using [the control panel](https://api.blockchair.com/premium). If you have any questions, you can always reach us at <`info@blockchair.com`>
 * v.2.0.59 - Jun 18th, 2020
     * Enhancements for Tezos:
         * New `blocks` infinitable: `https://api.blockchair.com/tezos/raw/blocks`
