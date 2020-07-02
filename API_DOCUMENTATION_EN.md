@@ -1,4 +1,4 @@
-# [Blockchair.com](https://blockchair.com/) API v.2.0.58 Documentation
+# [Blockchair.com](https://blockchair.com/) API v.2.0.62 Documentation
 
 ```
     ____  __           __        __          _     
@@ -36,6 +36,7 @@
       - [Block](#link_100)
       - [Transaction](#link_200)
       - [Address and extended public key (xpub)](#link_300)
+      - [Address balance mass check](#link_390)
   + [Ethereum](#link_M22)
       - [Block](#link_103)
       - [Uncle](#link_401)
@@ -97,6 +98,8 @@
       + [Snapshots](#link_407) (table)
       + [Mintings](#link_408) (table)
       + [Nodes](#link_409) (table)
+    + [Tezos](#link_M45)
+      + [Blocks](#link_410) (table)
     + [Second layers](#link_M43)
       + [Omni Layer properties](#link_502) (table)
       + [ERC-20 tokens](#link_505) (table)
@@ -110,6 +113,9 @@
     + [Halvening countdown](#link_512)
     + [Premium API endpoints](#link_M51)
       + [Premium API usage stats](#link_600)
++ [Privacy-o-meter](#link_M6)
+    + [Introduction](#link_700)
+    + [Transaction privacy score](#link_702)
 + [Support](#link_M7)
 
 
@@ -165,7 +171,7 @@ Here's the list of available mainnets:
 | Dogecoin | Bitcoin-like | `https://api.blockchair.com/dogecoin` | Full support |
 | Dash | Bitcoin-like | `https://api.blockchair.com/dash` | Full support |
 | Ripple | Ripple-like | `https://api.blockchair.com/ripple` | Alpha mode, possible compatibility-breaking changes |
-| Groestlcoin | Bitcoin-like | `https://api.blockchair.com/groestlcoin` | Full support at least till June 18th, 2020 |
+| Groestlcoin | Bitcoin-like | `https://api.blockchair.com/groestlcoin` | Full support at least till January 1st, 2021 |
 | Stellar | Stellar-like | `https://api.blockchair.com/stellar` | Alpha mode, possible compatibility-breaking changes |
 | Monero | Monero-like | `https://api.blockchair.com/monero` | Alpha mode, possible compatibility-breaking changes |
 | Cardano | Cardano-like | `https://api.blockchair.com/cardano` | Alpha mode, possible compatibility-breaking changes |
@@ -260,8 +266,10 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:ada_chain}/raw/block/{:hash}₀` | [👉](#link_110) | `1` | Alpha |
 | `https://api.blockchair.com/{:xin_chain}/raw/snapshot/{:height}₀` | [👉](#link_111) | `1` | Alpha |
 | `https://api.blockchair.com/{:xin_chain}/raw/snapshot/{:hash}₀` | [👉](#link_111) | `1` | Alpha |
+| `https://api.blockchair.com/{:xin_chain}/raw/snapshots?{:query}` | [👉](#link_407) | `1` | Alpha |
 | `https://api.blockchair.com/{:xtz_chain}/raw/block/{:height}₀` | [👉](#link_112) | `1` | Alpha |
 | `https://api.blockchair.com/{:xtz_chain}/raw/block/{:hash}₀` | [👉](#link_112) | `1` | Alpha |
+| `https://api.blockchair.com/{:xtz_chain}/raw/blocks?{:query}` | [👉](#link_410) | `1` | Alpha |
 | `https://api.blockchair.com/{:eos_chain}/raw/block/{:height}₀` | [👉](#link_113) | `1` | Alpha |
 | **Transaction-related information and actions** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/transaction/{:hash}₀` | [👉](#link_200) | `1` | Stable |
@@ -288,6 +296,7 @@ This is the full list of available API endpoints.
 | **Address-related information** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀` | [👉](#link_300) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/addresses/{:address}₀,...,{:address}ᵩ` | [👉](#link_300) | `1 + 0.1*c` | Stable |
+| `https://api.blockchair.com/{:btc_chain}/addresses/balances` (`POST`, mass balance check) | [👉](#link_390) | `1 + 0.001*c` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/dashboards/xpub/{:extended_key}` | [👉](#link_300) | `1 + 0.1*d` | Beta |
 | `https://api.blockchair.com/{:btc_chain}/addresses?{:query}` | [👉](#link_301) | `2` | Stable |
 | `https://api.blockchair.com/{:eth_chain}/dashboards/address/{:address}₀` | [👉](#link_302) | `1` | Stable |
@@ -309,7 +318,6 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:xin_chain}/raw/round/({:node_hash},{:id})` | [👉](#link_404) | `1` | Alpha |
 | `https://api.blockchair.com/{:xin_chain}/raw/node/{:hash}` | [👉](#link_405) | `1` | Alpha |
 | `https://api.blockchair.com/{:xin_chain}/raw/graph` | [👉](#link_406) | `1` | Alpha |
-| `https://api.blockchair.com/{:xin_chain}/raw/snapshots?{:query}` | [👉](#link_407) | `1` | Alpha |
 | `https://api.blockchair.com/{:xin_chain}/raw/mintings?{:query}` | [👉](#link_408) | `1` | Alpha |
 | `https://api.blockchair.com/{:xin_chain}/raw/nodes?{:query}` | [👉](#link_409) | `1` | Alpha |
 | **Special second layer protocol endpoints (Omni Layer and ERC-20 tokens)** | — | — | — |
@@ -389,6 +397,7 @@ API returns JSON-encoded data. Typically, the response is an array consisting of
   * `context.cache` — array of info on whether the response comes from the cache or not
     * `context.cache.live` — `false` if the response comes from the cache, `true` otherwise
     * `context.cache.until` — cache expiry timestamp
+  * `context.request_cost` — API request cost (`1` for ordinary queries, more than 1 for complex requests, see the next section for details)
 
 There are also some things which are the same across all endpoints:
 
@@ -435,6 +444,8 @@ If you have exceeded the limit multiple times without using a key, an error `430
 * `https://api.blockchair.com/bitcoin/dashboards/blocks/0,1,2,3,4,5,6,7,8,9` — requesting information about ten blocks via one request "costs" 1.9 requests
 
 Every API endpoint documentation has the "Request cost formula" section describing how the "cost" is calculated. For most API requests it's always 1. It's more than 1 in cases when you're requiring additional data (e.g. when you're requesting data on an Ethereum address, and you're also requesting its ERC-20 token balances).
+
+Every API response yields `context.request_cost` with the request cost number ("request points").
 
 As a kindly reminder, there are tasks such as extracting lots of blockchain data (e.g. all transactions over a 2 month period) which require lots of requests done —  it may be better to use our Database dumps feature instead of the API (see https://blockchair.com/dumps for documentation)
 
@@ -2386,6 +2397,54 @@ Address object specification:
 
 - https://blockchair.com/bitcoin/address/1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
 - https://blockchair.com/bitcoin/xpub/xpub6CUGRUonZSQ4TWtTMmzXdrXDtypWKiKrhko4egpiMZbpiaQL2jkwSB1icqYh2cfDfVxdx4df189oLKnC5fSwqPfgyP3hooxujYzAu3fDVmz
+
+
+
+### <a name="link_390"></a> Address balance mass check
+
+This endpoint returns confirmed balances only. If address hasn't been seen on the blockchain or has a zero balance, it's not shown among the results. It's extremely fast (under 1 second for 25.000 addresses) and cheap (it costs only 26 request points to fetch 25.000 addresses).
+
+**Endpoints:**
+
+- `https://api.blockchair.com/{:btc_chain}/addresses/balances` (`POST`)
+- `https://api.blockchair.com/{:btc_chain}/addresses/balances?addresses={:comma_separated_list}` (`GET`)
+
+**Where:**
+
+- `{:btc_chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `zcash`, `bitcoin/testnet`
+- `{:comma_separated_list}` is the comma-separated list of addresses (up to 25.000)
+
+**Example output:**
+
+`https://api.blockchair.com/bitcoin/addresses/balances?addresses=34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo,35hK24tcLEWcgNA4JxpvbkNkoAcDGqQPsP,1DoesntExist`:
+
+```json
+{
+  "data": {
+    "35hK24tcLEWcgNA4JxpvbkNkoAcDGqQPsP": 25550215769897,
+    "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo": 4053399981517
+  },
+  "context": {
+    "code": 200,
+    "results": 2,
+    "state": 635329,
+    "request_cost": 1.003,
+    ...
+  }
+}
+```
+
+**Example POST request:**
+
+```bash
+> curl -v --data "addresses=34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo,35hK24tcLEWcgNA4JxpvbkNkoAcDGqQPsP,1DoesntExist" https://api.blockchair.com/bitcoin/addresses/balances
+```
+
+(it's better to use `POST` for long requests)
+
+**Request cost formula:**
+
+`1` + `0.001` per each requested address (i.e. for 25.000 addresses it's just 25, so it's the best and the fastest way to fetch balances)
 
 
 
@@ -6301,28 +6360,33 @@ Always `1`.
 
 
 
-### <a name="link_309"></a> EOS account data
+### <a name="link_309"></a> Raw account data
 
 Returns raw account data directly from our node.
 
 **Endpoint:**
 
-- `https://api.blockchair.com/{:eos_chain}/raw/account/{:address}₀`
+- `https://api.blockchair.com/{:eos_chain}/raw/account/{:address}`
 
 **Where:**
 
 - `{:eos_chain}` can only be `eos`
-- `{:address}ᵢ` is the account name
+- `{:address}` is the account name
+
+**Possible options:**
+
+- `?actions=true` displays 10 most recent actions for this account
 
 **Output:**
 
 `data` contains an associative array:
 
-- `data.{:address}ᵢ.account` — account information.
+- `data.{:address}.account` — account information
+- `data.{:address}.actions` — the list of recent actions if `?actions=true` is set, otherwise `null`
 
 **Example output:**
 
-`https://api.blockchair.com/eos/raw/account/blockpooleos`:
+`https://api.blockchair.com/eos/raw/account/blockpooleos?actions=true`:
 
 ```json
 {
@@ -6330,24 +6394,24 @@ Returns raw account data directly from our node.
     "blockpooleos": {
       "account": {
         "account_name": "blockpooleos",
-        "head_block_num": 125863151,
-        "head_block_time": "2020-06-13T18:37:20.000",
+        "head_block_num": 127937449,
+        "head_block_time": "2020-06-25T18:47:45.500",
         "privileged": false,
         "last_code_update": "1970-01-01T00:00:00.000",
         "created": "2019-07-13T03:45:22.500",
-        "core_liquid_balance": "4533.2384 EOS",
+        "core_liquid_balance": "2771.4153 EOS",
         "ram_quota": 17559,
         "net_weight": 150100,
-        "cpu_weight": 1050619,
+        "cpu_weight": 1050703,
         "net_limit": {
           "used": 105,
-          "available": 15532697,
-          "max": 15532802
+          "available": 15609531,
+          "max": 15609636
         },
         "cpu_limit": {
-          "used": 662,
-          "available": 8895,
-          "max": 9557
+          "used": 464,
+          "available": 9039,
+          "max": 9503
         },
         "ram_usage": 4795,
         "permissions": [
@@ -6400,22 +6464,22 @@ Returns raw account data directly from our node.
         "total_resources": {
           "owner": "blockpooleos",
           "net_weight": "15.0100 EOS",
-          "cpu_weight": "105.0619 EOS",
+          "cpu_weight": "105.0703 EOS",
           "ram_bytes": 16159
         },
         "self_delegated_bandwidth": {
           "from": "blockpooleos",
           "to": "blockpooleos",
           "net_weight": "5.0100 EOS",
-          "cpu_weight": "5.0619 EOS"
+          "cpu_weight": "5.0703 EOS"
         },
         "refund_request": null,
         "voter_info": {
           "owner": "blockpooleos",
           "proxy": "genpoolproxy",
           "producers": [],
-          "staked": 100929,
-          "last_vote_weight": "151677066207.26217651367187500",
+          "staked": 101013,
+          "last_vote_weight": "153840349310.80059814453125000",
           "proxied_vote_weight": "0.00000000000000000",
           "is_proxy": 0,
           "flags1": 0,
@@ -6423,14 +6487,79 @@ Returns raw account data directly from our node.
           "reserved3": "0 "
         },
         "rex_info": null
-      }
+      },
+      "actions": [
+        {
+          "global_action_seq": "162018041028",
+          "account_action_seq": 33,
+          "block_num": 127926696,
+          "block_time": "2020-06-25T17:18:08.000",
+          "action_trace": {
+            "action_ordinal": 6,
+            "creator_action_ordinal": 1,
+            "closest_unnotified_ancestor_action_ordinal": 1,
+            "receipt": {
+              "receiver": "eosio.token",
+              "act_digest": "3e8e32ac2f3e9a4e9fe05c497016e8a2aad839f6f0dc700e1aa4be7fe1737436",
+              "global_sequence": "162018041028",
+              "recv_sequence": "39120141509",
+              "auth_sequence": [
+                [
+                  "blockpooleos",
+                  2436
+                ],
+                [
+                  "eosio.vpay",
+                  163338
+                ]
+              ],
+              "code_sequence": 4,
+              "abi_sequence": 4
+            },
+            "receiver": "eosio.token",
+            "act": {
+              "account": "eosio.token",
+              "name": "transfer",
+              "authorization": [
+                {
+                  "actor": "eosio.vpay",
+                  "permission": "active"
+                },
+                {
+                  "actor": "blockpooleos",
+                  "permission": "active"
+                }
+              ],
+              "data": {
+                "from": "eosio.vpay",
+                "to": "blockpooleos",
+                "quantity": "588.1989 EOS",
+                "memo": "producer vote pay"
+              },
+              "hex_data": "0080377503ea305580a98a945688683c85c059000000000004454f53000000001170726f647563657220766f746520706179"
+            },
+            "context_free": false,
+            "elapsed": 82,
+            "console": "",
+            "trx_id": "999420909e47b8d3afe57b80c93c3317ea6f9103b8dbbec9572ebb8ecf073a45",
+            "block_num": 127926696,
+            "block_time": "2020-06-25T17:18:08.000",
+            "producer_block_id": "07a001a82d080f2ca57f6b4f2b0c33a32953d234156349b4434c5c56a2870967",
+            "account_ram_deltas": [],
+            "except": null,
+            "error_code": null
+          }
+        },
+        ...
+      ]
     }
   },
   "context": {
     "code": 200,
     "results": 1,
-    "state": 125863140,
-    "request_cost": 1,
+    "state": 127937448,
+    "price_usd": 2.49,
+    "request_cost": 2,
     ...
   }
 }
@@ -6438,7 +6567,7 @@ Returns raw account data directly from our node.
 
 **Request cost formula:**
 
-Always `1`.
+`1` + `1` if the `?actions=true` option is used
 
 **Explore visualization on our front-end:**
 
@@ -6468,6 +6597,7 @@ Just don't ask why do we call that `infinitables`… Infinite tables? Maybe.
 * `{:xin_chain}/raw/snapshots`
 * `{:xin_chain}/raw/mintings`
 * `{:xin_chain}/raw/nodes`
+* `{:xtz_chain}/raw/blocks`
 * `bitcoin/omni/properties`
 * `ethereum/erc-20/tokens`
 * `ethereum/erc-20/transactions`
@@ -6477,6 +6607,7 @@ Where:
 * `{:btc_chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `zcash`, or `bitcoin/testnet`
 * `{:eth_chain}` can be only `ethereum`
 * `{:xin_chain}` can be only `mixin`
+* `{:xtz_chain}` can be only `tezos`
 
 Note on mempool tables: to speed up some requests, our architecture have separate tables (`{:chain}/mempool/{:entity}`) for unconfirmed transactions. Unlike with dashboard endpoints which search entities like transactions in both the blockchain and the mempool, infinitable endpoints don't do that.
 
@@ -6719,7 +6850,7 @@ Applying a limit over the default multiplies the summed cost by `1 + 0.01 * numb
 
 **Table descriptions**
 
-Further in documentations are table descriptions. Each documentation section contains a general description, and a table describing the table columns (fields) in the following format:
+Further the documentation describes each of the supported tables. Each documentation section contains a general description, and a table listing the table columns (fields) in the following format:
 
 | Column        | Type          | Description          | Q?                                         | S?                                       | A?                                        | C?                                                           |
 | ------------- | ------------- | -------------------- | ------------------------------------------ | ---------------------------------------- | ----------------------------------------- | ------------------------------------------------------------ |
@@ -8179,6 +8310,105 @@ See [request costs for infinitables](#link_05)
 
 
 
+## <a name="link_M45"></a> Inifinitable endpoints for Tezos
+
+Please note that our Tezos API outputs raw node data for this endpoint. 
+
+
+
+### <a name="link_410"></a> `blocks` table
+
+Note: this particular table doesn't support advanced querying. The only query section it supports are `?offset=` and sorting/filtering by `id` (height).
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:xtz_chain}/raw/blocks?{:query}`
+
+**Where:**
+
+- `{:xtz_chain}` can be only `tezos`
+
+**Where:**
+
+- `{:query}` is the query against the table ([how to build a query](#link_05))
+
+**Output:**
+
+`data` contains an array of database rows.
+
+**Example requests:**`
+
+- `https://api.blockchair.com/tezos/raw/blocks`
+- `https://api.blockchair.com/tezos/raw/blocks?q=id(..100000)&offset=10`
+- `https://api.blockchair.com/tezos/raw/blocks?s=id(asc)`
+
+**Example output:**
+
+`https://api.blockchair.com/tezos/raw/blocks?s=id(asc)`:
+
+```json
+{
+  "data": [
+    {
+      "id": 0,
+      "time": "2018-06-30T16:07:32Z",
+      "hash": "BLockGenesisGenesisGenesisGenesisGenesisf79b5d1CoW2",
+      "priority": 0,
+      "n_ops": 0,
+      "volume": 0,
+      "cycle": 0,
+      "is_cycle_snapshot": 1,
+      "version": 0,
+      "n_accounts": 0,
+      "n_new_accounts": 0,
+      "n_new_contracts": 0,
+      "gas_limit": 0,
+      "gas_used": 0,
+      "gas_price": 0,
+      "days_destroyed": 0
+    },
+    {
+      "id": 1,
+      "time": "2018-06-30T17:39:57Z",
+      "hash": "BLSqrcLvFtqVCx8WSqkVJypW2kAVRM3eEj2BHgBsB6kb24NqYev",
+      "priority": 0,
+      "n_ops": 0,
+      "volume": 0,
+      "cycle": 0,
+      "is_cycle_snapshot": 0,
+      "version": 1,
+      "n_accounts": 31589,
+      "n_new_accounts": 31589,
+      "n_new_contracts": 32,
+      "gas_limit": 0,
+      "gas_used": 0,
+      "gas_price": 0,
+      "days_destroyed": 0
+    },
+    ...
+  ],
+  "context": {
+    "code": 200,
+    "results": 10,
+    "total_rows": 1002667,
+    "offset": 0,
+    "state": 1002666,
+    "price_usd": 2.67,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+See [request costs for infinitables](#link_05)
+
+**Explore visualization on our front-end:**
+
+- https://blockchair.com/tezos/blocks
+
+
+
 ## <a name="link_M43"></a> Inifinitable endpoints for second layers
 
 
@@ -9070,6 +9300,267 @@ Please be advised that
 **Request cost formula:**
 
 Always `0`. This request is free to use.
+
+
+
+
+
+# <a name="link_M6"></a> Privacy-o-meter
+
+## <a name="link_700"></a> Introduction
+
+While Bitcoin is considered to be a privacy-oriented system, the blockchain is open to analyze by anyone, and there are numerous transaction tracing tools like Chainalysis, Coinfirm, Elliptic, CipherTrace, and Crystal. They're all not free, and Bitcoin users rarely have a chance to see how deep the rabbit hole goes. We start with a simple transaction scoring tool, and will soon expand this even further. We'll provide this service for free as we hope it'd help Bitcoin users to take some of their privacy back.
+
+Transaction tracing is quite an easy task on the Bitcoin blockchain due to the following reasons:
+
+1. Most users aren't concerned enough about their privacy and make rookie mistakes like sending round BTC amounts
+2. Wallet software developers mostly don't care about user privacy. Taking the previous example in context, there are no warnings if user tries to send a round amount.
+3. There are multiple wallets with different transaction processing rules making it possible to figure out what software type given user uses
+4. Bitcoin blockchain is congested due to refusal to properly scale — that makes using mixers very expensive and cumbersome
+5. While there are multiple protocols allowing more secure ways to transact (like shielded transactions on Zcash), these are not implemented in Bitcoin out of fears of changing the protocol
+6. Bitcoin has multiple standard script types, their number has been recently increased with the activation of SegWit, and will increase further with new constructs built on top of SegWit 
+
+Here's a good overview of some basic heuristics: https://en.bitcoin.it/wiki/Privacy — we use most of them and introduce many new ones. The full list of heuristics we're using is available below.
+
+At the moment, Privacy-o-meter is available for Bitcoin only, but we'll soon expand it to other UTXO-based coins, and then to all the others we support.
+
+
+
+**A couple of examples of transactions with bad and good privacy scores**
+
+Take this transaction as an example: https://blockchair.com/bitcoin/transaction/116bd19a3ec5f210ce72043115a4d5d3ef08f7556829c4feac8d89de3195ea4e
+
+It has 2 inputs and 2 outputs:
+
+| Input addresses        | Input values     |      | Output values    | Output addresses    |
+| ---------------------- | ---------------- | ---- | ---------------- | ------------------- |
+| bc1qj9p0huddhg5pzccur… | 0.96350000 BTC   | ⟾    | 1.00000000 BTC   | 3EgAFC6FKojYUu53…   |
+| bc1qrpfxyvdc3fqmyux54… | 281.65022105 BTC | ⟾    | 281.61332105 BTC | bc1qva7utdxd6easlj… |
+
+And also the following characteristics:
+
+* Uses SegWit: `yes`
+* Lock time: `0`
+* Version: `1`
+
+An analyst will be able to gather lots of metadata looking at this transaction:
+
+1. First output has a round amount of 1 bitcoin
+2. First output has a P2SH address type while both inputs and the second output are P2WSH
+3. Given (1) and (2) it can be assumed that 3EgAFC6FKojYUu53… is the recipient, and bc1qva7utdxd6easlj… is the change address. Thus we can say that bc1qj9p0huddhg5pzccur…, bc1qrpfxyvdc3fqmyux54…, and bc1qva7utdxd6easlj… can be clusterized as belonging to one entity
+4. There's a discrepancy: if the sender wanted to send just 1 bitcoin, there's no need for the first output to be in the transaction, the second would be more than sufficient. That shows that the sender is probably using a non-standard wallet software
+5. The transaction's lock time value is `0` and the sender uses SegWit-copmatible software that generates version `1` transactions. That and (4) can be used to single out the sender's wallet software
+
+Our system gives this transaction the score of `0` as it's too clear which output is the recipient and which is the change.
+
+One important point: it's not probable, but still possible that this partiular transaction's sender tries to confuse forensics software and all the conclusions are incorrect. So, basically, if you're trying to increase your privacy level knowing how to do that, and getting the `0` score, you're probably doing that right.
+
+Let's take another transaction to show some contrast: https://blockchair.com/bitcoin/transaction/24a517dd2ffbb3a290eeee75d6dea2c62df7ebcd6f898b703b70dc031baa8a18
+
+It has 1 input and 2 outputs:
+
+| Input addresses      | Input values   |      | Output values  | Output addresses  |
+| -------------------- | -------------- | ---- | -------------- | ----------------- |
+| 12CBjcNtRU7c795neLC… | 0.01006987 BTC | ⟾    | 0.00344481 BTC | 199eZE5j4shSU7D9… |
+|                      |                |      | 0.00640487 BTC | 1CGL5micNcJbMaV…  |
+
+This is a relatively rare example of a transaction getting a `100` score. It's not possible to distinguish the recipient from the change address just by analyzing this transaction.
+
+
+
+**Heuristics we use:**
+
+| Heuristic key | Heuristic name | Description and notes | Affects clusterization? | Example transaction | API example |
+| ---- | ---- | ---- | ---- | ---- | ---- |
+| **Most common heuristics** | **♠** | **♠** | **♠** | **♠** | **♠** |
+|`inputs` |Co-spending | Unless it's a CoinJoin transaction it's safe to assume that all input addresses belong to one person | `+` | [👉](https://blockchair.com/bitcoin/transaction/a7d7eb23e76e1f95996b25655025aa5c68bfa46f609ebd9df5feec7cc12f5a6c) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/a7d7eb23e76e1f95996b25655025aa5c68bfa46f609ebd9df5feec7cc12f5a6c?privacy-o-meter=true) |
+|`script_types` |Script types | If all inputs has the same type, and exactly one of the outputs is not of the same type — this output can be considered as the recipient | `+` | [👉](https://blockchair.com/bitcoin/transaction/250b2c28ff7213633bba93fa4578144a00eed1fcb6378740d2071b7088a6aee8) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/250b2c28ff7213633bba93fa4578144a00eed1fcb6378740d2071b7088a6aee8?privacy-o-meter=true) |
+|`p2sh_types` | P2SH multisig types | If all inputs are `m of n` multisig P2SH, and all outputs are multisig P2SH, but exactly one of the outputs has another `m` of `n` structure — this output can be considered as the recipient | `+` | [👉](https://blockchair.com/bitcoin/transaction/816e90f4ff8cf5348eb81de3bfe93c53cd990b8018f7f50ba7845428f0334cbe) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/816e90f4ff8cf5348eb81de3bfe93c53cd990b8018f7f50ba7845428f0334cbe?privacy-o-meter=true) |
+|`p2wsh_types` | P2WSH multisig types | If all inputs are `m of n` multisig P2WSH, and all outputs are multisig P2WSH, but exactly one of the outputs has another `m` of `n` structure — this output can be considered as the recipient | `+` | [👉](https://blockchair.com/bitcoin/transaction/31a3bda9bb623973808f65feede0dc948f4d0523ec8c7571f40a54cb46cb10f1) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/31a3bda9bb623973808f65feede0dc948f4d0523ec8c7571f40a54cb46cb10f1?privacy-o-meter=true) |
+|`round_value` |Round value | If one of the outputs has a round value (like exactly 1 BTC) — this output can be considered as the recipient | `+` | [👉](https://blockchair.com/bitcoin/transaction/617abb5cf47791077a71ba5a342496c17b259a39a1e8287820be64de229118d5) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/617abb5cf47791077a71ba5a342496c17b259a39a1e8287820be64de229118d5?privacy-o-meter=true) |
+|`recipient_by_value` | Recipient by bigger value | If the recipient is the smaller output, there's no point in having some of the inputs | `+` | [👉](https://blockchair.com/bitcoin/transaction/1b6b875d97e13301aa1c1a7a8991a8ca9b9b346d88fd018f2c79d7b2bd20362d) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/1b6b875d97e13301aa1c1a7a8991a8ca9b9b346d88fd018f2c79d7b2bd20362d?privacy-o-meter=true) |
+|`t1-2_bigger_value_25` | Output value x25 | One of the two outputs is 25 times bigger than the other meaning that it's potentially the change output | `+` | [👉](https://blockchair.com/bitcoin/transaction/dc4521de6e89a313a84cbdc979a6d2796b6c0fa00456664c0298dbfb9f14f23d) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/dc4521de6e89a313a84cbdc979a6d2796b6c0fa00456664c0298dbfb9f14f23d?privacy-o-meter=true) |
+|`t1-2_bigger_value_100` | Output value x100 | - 〃 - 〃 -     100 times bigger | `+` | [👉](https://blockchair.com/bitcoin/transaction/5fdd152a47e6701ae184d5f14d67fa53279309fce8345569638e06a62f78e8fe) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/5fdd152a47e6701ae184d5f14d67fa53279309fce8345569638e06a62f78e8fe?privacy-o-meter=true) |
+|`t1-2_bigger_value_250` | Output value x250 | - 〃 - 〃 -     250 times bigger | `+` | [👉](https://blockchair.com/bitcoin/transaction/8f39915714e1fd8c5025c95b4c4cb5c1ef9066212578a70c729ce2c856dba314) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/8f39915714e1fd8c5025c95b4c4cb5c1ef9066212578a70c729ce2c856dba314?privacy-o-meter=true) |
+|`t1-2_bigger_value_1000` | Output value x1000 | - 〃 - 〃 -     1000 times bigger | `+` | [👉](https://blockchair.com/bitcoin/transaction/8b5c0080ff2d5fd022ff910f1be99eb504b5d89dd74c5c8f543cac184299eab0) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/8b5c0080ff2d5fd022ff910f1be99eb504b5d89dd74c5c8f543cac184299eab0?privacy-o-meter=true) |
+|`coinbase_known` | Known miner | The recipient is the known miner |  | [👉](https://blockchair.com/bitcoin/transaction/4e5c226fd6d88c20ff56d10037c473bdf17a401878c9d41724bffb8762cb18d6) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/4e5c226fd6d88c20ff56d10037c473bdf17a401878c9d41724bffb8762cb18d6?privacy-o-meter=true) |
+|`coinbase_unknown` | Unknown miner | The recipient is an unknown miner |  | [👉](https://blockchair.com/bitcoin/transaction/415b101a57a2117eb9b2cc18959c962c03b6292d2553b31a041d70fcc429e85c) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/415b101a57a2117eb9b2cc18959c962c03b6292d2553b31a041d70fcc429e85c?privacy-o-meter=true) |
+|`coinjoin` | Coinjoin | This is a CoinJoin transaction. This cancels all other heuristics. | `+` | [👉](https://blockchair.com/bitcoin/transaction/0156114ce052ca0be908cdee9fe7840a57087e99022d88d82ff78a2653419a00) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/0156114ce052ca0be908cdee9fe7840a57087e99022d88d82ff78a2653419a00?privacy-o-meter=true) |
+|`round_fee` | Round fee | The transaction has a round fee amount, the sender is probably using some specific software |  | [👉](https://blockchair.com/bitcoin/transaction/fb8c2c96d1f442e2e66fe1eccd519a5658eeb9ea5de7f79bef96d82b22755854) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/fb8c2c96d1f442e2e66fe1eccd519a5658eeb9ea5de7f79bef96d82b22755854?privacy-o-meter=true) |
+|`rare_fingerprint` | Rare fingerprint | This transaction has quite unique technical characteristics | | [👉](https://blockchair.com/bitcoin/transaction/52bf8b7600a38946506b400121513a09b44e5050df0c33448f35546d2bf44e00) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/52bf8b7600a38946506b400121513a09b44e5050df0c33448f35546d2bf44e00?privacy-o-meter=true) |
+|**Specific order of inputs and outputs** |**♠** | **♠** | **♠** | **♠** | **♠** |
+|`asc_output_values` |Ascending output values | For transaction with more than 5 outputs — they are ordered by value ascending — that may due to some specific software usage |  | [👉](https://blockchair.com/bitcoin/transaction/81c27162281ae7927444293994a066678a4ee681e5beb91bc5f82f1f2bfc5284) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/81c27162281ae7927444293994a066678a4ee681e5beb91bc5f82f1f2bfc5284?privacy-o-meter=true) |
+|`desc_output_values` |Descending output values | Same, but in descending order. Generally, all descending patterns are more rare than ascending. |  | [👉](https://blockchair.com/bitcoin/transaction/0ec4fc763b25acbf7e6119a3dfa6ed94523ebc9a4ddbe85e73796e01d245c76b) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/0ec4fc763b25acbf7e6119a3dfa6ed94523ebc9a4ddbe85e73796e01d245c76b?privacy-o-meter=true) |
+|`asc_output_addresses` |Ascending output addresses | Same, but this time it's addresses sorted in alphabetical order |  | [👉](https://blockchair.com/bitcoin/transaction/6075cf9a3a417a7a8f924e163b091ed793e51d68d21b14a9b5beb96fbc6593e3) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/6075cf9a3a417a7a8f924e163b091ed793e51d68d21b14a9b5beb96fbc6593e3?privacy-o-meter=true) |
+|`desc_output_addresses` |Descending output addresses | - 〃 - 〃 -     (Very rare) |  | [👉](https://blockchair.com/bitcoin/transaction/4379451e04005c00f4f3163d555a0afc5d69e4de6496b1e45faa8234752f6819) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/4379451e04005c00f4f3163d555a0afc5d69e4de6496b1e45faa8234752f6819?privacy-o-meter=true) |
+|`asc_input_values` |Ascending input values | - 〃 - 〃 -     Same, but for inputs |  | [👉](https://blockchair.com/bitcoin/transaction/05bc2ea8f5fc3dd10decf307868541dbd237255b7682c1948db9b5c0a05ceb3a) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/05bc2ea8f5fc3dd10decf307868541dbd237255b7682c1948db9b5c0a05ceb3a?privacy-o-meter=true) |
+|`desc_input_values` |Descending input values | - 〃 - 〃 - |  | [👉](https://blockchair.com/bitcoin/transaction/87452c593c556c5a9f3a7c1b6a220e70f56d52ccc4f4bc84bc4ee0205bf6d1d6) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/87452c593c556c5a9f3a7c1b6a220e70f56d52ccc4f4bc84bc4ee0205bf6d1d6?privacy-o-meter=true) |
+|`asc_input_addresses` |Ascending input addresses | - 〃 - 〃 -     (Very rare) |  | [👉](https://blockchair.com/bitcoin/transaction/1f07f37f2b76479e8dedad8b59aef9a1e6290b0cc8c246e46a87fa3206b84d5c) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/1f07f37f2b76479e8dedad8b59aef9a1e6290b0cc8c246e46a87fa3206b84d5c?privacy-o-meter=true) |
+|`desc_input_addresses` |Descending input addresses | - 〃 - 〃 -     (Very rare) |  | [👉](https://blockchair.com/bitcoin/transaction/662739458c6d4ee79027b0cc2bac4c79341f4bae7faa477f50f84a657fb9e674) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/662739458c6d4ee79027b0cc2bac4c79341f4bae7faa477f50f84a657fb9e674?privacy-o-meter=true) |
+|`asc_input_timestamps` |Ascending input timestamps | - 〃 - 〃 -     Same, inputs are sorted by age |  | [👉](https://blockchair.com/bitcoin/transaction/e5e46dace28b98689d9dc05296fc1712f492cebcebe1dcf4b0e2ab315404feba) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/e5e46dace28b98689d9dc05296fc1712f492cebcebe1dcf4b0e2ab315404feba?privacy-o-meter=true) |
+|`desc_input_timestamps` |Descending input timestamps | - 〃 - 〃 - |  | [👉](https://blockchair.com/bitcoin/transaction/3547bf0310882c290d073f7ad8b73c1a017ea93bd7677202f4d1147df6d8e2b1) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/3547bf0310882c290d073f7ad8b73c1a017ea93bd7677202f4d1147df6d8e2b1?privacy-o-meter=true) |
+|`asc_output_values_except_first` |Ascending output values except first | All outputs are sorted by value ascending except for the first one, that may mean that the first output is the change address. But this is a quite vague heuristic, thus we don't use it in clusterization. |  | [👉](https://blockchair.com/bitcoin/transaction/d89159504e8ec57ec89646f727555b67bc5189fbdb293e2843dc1463e87a970e) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/d89159504e8ec57ec89646f727555b67bc5189fbdb293e2843dc1463e87a970e?privacy-o-meter=true) |
+|`asc_output_values_except_last` |Ascending output values except last | - 〃 - 〃 - |  | [👉](https://blockchair.com/bitcoin/transaction/30ef0b26e8163c77bb56f5afeba54329f0cfd7ea8e7bb2cf65d343f469bb91fd) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/30ef0b26e8163c77bb56f5afeba54329f0cfd7ea8e7bb2cf65d343f469bb91fd?privacy-o-meter=true) |
+|`asc_output_addresses_except_first` |Ascending output addresses except first | - 〃 - 〃 - |  | [👉](https://blockchair.com/bitcoin/transaction/1d4685dd141c1951adbebda7e7f05c72c7598b9028852283f1055dde4f49b0f7) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/1d4685dd141c1951adbebda7e7f05c72c7598b9028852283f1055dde4f49b0f7?privacy-o-meter=true) |
+|`asc_output_addresses_except_last` |Ascending output addresses except last | - 〃 - 〃 - |  | [👉](https://blockchair.com/bitcoin/transaction/59c553c9484badebcd68a55df0f74c7a05e8cc053fa49d5340f6ece9841d47cd) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/59c553c9484badebcd68a55df0f74c7a05e8cc053fa49d5340f6ece9841d47cd?privacy-o-meter=true) |
+|`desc_output_values_except_first` |Descending output values except first | - 〃 - 〃 - |  | [👉](https://blockchair.com/bitcoin/transaction/8b2d41e57b268a49dd9f97849c7e75c60b1fa2001b915f2378eb85abffb6b2f2) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/8b2d41e57b268a49dd9f97849c7e75c60b1fa2001b915f2378eb85abffb6b2f2?privacy-o-meter=true) |
+|`desc_output_values_except_last` |Descending output values except last | - 〃 - 〃 - |  | [👉](https://blockchair.com/bitcoin/transaction/63595f498276e327a36fffb062e902ed8da65a9c56dae26cd9571d4c0487f98e) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/63595f498276e327a36fffb062e902ed8da65a9c56dae26cd9571d4c0487f98e?privacy-o-meter=true) |
+|`desc_output_addresses_except_last` |Descending output addresses except last | - 〃 - 〃 - |  | [👉](https://blockchair.com/bitcoin/transaction/94d72365f7de01766dd5b3a30b25cf9b362d41adcad0a02c852786413814af7b) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/94d72365f7de01766dd5b3a30b25cf9b362d41adcad0a02c852786413814af7b?privacy-o-meter=true) |
+|`desc_output_addresses_except_first` |Descending output addresses except first | - 〃 - 〃 - |  | [👉](https://blockchair.com/bitcoin/transaction/6d417f1b4f9aacafebf8ae51a4eb4ad0511ccb584e9d1196088eeab4b6858a67) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/6d417f1b4f9aacafebf8ae51a4eb4ad0511ccb584e9d1196088eeab4b6858a67?privacy-o-meter=true) |
+|**Reuse of the same address** |**♠** | **♠** | **♠** | **♠** | **♠** |
+|`simple_reuse_1-2` | Address reuse | The sender uses the same address for receiving and for change |  | [👉](https://blockchair.com/bitcoin/transaction/a0dc90c9856f19de61170eac0b43061e6835a8fba9c00f11338d020a85ee5322) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/a0dc90c9856f19de61170eac0b43061e6835a8fba9c00f11338d020a85ee5322?privacy-o-meter=true) |
+|`simple_reuse_N-2` | Address reuse | The sender uses the same address for receiving and for change |  | [👉](https://blockchair.com/bitcoin/transaction/425fa42b8f31c5123d50133461ee0bd30d8b3c8a263315c5d3b9018a90a82857) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/425fa42b8f31c5123d50133461ee0bd30d8b3c8a263315c5d3b9018a90a82857?privacy-o-meter=true) |
+|`simple_reuse_1-N` | Address reuse | The sender (probably an exchange) uses the same address for receiving and for change |  | [👉](https://blockchair.com/bitcoin/transaction/2181e669dddbaf7bf2b77174405df82d0085f0b58edd5b98af095b95b494f0e5) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/2181e669dddbaf7bf2b77174405df82d0085f0b58edd5b98af095b95b494f0e5?privacy-o-meter=true) |
+|`simple_reuse_same_address_in_inputs` | Same address in inputs | There's multiple occurences of the same address in inputs |  | [👉](https://blockchair.com/bitcoin/transaction/b16f9802004ade2df1c764daa811f021bd424e5070da706cee8e2e6e384e0273) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/b16f9802004ade2df1c764daa811f021bd424e5070da706cee8e2e6e384e0273?privacy-o-meter=true) |
+|**Sweeps** |**♠** | **♠** | **♠** | **♠** | **♠** |
+|`sweep_1-1` | Sweep (1-1) | The sender uses the "send everything" option to either pay someone (e.g. an exchange) or just moving the funds to another wallet (1 input) |  | [👉](https://blockchair.com/bitcoin/transaction/babd3998f821c2d2f4a1dca9ec37d83213264d18e9ec00a692ce5f58da90509e) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/babd3998f821c2d2f4a1dca9ec37d83213264d18e9ec00a692ce5f58da90509e?privacy-o-meter=true) |
+|`sweep_1-1_to_another_type` | Sweep to another type (1-1) | - 〃 - 〃 -     Same, but the outputs is of another type. The sender is either paying someone or moving the funds to a new wallet type (1 input) |  | [👉](https://blockchair.com/bitcoin/transaction/8ae5fef447c836c02021b84cd4b6e6610328618e5b6eb0a29839237b02bfd274) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/8ae5fef447c836c02021b84cd4b6e6610328618e5b6eb0a29839237b02bfd274?privacy-o-meter=true) |
+|`sweep_N-1` | Sweep | - 〃 - 〃 -     Same, but with multiple inputs |  | [👉](https://blockchair.com/bitcoin/transaction/8221a2efa0fdaf2355c9017e845c614a77d488c9ebb1a1322eca7d3de586e926) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/8221a2efa0fdaf2355c9017e845c614a77d488c9ebb1a1322eca7d3de586e926?privacy-o-meter=true) |
+|`sweep_N-1_to_another_type` | Sweep to another type | - 〃 - 〃 -     Same, but to another address type |  | [👉](https://blockchair.com/bitcoin/transaction/87452c593c556c5a9f3a7c1b6a220e70f56d52ccc4f4bc84bc4ee0205bf6d1d6) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/87452c593c556c5a9f3a7c1b6a220e70f56d52ccc4f4bc84bc4ee0205bf6d1d6?privacy-o-meter=true) |
+|**Discrepancies** |**♠** | **♠** | **♠** | **♠** | **♠** |
+|`discrepancy_unnecessary_inputs` | Discrepancy: unnecessary input | The smaller input is unnecessary, as whichever of the outputs is the recipient, there's no need to include that input |  | [👉](https://blockchair.com/bitcoin/transaction/2b4601a6a1a295fdbe546b78af97a619b13ae43e31715ebcc5b683f17a1a0205) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/2b4601a6a1a295fdbe546b78af97a619b13ae43e31715ebcc5b683f17a1a0205?privacy-o-meter=true) |
+|`discrepancy_input_types` | Discrepancy: various input types | The inputs are of different types. That means the sender is probably using the software allowing to create the same address type for the change as the recipient has, trying to circumvent the `script_types` heuristic |  | [👉](https://blockchair.com/bitcoin/transaction/890719cb7e5b365988e07c461e88b1d6ba432c24dad499177d81cd49a07155bb) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/890719cb7e5b365988e07c461e88b1d6ba432c24dad499177d81cd49a07155bb?privacy-o-meter=true) |
+|`discrepancy_script_types_and_round_value` | Discrepancy between Script types and Round value | `script_types` and `round_value` heuristics yield different results | `+` | [👉](https://blockchair.com/bitcoin/transaction/f02b2bf8d0f0383a2a65ee3bc72d49f02d7463beae118ffbcd28cdc709fab4e8) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/f02b2bf8d0f0383a2a65ee3bc72d49f02d7463beae118ffbcd28cdc709fab4e8?privacy-o-meter=true) |
+|`discrepancy_script_types_and_recipient_by_value` | Discrepancy between Script types and Recipient by value | `script_types` and `recipient by value` heuristics yield different results | `+` | [👉](https://blockchair.com/bitcoin/transaction/bc2485c492c9985996c0bf43beecb6bd45c4b0ed9d2ad395a42930a6f704c060) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/bc2485c492c9985996c0bf43beecb6bd45c4b0ed9d2ad395a42930a6f704c060?privacy-o-meter=true) |
+|`discrepancy_round_value_and_recipient_by_value` | Discrepancy between Round value and Recipient by value | `round_value` and `recipient by value` heuristics yield different results | `+` | [👉](https://blockchair.com/bitcoin/transaction/e20768471edddafc74cddda43df28c43219a9c237480f768491a754e3b0f02fb) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/e20768471edddafc74cddda43df28c43219a9c237480f768491a754e3b0f02fb?privacy-o-meter=true) |
+|`discrepancy_p2sh_various_input_types` | Discrepancy: various P2SH input types | The P2SH input types are different (e.g. one is 2-of-2 multisig, and the other is 2-of-3). Very rare. |  | [👉](https://blockchair.com/bitcoin/transaction/a1ace505a545ac750ed3bdce8514b96e406eafc228695606a15d56bc39e708f3) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/a1ace505a545ac750ed3bdce8514b96e406eafc228695606a15d56bc39e708f3?privacy-o-meter=true) |
+|`discrepancy_p2wsh_various_input_types` | Discrepancy: various P2WSH input types | - 〃 - 〃 -     Same, but for P2WSH |  | N/A |N/A|
+|`discrepancy_same_address_in_outputs` | Discrepancy: output address duplicates | There are outputs with the same address — that makes no economical sense |  | [👉](https://blockchair.com/bitcoin/transaction/e7af7c8526069f367334e22bbfa0d0287a24eacaeb5dd5df05db660a4bf4b76b) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/e7af7c8526069f367334e22bbfa0d0287a24eacaeb5dd5df05db660a4bf4b76b?privacy-o-meter=true) |
+|`discrepancy_no_output_of_the_same_type_as_inputs` | Discrepancy: no output of the same type as inputs | Probably the sender uses software generating the same change address type as the recipient address has |  | [👉](https://blockchair.com/bitcoin/transaction/ad0e7a6c20ca04a42978100de79f4d9851e7ccfa1776aacf309ee6a2d6266d8a) | [👉](https://api.blockchair.com/bitcoin/dashboards/transaction/ad0e7a6c20ca04a42978100de79f4d9851e7ccfa1776aacf309ee6a2d6266d8a?privacy-o-meter=true) |
+
+
+
+**Possible transaction types are:**
+
+| Type code | Description                                                  |
+| --------- | ------------------------------------------------------------ |
+| `CB`      | Coinbase transaction                                         |
+| `N1`      | Transaction with just 1 output (either a sweep to another address by the same owner, or a transfer using a "send everything I have" option) |
+| `N2`      | Transaction with 2 outputs — most common in wallets — where one of the outputs is the recipient, and the other one is the change address |
+| `NN`      | Transaction with more than 2 outputs — most common in exchanges and services that use payout batching |
+
+
+
+**Transaction fingerprint:**
+
+| Property      | Possible values                                   | Description                                                   |
+| ------------- | ------------------------------------------------- | ------------------------------------------------------------ |
+| `lock_time`   | `0`, `rare`, `block_id`, `big_value`, `timestamp` | Depending on wallet software, `lock_time` property can either be `0`, or a block height, or some timestamp. In rare cases it's some other value (`rare` or `big_value`) |
+| `version`     | `1`, `2`, `unknown`                               | Versions `1` and `2` are distributed almost equally these days |
+| `has_witness` | `true`, `false`                                   | SegWit usage is a distinctive property — there are wallets and exchanges who are known to be using or not using SegWit |
+
+
+## <a name="link_701"></a> API endpoints
+
+### <a name="link_702"></a> Transaction score
+
+**Endpoints:**
+
+- `https://api.blockchair.com/{:chain}/dashboards/transaction/{:hash}₀?privacy-o-meter=true`
+- `https://api.blockchair.com/{:chain}/dashboards/transactions/{:hash}₀,...,{:hash}ᵩ?privacy-o-meter=true` (up to 10 transactions, comma-separated)
+
+**Output:**
+
+- See the transaction dashboard for general transaction info: [👉](#link_200)
+- `privacy-o-meter` array with scoring data:
+  - `type` — transaction type (`CB`, `N1`, `N2`, or `NN`)
+  - `fingerprint` — transaction properties allowing to understand what software the sender uses
+  - `is_finalized` — shows whether the transaction has the final score — `true` if all outputs are spent, `false` otherwise (`nulldata` and other non-spendable outputs are considered as spent)
+  - `heuristics` — array of heuristic keys applicable for the transaction
+  - `clusterized` — array of addresses potentially belonging to one entity based on the applicable heuristics
+  - `score` — transaction privacy score where `0` is the worst score, and `100` is the best score
+
+**Example output:**
+
+`https://api.blockchair.com/bitcoin/dashboards/transaction/116bd19a3ec5f210ce72043115a4d5d3ef08f7556829c4feac8d89de3195ea4e?privacy-o-meter=true`:
+
+```json
+{
+  "data": {
+    "116bd19a3ec5f210ce72043115a4d5d3ef08f7556829c4feac8d89de3195ea4e": {
+      "transaction": {
+        ...
+        "version": 1,
+        "lock_time": 0,
+        "has_witness": true,
+        "input_count": 2,
+        "output_count": 2,
+        ...
+      },
+      "inputs": [
+        {
+          ...
+          "value": 96350000,
+          "recipient": "bc1qj9p0huddhg5pzccur3zyzuxpserfvj983jcg6nmwqq6fqkeaaxtstnp4ea",
+          "type": "witness_v0_scripthash",
+          "scripthash_type": "multisig_2_of_3"
+        },
+        {
+          ...
+          "value": 28165022105,
+          "recipient": "bc1qrpfxyvdc3fqmyux54cg63s5eph7hc9lk2aeveu8ahz4dt63caf2q8lw9n7",
+          "type": "witness_v0_scripthash",
+          "scripthash_type": "multisig_2_of_3"
+        }
+      ],
+      "outputs": [
+        {
+          ...
+          "value": 100000000,
+          "recipient": "3EgAFC6FKojYUu53FfazU6ZUgE4p3YzyUU",
+          "type": "scripthash",
+          "is_spent": true,
+          "scripthash_type": "multisig_2_of_3"
+        },
+        {
+          ...
+          "value": 28161332105,
+          "recipient": "bc1qva7utdxd6easljpy28kvuyq67x4y9t9mwcdep4xrwrr98wkrxs8qhxqj70",
+          "type": "witness_v0_scripthash",
+          "is_spent": true,
+          "scripthash_type": "multisig_2_of_3"
+        }
+      ],
+      "privacy-o-meter": {
+        "type": "N2",
+        "fingerprint": {
+          "lock_time": 0,
+          "version": 1,
+          "has_witness": true
+        },
+        "is_finalized": true,
+        "heuristics": [
+          "inputs",
+          "script_types",
+          "round_values",
+          "unnecessary_inputs"
+        ],
+        "clusterized": [
+          "bc1qva7utdxd6easljpy28kvuyq67x4y9t9mwcdep4xrwrr98wkrxs8qhxqj70",
+          "bc1qj9p0huddhg5pzccur3zyzuxpserfvj983jcg6nmwqq6fqkeaaxtstnp4ea",
+          "bc1qrpfxyvdc3fqmyux54cg63s5eph7hc9lk2aeveu8ahz4dt63caf2q8lw9n7"
+        ],
+        "score": 0
+      }
+    }
+  },
+  "context": {
+    "code": 200,
+    "results": 1,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+ `1`1 (`1` for the dashboard + `10` for the `?privacy-o-meter=true` option)
+
+For privacy-concerned wallets and services who'd agree to feature a link to our Privacy-o-meter along with showing the score, the cost would be `0`. 
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/bitcoin/transaction/116bd19a3ec5f210ce72043115a4d5d3ef08f7556829c4feac8d89de3195ea4e
 
 
 
