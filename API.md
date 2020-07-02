@@ -26,6 +26,15 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.62 - July 2nd, 2020
+    * We're happy to announce that Groestlcoin support has been extended up to at least January 1st, 2021.
+    * `https://api.blockchair.com/{:eos_chain}/raw/account/{:address}` endpoint now has `?actions=true` option showing the last 10 actions for account
+    * All EOS endpoints now have `context.price_usd` showing the USD price of EOS.
+    * Fixed a bug where it wasn't possible to submit a transaction that is larger than 32 kB in size for broadcast (thanks to Koval for noticing that). Just a reminder, the transaction size still shouldn't be more than ~100 kB as it makes it non-standard and it won't be relayed by nodes.
+    * The `https://api.blockchair.com/{:btc_chain}/addresses/balances` endpoint now works more stable.
+* v.2.0.61 - Jun 24th, 2020
+    * We're launching Privacy-o-meter - a tool to highlight transactions privacy issues. See the most detailed documentation: https://blockchair.com/api/docs#link_M6
+    * `https://api.blockchair.com/{:btc_chain}/dashboards/transaction/{:hash}₀` and `https://api.blockchair.com/{:btc_chain}/dashboards/transactions/{:hash}₀,...,{:hash}ᵩ` now yield `coinbase_data_hex` for coinbase transactions if `?privacy-o-meter=true` option is set.    
 * v.2.0.60 - Jun 19th, 2020
     * New way to fetch balances for multiple addresses: `https://api.blockchair.com/{:btc_chain}/addresses/balances` (`POST` or `GET`) with `addresses` key in a `POST` request (or `?addresses={:list}` in a `GET` request) as a comma-separated list of addresses (up to 25.000 at once). This endpoint returns confirmed balances only. If address hasn't been recorded on the blockchain or has a balance of zero, it won't be displayed in the results. This endpoint is extremely fast (under 1 second for 25.000 addresses) and cheap (it costs only 26 request points to fetch 25.000 addresses). See documentation here: https://blockchair.com/api/docs#link_390 (supported chains: Bitcoin, Bitcoin Cash, Bitcoin SV, Litecoin, Dash, Zcash, Dogecoin, Groestlcoin)
     * On Oct 26th, 2019 with v.2.0.38 we announced the "request cost" concept by which some requests cost more than others (i.e. requesting the data on 10 transactions costs more than requesting it for just 1 transaction, but since the request is done in bulk, it is cheaper for the API user in the end). Up until now we didn't enforce that policy counting each request as 1.
