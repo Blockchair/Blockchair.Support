@@ -1,4 +1,4 @@
-# [Blockchair.com](https://blockchair.com/) API v.2.0.62 Documentation
+# [Blockchair.com](https://blockchair.com/) API v.2.0.63 Documentation
 
 ```
     ____  __           __        __          _     
@@ -313,7 +313,7 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:eth_chain}/uncles?{:query}` | [👉](#link_402) | `2` | Stable |
 | `https://api.blockchair.com/{:eth_chain}/calls?{:query}` | [👉](#link_403) | `10` | Stable |
 | `https://api.blockchair.com/{:xmr_chain}/outputs?{:query}` | [👉](#link_306) | `1` | Alpha |
-| `https://api.blockchair.com/zcash/validate?paymentdisclosure={:disclosure}` | N/A | `1` | Alpha |
+| `https://api.blockchair.com/zcash/raw/validate?paymentdisclosure=zpd:...` | N/A | `1` | Alpha |
 | `https://api.blockchair.com/{:xin_chain}/raw/round/{:hash}` | [👉](#link_404) | `1` | Alpha |
 | `https://api.blockchair.com/{:xin_chain}/raw/round/({:node_hash},{:id})` | [👉](#link_404) | `1` | Alpha |
 | `https://api.blockchair.com/{:xin_chain}/raw/node/{:hash}` | [👉](#link_405) | `1` | Alpha |
@@ -1652,6 +1652,7 @@ Note that the total number of transactions in the block is contained in `data.{:
 Additional data:
 * `data.{:hash}ᵢ.layer_2.omni` (for `bitcoin` only; in alpha test mode) — Omni layer transaction data in case there's any
 * `scripthash_type` field for inputs and outputs (example: `https://api.blockchair.com/bitcoin/dashboards/transaction/4d41241148a7cb8f4e2820d4393415ccd3d0793053a3855b44c33e5053c231ff`) in the `multisig_{:m}_of_{:n}` format. Please note that if output is unspent, `scripthash_type` will always be `null`, even if the associated address multisig type can be derived from some other spent output.
+* `data.{:hash}ᵢ.transaction.is_rbf` (for `bitcoin` and `bitcoin/testnet` only) — yields `true` if the transaction can be replaced with a transaction with a higher fee (replace-by-fee), and `false` otherwise; for blockchain transactions it shows whether the transaction could've been replaced before it has been included into the block.
 
 In case transaction is confirmed on the blockchain, `data.{:hash}ᵢ.transaction.block_id` contains the block number it's included in. If the transaction is in the mempool, `data.{:hash}ᵢ.transaction.block_id` yields `-1`. If the transaction is neither present in the blockchain, nor in the mempool, there won't be `data.{:hash}ᵢ` key with data.
 
@@ -1701,7 +1702,7 @@ In case transaction is confirmed on the blockchain, `data.{:hash}ᵢ.transaction
         "fee_per_kwu": 0,
         "fee_per_kwu_usd": 0,
         "cdd_total": 149.15856481481,
-        "scripthash_type": null
+        "is_rbf": false
       },
       "inputs": [
         {
