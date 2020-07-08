@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.60)
+* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.63)
 
 ### Please apply for an API key first
 
@@ -26,6 +26,9 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.63 - July 8th, 2020
+    * Added `is_rbf` field to `https://api.blockchair.com/bitcoin/dashboards/transaction/{:hash}` and `https://api.blockchair.com/bitcoin/dashboards/transactions/{:hash}₀,...,{:hash}ᵩ` endpoints. It yields `true` if the transaction can be replaced with a transaction with a higher fee (replace-by-fee), and `false` otherwise. For blockchain transactions it shows whether the transaction could've been replaced before it has been included into the block. Available for Bitcoin Testnet as well.
+    * Fixed a bug with Tezos when API returned error `500` for blocks with no transactions
 * v.2.0.62 - July 2nd, 2020
     * We're happy to announce that Groestlcoin support has been extended up to at least January 1st, 2021.
     * `https://api.blockchair.com/{:eos_chain}/raw/account/{:address}` endpoint now has `?actions=true` option showing the last 10 actions for account
