@@ -9569,6 +9569,4 @@ For privacy-concerned wallets and services who'd agree to feature a link to our 
 # <a name="link_M7"></a> Support
 
 * E-mail: [info@blockchair.com](mailto:info@blockchair.com)
-* Telegram chat: [@Blockchair](https://telegram.me/Blockchair)
-* Twitter: [@Blockchair](https://twitter.com/Blockchair)
 * Github issue tracker: https://github.com/Blockchair/Blockchair.Support/issues
