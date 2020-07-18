@@ -1,4 +1,4 @@
-# [Blockchair.com](https://blockchair.com/) API v.2.0.63 Documentation
+# [Blockchair.com](https://blockchair.com/) API v.2.0.64 Documentation
 
 ```
     ____  __           __        __          _     
@@ -46,6 +46,8 @@
       - [Omni Layer property](#link_501)
       - [ERC-20 token](#link_503)
       - [ERC-20 token holder](#link_504)
+  + [Cross-chain checks](#link_M24)
+      - [Address data from multiple blockchains](#link_391)
 + [Raw data endpoints](#link_M3) (Retrieve raw information about various entities directly from our full nodes)
     - [Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Zcash, and Bitcoin Testnet](#link_M31)
       - [Block](#link_101)
@@ -305,6 +307,7 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/{:ada_chain}/raw/address/{:address}₀` | [👉](#link_307) | `1` | Alpha |
 | `https://api.blockchair.com/{:xtz_chain}/raw/account/{:address}₀` | [👉](#link_308) | `1` | Alpha |
 | `https://api.blockchair.com/{:eos_chain}/raw/account/{:address}₀` | [👉](#link_309) | `1` | Alpha |
+| `https://api.blockchair.com/multi/dashboards/addresses/{:address}₀,...,{:address}ᵩ` | [👉](#link_391) | Complex | Alpha |
 | **Special entities** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/outputs?{:query}` | [👉](#link_400) | `10` | Beta |
 | `https://api.blockchair.com/{:btc_chain}/mempool/outputs?{:query}` | [👉](#link_400) | `2` | Beta |
@@ -1854,7 +1857,7 @@ For mempool transactions shows priority (`position`) — for chains supporting S
 
 * `?limit={:transaction_limit},{:utxo_limit}` or a shorthand `?limit={:limit}`. `{:transaction_limit}` limits the number of returned latest transaction hashes (in the `transactions` array) for an address or an address set. Default is `100`. Maximum is `10000`. In case of `0` returns an empty transaction hashes array. `{:utxo_limit}` limits the number of returned latest UTXOs (in the `utxo` array) for an address or an address set. Default is `100`. Maximum is `10000`. In case of `0` returns an empty UTXO array. If only one limit is set, it applies to both `{:transaction_limit}` and `{:utxo_limit}` (e.g. `?limit=100` is an equivalent of `?limit=100,100`).
 * `?offset={:transaction_offset},{:utxo_offest}` or a shorthand `?offset={:offset}` allows to paginate transaction hashes and the UTXO array. The behaviour is similar to the `?limit=` section. Default for both offset is `0`, and the maximum is `1000000`.  
-* `?transaction_details=true` — returns detailed info on transactions instead of just hashes in the `transactions` array. Each element contains `block_id`, `transaction_hash`, `time`, and `balance_change` (shows how the transactions affected the balance of `{:address}`, i.e. it can be a negative value). At the moment, this option is available for the `address` endpoint only.
+* `?transaction_details=true` — returns detailed info on transactions instead of just hashes in the `transactions` array. Each element contains `block_id`, `transaction_hash`, `time`, and `balance_change` (shows how the transactions affected the balance of `{:address}`, i.e. it can be a negative value). This option is available for all three endpoints: `dashboards/address`, `dashboards/addresses`, and `dashboards/xpub`.
 * `?omni=true` (for `bitcoin` only; in alpha test mode) — shows information about Omni Layer tokens belonging to the address. At the moment, this option is available for the `address` endpoint only. The data is returned in the `layer_2.omni` array.
 * `?state=latest` — discards unconfirmed transactions from the output — `balance` will show only confirmed balance, and `transactions` and `utxo` arrays won't include unconfirmed data.
 
@@ -1930,6 +1933,7 @@ Address object specification:
 * `https://api.blockchair.com/bitcoin/dashboards/address/1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa`
 * `https://api.blockchair.com/bitcoin/dashboards/addresses/1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa,12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX`
 * `https://api.blockchair.com/bitcoin/dashboards/xpub/xpub6CUGRUonZSQ4TWtTMmzXdrXDtypWKiKrhko4egpiMZbpiaQL2jkwSB1icqYh2cfDfVxdx4df189oLKnC5fSwqPfgyP3hooxujYzAu3fDVmz`
+* `https://api.blockchair.com/bitcoin/dashboards/xpub/xpub6CUGRUonZSQ4TWtTMmzXdrXDtypWKiKrhko4egpiMZbpiaQL2jkwSB1icqYh2cfDfVxdx4df189oLKnC5fSwqPfgyP3hooxujYzAu3fDVmz?transaction_details=true&limit=10,0`
 * `https://api.blockchair.com/bitcoin/dashboards/address/12cbQLTFMXRnSzktFkuoG3eHoMeFtpTu3S?transaction_details=true`
 * `https://api.blockchair.com/bitcoin/dashboards/address/1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa?limit=1&offset=1&transaction_details=true`
 
@@ -2390,9 +2394,10 @@ Address object specification:
 
 **Request cost formula:**
 
-- `1` for the `address` endpoint (add `1` for every of these options used: `?transaction_details=true`, `?omni=true`)
+- `1` for the `address` endpoint (add `1` if `?omni=true` is used)
 - `1 + (0.1 * (entity count - 1))`  for the `addresses` endpoint (e.g. it's `1 + (0.1 * (100 - 1)) = 10.9` for requesting 100 addresses)
 - `1 + 2 * depth - 0.1` for the `xpub` endpoint, where `depth` is the number of 20-addresses iterations (BIP 32 standard). The minimum number of iterations is 1 (the cost would be `2.9` in that case), if there are 5 iterations required, 100 addresses will be checked in total (the cost would be `10.9`)
+- Additional `1` point if `?transaction_details=true` is used
 
 **Explore visualizations on our front-end:**
 
@@ -3245,6 +3250,187 @@ The structure is similar to the [Ethereum address](#link_302) endpoint with the 
 
 - Always `1`
 
+
+
+## <a name="link_M24"></a> Cross-chain checks
+
+
+
+### <a name="link_391"></a> Multichain address check
+
+This endpoint allows to check multiple addresses from diffrerent blockchain via just one request. This can be useful if you're monitoring your own wallet or portfolio.
+
+**Endpoint:**
+
+- ``https://api.blockchair.com/multi/dashboards/addresses/{:address}₀,...,{:address}ᵩ`
+
+**Where:**
+
+- `{:address}₀,...,{:address}ᵩ` is a comma separated list of addresses in the `blockchain:address` format. Supported blockchains: `bitcoin`, `bitcoin-cash`, `ethereum,` `litecoin`, `bitcoin-sv`, `dash`, `groestlcoin`, `zcash`. More blockchains are coming in the future. `bitcoin-cash` and `bitcoin-sv` may be used as `bitcoincash` and `bitcoinsv` respectively. Only `CashAddr` format is supported for Bictoin Cash. The maximum number of addresses is 100. There can only be one Ethereum address in the list.
+
+**Output:**
+
+- `data.set` — information on the entire set (total USD balance, etc.)
+- `data.addresses` — an array of info on addresses found
+- `data.transactions` — list of the latest transactions for this set (similar to `?transaction_details=true` option for `{:btc_chain}/dashboards/address` endpoint)
+
+**Example output:**
+
+`https://api.blockchair.com/multi/dashboards/addresses/bitcoin:1JADsmDFX9d2TXis63S9F9L8eDAXwJmnWE,ethereum:0x19DdD94B94D3c68385c897846AB44Ac99DBFAe0f,litecoin:LNAifc8nfjtDJ8azRPiancbZSBftPzhfzb,bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa`:
+
+```json
+{
+  "data": {
+    "set": {
+      "address_count": 4,
+      "balance_usd": 634530.2131392508,
+      "received_usd": 195118.95799999998,
+      "first_seen_receiving": "2009-01-03 18:15:05",
+      "last_seen_receiving": "2020-06-26 18:10:58",
+      "first_seen_spending": "2019-03-19 18:48:57",
+      "last_seen_spending": "2020-06-08 17:48:18",
+      "transaction_count": 3524
+    },
+    "addresses": {
+      "bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa": {
+        "chain": "bitcoin",
+        "address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+        "type": "pubkeyhash",
+        "script_hex": "76a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac",
+        "balance": 6833161946,
+        "balance_usd": 623983.1661066874,
+        "received": 6833161946,
+        "received_usd": 17068.6063,
+        "spent": 0,
+        "spent_usd": 0,
+        "output_count": 2399,
+        "unspent_output_count": 2399,
+        "first_seen_receiving": "2009-01-03 18:15:05",
+        "last_seen_receiving": "2020-07-18 12:16:28",
+        "first_seen_spending": null,
+        "last_seen_spending": null
+      },
+      "bitcoin:1JADsmDFX9d2TXis63S9F9L8eDAXwJmnWE": {
+        "chain": "bitcoin",
+        "address": "1JADsmDFX9d2TXis63S9F9L8eDAXwJmnWE",
+        "type": "pubkeyhash",
+        "script_hex": "76a914bc38a131c33427e977a9c08bcce726dd180eece888ac",
+        "balance": 115220355,
+        "balance_usd": 10521.5656354995,
+        "received": 2117013594,
+        "received_usd": 164984.9339,
+        "spent": 2001793239,
+        "spent_usd": 154273.1036,
+        "output_count": 672,
+        "unspent_output_count": 17,
+        "first_seen_receiving": "2019-03-19 01:19:51",
+        "last_seen_receiving": "2020-07-18 03:40:41",
+        "first_seen_spending": "2019-03-19 18:48:57",
+        "last_seen_spending": "2020-07-07 19:05:16"
+      },
+      "ethereum:0x19ddd94b94d3c68385c897846ab44ac99dbfae0f": {
+        "chain": "ethereum",
+        "address": "0x19ddd94b94d3c68385c897846ab44ac99dbfae0f",
+        "type": "account",
+        "contract_code_hex": null,
+        "contract_created": null,
+        "contract_destroyed": null,
+        "balance": "108693390000000000",
+        "balance_usd": 25.30068026881297,
+        "received_approximate": "56446395000000000000",
+        "received_usd": 12974.6457,
+        "spent_approximate": "56327761000000000000",
+        "spent_usd": 12937.1422,
+        "fees_approximate": "9941000000000000",
+        "fees_usd": 2.0446,
+        "receiving_call_count": 83,
+        "spending_call_count": 56,
+        "call_count": 140,
+        "transaction_count": 140,
+        "first_seen_receiving": "2019-03-20 05:34:30",
+        "last_seen_receiving": "2020-07-18 17:56:29",
+        "first_seen_spending": "2019-03-20 14:26:51",
+        "last_seen_spending": "2020-07-13 18:09:23",
+        "nonce": null
+      },
+      "litecoin:LNAifc8nfjtDJ8azRPiancbZSBftPzhfzb": {
+        "chain": "litecoin",
+        "address": "LNAifc8nfjtDJ8azRPiancbZSBftPzhfzb",
+        "type": "pubkeyhash",
+        "script_hex": "76a914204bc7902ad5bfc5174b2c3d5162156695fb647888ac",
+        "balance": 431305,
+        "balance_usd": 0.18071679499999999,
+        "received": 20914686144,
+        "received_usd": 90.7721,
+        "spent": 20914254839,
+        "spent_usd": 92.6259,
+        "output_count": 59,
+        "unspent_output_count": 2,
+        "first_seen_receiving": "2019-03-20 00:01:21",
+        "last_seen_receiving": "2020-06-26 18:10:58",
+        "first_seen_spending": "2019-03-20 00:41:49",
+        "last_seen_spending": "2020-06-08 17:48:18"
+      }
+    },
+    "transactions": [
+      {
+        "chain": "ethereum",
+        "address": "0x19ddd94b94d3c68385c897846ab44ac99dbfae0f",
+        "block_id": 10484912,
+        "hash": "0x35198f37aa02245789fe8c377b2328fa665498981e0ff93909494602b7d3c592",
+        "time": "2020-07-18 17:56:29",
+        "balance_change": 1000000000000000
+      },
+      {
+        "chain": "ethereum",
+        "address": "0x19ddd94b94d3c68385c897846ab44ac99dbfae0f",
+        "block_id": 10484558,
+        "hash": "0x9e368758434651efdbf1be4a19ec3a90fc74c51a9bd3822957a7bf5e1c5734c2",
+        "time": "2020-07-18 16:35:19",
+        "balance_change": 413370000000000
+      },
+      {
+        "chain": "bitcoin",
+        "address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+        "block_id": -1,
+        "hash": "43401f6f7da64a5bff65fba8b80bb98c9fa252bfc763a634cae5c616e5d89394",
+        "time": "2020-07-18 12:16:28",
+        "balance_change": 558
+      },
+      ...
+    ]
+  },
+  "context": {
+    "code": 200,
+    "cache": {
+      "live": true,
+      "duration": 60,
+      "since": "2020-07-18 18:07:03",
+      "until": "2020-07-18 18:08:03",
+      "time": null
+    },
+    "api": {
+      "version": "2.0.63",
+      "last_major_update": "2019-07-19 18:07:19",
+      "next_major_update": "2020-07-19 00:00:00",
+      "documentation": "https://blockchair.com/api/docs",
+      "notice": "Beginning July 19th, 2020 we'll start enforcing request cost formulas, see the changelog for details"
+    },
+    "time": 0.330610990524292,
+    "render_time": 0.010856151580810547,
+    "full_time": 0.34146714210510254,
+    "request_cost": 5.1
+  }
+}
+```
+
+**Request cost formula:**
+
+The total cost is the same as if you'd use `dashboards/addresses` endpoints for the requested blockchains separately with the `?transaction_details=true` option enabled. In the example, the cost is `5.1`, and it's calculated as the sum of using the following endpoints:
+
+* `https://api.blockchair.com/bitcoin/dashboards/addresses/1JADsmDFX9d2TXis63S9F9L8eDAXwJmnWE,1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa?transaction_details=true` (cost: `2.1`)
+* `https://api.blockchair.com/ethereum/dashboards/address/0x19DdD94B94D3c68385c897846AB44Ac99DBFAe0f` (cost: `1`)
+* `https://api.blockchair.com/litecoin/dashboards/addresses/LNAifc8nfjtDJ8azRPiancbZSBftPzhfzb?transaction_details=true` (cost: `2`)
 
 
 # <a name="link_M3"></a> Raw data endpoints
