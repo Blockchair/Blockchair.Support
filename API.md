@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.63)
+* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.64)
 
 ### Please apply for an API key first
 
@@ -26,6 +26,10 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.64 - July 19th, 2020
+    * Added `?transaction_details=true` option to `https://api.blockchair.com/{:btc_chain}/dashboards/addresses/{:address}₀,...,{:address}ᵩ` and `https://api.blockchair.com/{:btc_chain}/dashboards/xpub/{:extended_key}` endpoints. The additional cost for using this option is `1`. See its description in the v.2.0.37 changelog or in the documentation. Usage example: `https://api.blockchair.com/bitcoin/dashboards/xpub/xpub6CUGRUonZSQ4TWtTMmzXdrXDtypWKiKrhko4egpiMZbpiaQL2jkwSB1icqYh2cfDfVxdx4df189oLKnC5fSwqPfgyP3hooxujYzAu3fDVmz?transaction_details=true`
+    * New `https://api.blockchair.com/multi/dashboards/addresses/{:address}₀,...,{:address}ᵩ` endpoint to check addresses from multiple blockchains at once. Supported blockchains: all Bitcoin-like blockchains and Ethereum. The maximum number of addresses is 100. See the documentation: https://blockchair.com/api/docs#link_391
+    * Previously announced request cost formulas now come into full effect.
 * v.2.0.63 - July 8th, 2020
     * Added `is_rbf` field to `https://api.blockchair.com/bitcoin/dashboards/transaction/{:hash}` and `https://api.blockchair.com/bitcoin/dashboards/transactions/{:hash}₀,...,{:hash}ᵩ` endpoints. It yields `true` if the transaction can be replaced with a transaction with a higher fee (replace-by-fee), and `false` otherwise. For blockchain transactions it shows whether the transaction could've been replaced before it has been included into the block. Available for Bitcoin Testnet as well.
     * Fixed a bug with Tezos when API returned error `500` for blocks with no transactions
