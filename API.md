@@ -26,6 +26,8 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.65 - August 27th, 2020
+    * Fixed wrong `nonce` values for Ethereum transactions. `nonce` field now yields correct integers (thanks to Linmin Li for noticing this bug).
 * v.2.0.64 - July 19th, 2020
     * Added `?transaction_details=true` option to `https://api.blockchair.com/{:btc_chain}/dashboards/addresses/{:address}₀,...,{:address}ᵩ` and `https://api.blockchair.com/{:btc_chain}/dashboards/xpub/{:extended_key}` endpoints. The additional cost for using this option is `1`. See its description in the v.2.0.37 changelog or in the documentation. Usage example: `https://api.blockchair.com/bitcoin/dashboards/xpub/xpub6CUGRUonZSQ4TWtTMmzXdrXDtypWKiKrhko4egpiMZbpiaQL2jkwSB1icqYh2cfDfVxdx4df189oLKnC5fSwqPfgyP3hooxujYzAu3fDVmz?transaction_details=true`
     * New `https://api.blockchair.com/multi/dashboards/addresses/{:address}₀,...,{:address}ᵩ` endpoint to check addresses from multiple blockchains at once. Supported blockchains: all Bitcoin-like blockchains and Ethereum. The maximum number of addresses is 100. See the documentation: https://blockchair.com/api/docs#link_391
