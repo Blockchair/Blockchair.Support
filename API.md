@@ -26,6 +26,9 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.66 - September 23rd, 2020
+    * We've upgraded our Ethereum engine - blocks, transactions, and ERC-20 transfers are now processed more than 10 times faster.
+    * Added Ethereum Goerli testnet: https://blockchair.com/ethereum/testnet (API endpoints are the same as for Ethereum, just use `ethereum/testnet` instead of `ethereum`; ERC-20's are also supported for the testnet).
 * v.2.0.65 - August 27th, 2020
     * Fixed wrong `nonce` values for Ethereum transactions. `nonce` field now yields correct integers (thanks to Linmin Li for noticing this bug).
 * v.2.0.64 - July 19th, 2020
