@@ -1,4 +1,4 @@
-# [Blockchair.com](https://blockchair.com/) API v.2.0.64 Documentation
+# [Blockchair.com](https://blockchair.com/) API v.2.0.68 Documentation
 
 ```
     ____  __           __        __          _     
@@ -124,7 +124,7 @@
 
 # <a name="link_M0"></a> Introduction
 
-Blockchair API provides developers with access to data contained in [17 different blockchains](#link_M01). Unlike other APIs, Blockchair also supports numerous analytical queries like filtering, sorting, and aggregating blockchain data.
+Blockchair API provides developers with access to data contained in [18 different blockchains](#link_M01). Unlike other APIs, Blockchair also supports numerous analytical queries like filtering, sorting, and aggregating blockchain data.
 
 Here are some examples of what you can build using our API:
 
@@ -148,9 +148,9 @@ Our API is free to try under some limitations, and we have a variety of premium 
 
 ## <a name="link_M01"></a> Supported blockchains and second layers
 
-As of today, our API supports **17 blockchains** (16 mainnets and 1 testnet) divided into 9 groups:
-* Bitcoin-like blockchains (Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Zcash, Bitcoin Testnet), also known as UTXO-based blockchains
-* Ethereum-like blockchains (Ethereum)
+As of today, our API supports **19 blockchains** (17 mainnets and 2 testnets) divided into 9 groups:
+* Bitcoin-like blockchains (Bitcoin, Bitcoin Cash, Litecoin, Bitcoin SV, Dogecoin, Dash, Groestlcoin, Zcash, Bitcoin ABC, Bitcoin Testnet), also known as UTXO-based blockchains
+* Ethereum-like blockchains (Ethereum, Ethereum Goerli Testnet)
 * Ripple-like blockchains (Ripple)
 * Stellar-like blockchains (Stellar)
 * Monero-like blockchains (Monero)
@@ -181,12 +181,16 @@ Here's the list of available mainnets:
 | Mixin | Mixin-like | `https://api.blockchair.com/mixin` | Full support at least till April 24th, 2021 |
 | Tezos | Tezos-like | `https://api.blockchair.com/tezos` | Alpha mode, possible compatibility-breaking changes |
 | EOS | EOS-like | `https://api.blockchair.com/eos` | Alpha mode, possible compatibility-breaking changes |
+| Bitcoin ABC | Bitcoin-like | `https://api.blockchair.com/bitcoin-abc` | Beta mode, possible instability. Also known as Bitcoin Cash ABC. |
+
+Please read our statement on the November 15th, 2020 Bitcoin Cash split: https://twitter.com/Blockchair/status/1324424632179576832. It is expected that Bitcoin ABC's hashrate will be very low so 51% attacks are possible. We'll be running Bitcoin ABC in beta mode and we don't guarantee neither its stability, nor that we'll run it if the chain won't be used by businesses. Once the situation becomes more stable we'll update the documentation. At the moment, other parts of the documentation don't reflect Bitcoin ABC support, so please assume that for every `bitcoin-cash` endpoint there's a `bitcoin-abc` equivalent except for `https://api.blockchair.com/bitcoin-cash/nodes`.
 
 There are also following testnets supported which are technically considered as separate blockchains:
 
 | Blokchain | Group | API path prefix | Support status |
 |-----------|------|----------|-------------|
 | Bitcoin Testnet | Bitcoin-like | `https://api.blockchair.com/bitcoin/testnet` | Full support |
+| Ethereum Goerli Testnet | Ethereum-like | `https://api.blockchair.com/ethereum/testnet` | Development mode, no guaranteed stability |
 
 We aim to support more blockchains (and their testnets) in future to cover as many users as possible. We don't disclose which blockchains we'll add next and how we choose them, but our main markers are daily number of real transactions and market capitalization. If you're representing a coin community which would like to add its blockchain to our platform, we'd be happy to talk.
 
@@ -211,7 +215,9 @@ Like with blockchains, within a group, there's no or little difference between t
 | Omni Layer | Omni-like   | Bitcoin           | `https://api.blockchair.com/bitcoin/omni`          | Alpha support                                    |
 | ERC-20     | ERC-20-like | Ethereum          | `https://api.blockchair.com/ethereum/erc-20`       | Beta support                                     |
 
-We also plan to bring ERC-721 support in the near future.
+We also plan to bring ERC-721 support in the future.
+
+Ethereum Goerli Testnet also supports ERC-20's.
 
 Wormhole support was dropped on January 1st, 2020 with a 3-month notice as it's not used by anyone anymore.
 
@@ -221,8 +227,8 @@ Wormhole support was dropped on January 1st, 2020 with a 3-month notice as it's 
 
 This is the full list of available API endpoints.
 
-- `{:btc_chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `zcash`, or `bitcoin/testnet`
-- `{:eth_chain}` can be only `ethereum`
+- `{:btc_chain}` can be one of these: `bitcoin`, `bitcoin-cash`, `litecoin`, `bitcoin-sv`, `dogecoin`, `dash`, `groestlcoin`, `zcash`, `bitcoin-abc`, or `bitcoin/testnet`
+- `{:eth_chain}` can be `ethereum` or `ethereum/testnet`
 - `{:xrp_chain}` can be only `ripple`
 - `{:xlm_chain}` can be only `stellar`
 - `{:xmr_chain}` can be only `monero`
@@ -331,6 +337,7 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/ethereum/erc-20/{:token_address}/dashboards/address/{:address}` | [👉](#link_504) | `1` | Beta |
 | `https://api.blockchair.com/ethereum/erc-20/tokens?{:query}` | [👉](#link_505) | `2` | Beta |
 | `https://api.blockchair.com/ethereum/erc-20/transactions?{:query}` | [👉](#link_506) | `5` | Beta |
+| `https://api.blockchair.com/ethereum/erc-20/{:token_address}/utils/allowance?owner={:owner_address}&spender={:spender_address}` | N/A | `1` | Alpha |
 | **State changes** | — | — | — |
 | `https://api.blockchair.com/{:btc_chain}/state/changes/block/{:block_id}` | [👉](#link_507) | `5` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/state/changes/mempool` | [👉](#link_507) | `10` | Stable |
@@ -385,7 +392,7 @@ API returns JSON-encoded data. Typically, the response is an array consisting of
     * `500` or `503` in case of a server error (it makes sense to wait and repeat the same request or open a ticket at https://github.com/Blockchair/Blockchair.Support/issues/new or write to <info@blockchair.com>)
   * `context.error` — error description in the case there's an error
   * `context.state` — number of the latest known block (e.g., for all requests to endpoints connected to the Bitcoin blockchain this will yield the latest block number for Bitcoin). For example, it may be useful to calculate the number of network сonfirmations, or correctly iterate trough the results using `?offset=`. Not returned if the request has failed.
-  * `context.state_layer_2` — the latest block number for which our engine has processed second layer (e.g. ERC-20) transactions. If it's less than the block id in your current environment (e.g. block id of a transaction you requested), it makes sense to repeat the request after some time to retrieve second layer data
+  * `context.state_layer_2` — the latest block number for which our engine has processed second layer (e.g. ERC-20) transactions. If it's less than the block id in your current environment (e.g. block id of a transaction you requested), it makes sense to repeat the request after some time to retrieve second layer data. With our current architecture it always equals to `context.state`, but that may change in future.
   * `context.results` — contains the number of found results (dashboard and raw endpoints)
   * `context.limit` — applied limit to the number of results (the default one or user set in the `?limit=` query section)
   * `context.offset` — applied offset (the default one or user set in the `?offset=` query section)
@@ -429,7 +436,7 @@ Here's our policy:
 | **Non-commercial or academic** | Key is not needed         | Key is required, up to 100% discount |
 | **Commercial**                 | Key is required           | Key is required, up to 10% discount  |
 
-**Our Premium API plans are available here: https://api.blockchair.com/premium/plans, please [contact us](#link_M7) if you have any questions or would like to have a custom plan.**
+**Our Premium API plans are available here: https://blockchair.com/api/plans, please [contact us](#link_M7) if you have any questions or would like to have a custom plan.**
 
 The daily request counter is reset at 00:00 UTC every day. 
 
@@ -456,7 +463,7 @@ As a kindly reminder, there are tasks such as extracting lots of blockchain data
 
 Our Premium API dashboard is available here: https://api.blockchair.com/premium
 
-First, you need to choose a suitable plan: https://api.blockchair.com/premium/plans
+First, you need to choose a suitable plan: https://blockchair.com/api/plans
 
 At the moment, this automated system accepts PayPal payments only (which also allows you to pay with your card). If you'd like to pay via wire transfer or crypto, please contact us at [info@blockchair.com](mailto:info@blockchair.com)
 
@@ -785,9 +792,10 @@ Always `1`.
 
 ## <a name="link_002"></a> Ethereum-like blockchain stats
 
-**Endpoint:**
+**Endpoints:**
 
 - `https://api.blockchair.com/ethereum/stats`
+- `https://api.blockchair.com/ethereum/testnet/stats`
 
 **Output:**
 
@@ -903,6 +911,7 @@ Always `1`.
 **Explore visualization on our front-end:**
 
 - https://blockchair.com/ethereum
+- https://blockchair.com/ethereum/testnet
 
 
 
@@ -2469,7 +2478,7 @@ This endpoint returns confirmed balances only. If address hasn't been seen on th
 
 **Where:**
 
-- `{:eth_chain}` can only be: `ethereum`
+- `{:eth_chain}` can only be: `ethereum` or `ethereum/testnet`
 - `{:height}ᵢ` is the block height (integer value), also known as block id
 - `{:hash}ᵢ` is the block hash (regex: `/^0x[0-9a-f]{64}$/i`)
 
@@ -2598,7 +2607,7 @@ Note that the total number of transactions in the block is contained in `data.{:
 
 **Where:**
 
-- `{:eth_chain}` can only be: `ethereum`
+- `{:eth_chain}` can only be: `ethereum` or `ethereum/testnet`
 - `{:hash}ᵢ` is the uncle hash (regex: `/^0x[0-9a-f]{64}$/i`)
 
 **Output:**
@@ -2684,12 +2693,13 @@ If there's no `{:hash}ᵢ` has been found in the database, there won't be such k
 
 **Where:**
 
-- `{:eth_chain}` can only be: `ethereum`
+- `{:eth_chain}` can only be: `ethereum` or `ethereum/testnet`
 - `{:hashᵢ}` is the transaction hash (regex: `/^0x[0-9a-f]{64}$/i`), also known as txid
 
 **Possible options:**
 
 - `?erc_20=true` shows information about ERC-20 token transfers in this transaction
+- `?effects=true` shows state changes for the transaction
 
 **Output:**
 
@@ -2700,7 +2710,8 @@ If there's no `{:hash}ᵢ` has been found in the database, there won't be such k
 
 Additional data:
 
-- `data.{:hash}ᵢ.layer_2.erc_20` (only if `?erc_20=true` is set) — the array of ERC-20 transfers (or an empty array if there are none), Each array element contains the following keys: `token_address`, `token_name`, `token_symbol`, `token_decimals`, `sender`, `recipient`, `value` — field descriptions are available [here](#link_506).
+- `data.{:hash}ᵢ.layer_2.erc_20` (only if `?erc_20=true` is set) — an array of ERC-20 transfers (or an empty array if there are none), Each array element contains the following keys: `token_address`, `token_name`, `token_symbol`, `token_decimals`, `sender`, `recipient`, `value` — field descriptions are available [here](#link_506).
+- `data.{:hash}ᵢ.effects` (only if `?effects=true` is set) — yields all ETH ad ERC-20 balance changes for the transaction in a neat format. Keys are `0x0000000000000000000000000000000000000000` for ETH or token address for ERC-20's. Each array element contains the following keys: `asset_type`, `asset_name`, `asset_symbol`, `asset_decimals`, `changes`. `changes` is an array containing all the changes for the asset (keys are Ethereum addresses, and values are balance changes). Please note this option is experimental. Example request: `https://api.blockchair.com/ethereum/dashboards/transaction/0xd9a24f57c713207c39c58e8ef3cb44e115fcc8bd0f85eb4ea82c78bc065a723f?effects=true&erc_20=true`. If `?erc_20=true` option is not used, `?effects=true` won't yield ERC-20 data.
 
 In case transaction is confirmed on the blockchain, `data.{:hash}ᵢ.transaction.block_id` contains the block number it's included in. If the transaction is in the mempool, `data.{:hash}ᵢ.transaction.block_id` yields `-1`. If the transaction is neither present in the blockchain, nor in the mempool, there won't be `data.{:hash}ᵢ` key with data.
 
@@ -2840,6 +2851,7 @@ For mempool transactions shows priority (`position`) by `gas_price` over other t
 - `1` for `https://api.blockchair.com/{:eth_chain}/dashboards/transaction/{:hash}₀` endpoint
 - `1 + (0.1 * (entity count - 1))`  for `https://api.blockchair.com/{:eth_chain}/dashboards/transactions/{:hash}₀,...,{:hash}ᵩ` endpoint (e.g. it's `1 + (0.1 * (10 - 1)) = 1.9` for requesting 10 transactions)
 - Using `?erc_20=true` adds `1` for each requested transaction
+- Using `?effects=true` adds `1` for each requested transaction
 
 **Explore visualization on our front-end:**
 
@@ -2855,14 +2867,17 @@ For mempool transactions shows priority (`position`) by `gas_price` over other t
 
 **Where:**
 
-- `{:eth_chain}` can only be: `ethereum`
+- `{:eth_chain}` can only be: `ethereum` or `ethereum/testnet`
 - `{:address}ᵢ` is an Ethereum address (either an account or a contract, the address should start with `0x`)
 
 **Possible options:**
 
 - `?limit={:call_limit}` — limits the number of returned latest calls associated with the address. Default is `100`. Maximum is `10000`.
 - `?offset={:call_offset}` — allows to paginate calls. Default is `0`, and the maximum is `1000000`.  
-- `?erc_20=true` — returns information about ERC-20 token balances of the address
+- `?erc_20={...}` — returns information about ERC-20 token balances of the address:
+  - `?erc_20=approximate` (or `?erc_20=true`, default) — yields all token balances from our database. These values may miss some non-standard transfers in tokens that don't follow the ERC-20 standard in full. Please double-check if this option returns correct values for the tokens you'd want to get information about. Using this option costs `1`.
+  - `?erc_20=precise` — yields all token balances from our node. The process is the following: we gather information from our database about potential ERC-20 tokens the address may hold, and then for each token we call `getBalance` function using our node to get precise balances. Please note that if for some reason some contract doesn't follow the ERC-20 standard, our database may still miss records about the address holding this token, and there will be no request to the node about this token. So while balances yielded with this option are precise, some non-standard tokens may still be missed. Using this option costs `2`.
+  - `?erc_20={:token_address}₀,...,{:token_address}ᵩ` (recommended) — yields balances for the enlisted ERC-20 tokens from our node. That's the recommended way if you have an exact list of tokens you'd like to check. Even if some token doesn't follow the ERC-20 standard, but still has `getBalance` function implemented, the correct balance will be returned. Using this option costs `0.75` + `0.01` for each contract checked (the cheapest option!)
 - `?nonce=true` — returns current account nonce 
 
 **Output:**
@@ -3088,9 +3103,10 @@ Always `1`.
 
 Allows to retrieve the some basic information on an ERC-20 token. Note that this endpoint is in the Beta stage.
 
-**Endpoint:**
+**Endpoints:**
 
 - `https://api.blockchair.com/ethereum/erc-20/{:token_address}/stats`
+- `https://api.blockchair.com/ethereum/testnet/erc-20/{:token_address}/stats` (Goerli Testnet)
 
 **Where:**
 
@@ -3159,9 +3175,10 @@ Always `1`.
 
 ### <a name="link_504"></a> ERC-20 token holder info
 
-**Endpoint:**
+**Endpoints:**
 
 - `https://api.blockchair.com/ethereum/erc-20/{:token_address}/dashboards/address/{:address}`
+- `https://api.blockchair.com/ethereum/testnet/erc-20/{:token_address}/dashboards/address/{:address}` (Goerli Testnet)
 
 **Where:**
 
@@ -3627,7 +3644,7 @@ Always `1`.
 
 
 
-## <a name="link_M32"></a> Raw data endpoints for Ethereum
+## <a name="link_M32"></a> Raw data endpoints for Ethereum and Ethereum Goerli Testnet
 
 
 
@@ -3642,7 +3659,7 @@ Returns raw block data directly from our full node.
 
 **Where:**
 
-- `{:eth_chain}` can only be `ethereum`
+- `{:eth_chain}` can only be `ethereum` or `ethereum/testnet`
 - `{:height}ᵢ` is the block height (integer value), also known as block id
 - `{:hash}ᵢ` is the block hash (regex: `/^0x[0-9a-f]{64}$/i`)
 
@@ -3727,7 +3744,7 @@ Returns raw transaction data directly from our full node.
 
 **Where:**
 
-- `{:eth_chain}` can only be 'ethereum'
+- `{:eth_chain}` can only be `ethereum` or `ethereum/testnet`
 - `{:hash}ᵢ` is the transaction hash (regex: `/^0x[0-9a-f]{64}$/i`)
 
 **Output:**
@@ -7693,7 +7710,7 @@ See [request costs for infinitables](#link_05)
 
 
 
-## <a name="link_M42"></a> Inifinitable endpoints for Ethereum
+## <a name="link_M42"></a> Inifinitable endpoints for Ethereum and Ethereum Goerli Testnet
 
 Please note that unlike with Bitcoin-like chains, where we populate our databases synchronically (block after block as there's the UTXO model used), for Ethereum we use asynchronous process, thus it's possible that for some brief period of time there will be information about block `n`, but there may not be for block `n-1` and further.
 
@@ -7707,7 +7724,7 @@ Please note that unlike with Bitcoin-like chains, where we populate our database
 
 **Where:**
 
-- `{:eth_chain}` can only be `ethereum`
+- `{:eth_chain}` can only be `ethereum` or `ethereum/testnet`
 - `{:query}` is the query against the table ([how to build a query](#link_05))
 
 **Output:**
@@ -7841,7 +7858,7 @@ See [request costs for infinitables](#link_05)
 
 **Where:**
 
-- `{:eth_chain}` can only be `ethereum`
+- `{:eth_chain}` can only be `ethereum` or `ethereum/testnet`
 - `{:query}` is the query against the table ([how to build a query](#link_05))
 
 **Output:**
@@ -7948,7 +7965,7 @@ See [request costs for infinitables](#link_05)
 
 **Where:**
 
-- `{:eth_chain}` can only be `ethereum`
+- `{:eth_chain}` can only be `ethereum` or `ethereum/testnet`
 - `{:query}` is the query against the table ([how to build a query](#link_05))
 
 **Output:**
@@ -7978,7 +7995,7 @@ See [request costs for infinitables](#link_05)
 | gas_limit ‡          | int                          | Gas limit for transaction set by the sender                  | `*`  | `+`  |      | `+`  |
 | gas_price ‡          | int                          | Price for gas set by the sender                              | `*`  | `+`  |      | `+`  |
 | input_hex ‡          | string `[0-9a-f]*`           | Transaction input data (hex)                                 | `^`  |      |      |      |
-| nonce ‡              | string `[0-9a-f]*`           | Nonce value                                                  |      |      |      |      |
+| nonce ‡              | int                          | Nonce value                                                  |      |      |      |      |
 | v ‡                  | string `[0-9a-f]*`           | V value                                                      |      |      |      |      |
 | r ‡                  | string `[0-9a-f]*`           | R value                                                      |      |      |      |      |
 | s ‡                  | string `[0-9a-f]*`           | S value                                                      |      |      |      |      |
@@ -8100,7 +8117,7 @@ See [request costs for infinitables](#link_05)
 
 **Where:**
 
-- `{:eth_chain}` can only be `ethereum`
+- `{:eth_chain}` can only be `ethereum` or `ethereum/testnet`
 - `{:query}` is the query against the table ([how to build a query](#link_05))
 
 **Output:**
@@ -8669,6 +8686,7 @@ See [request costs for infinitables](#link_05)
 **Endpoint:**
 
 - `https://api.blockchair.com/ethereum/erc-20/tokens?{:query}`
+- `https://api.blockchair.com/ethereum/testnet/erc-20/tokens?{:query}` (Goerli Testnet)
 
 **Where:**
 
@@ -8766,6 +8784,7 @@ See [request costs for infinitables](#link_05)
 **Endpoint:**
 
 - `https://api.blockchair.com/ethereum/erc-20/transactions?{:query}`
+- `https://api.blockchair.com/ethereum/testnet/erc-20/transactions?{:query}` (Goerli Testnet)
 
 **Where:**
 
