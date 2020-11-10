@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.64)
+* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.68)
 
 ### Please apply for an API key first
 
@@ -26,6 +26,16 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.68 - November 10th, 2020
+    * Added an experimental `?effects=true` option to the `https://api.blockchair.com/ethereum/dashboards/transaction/{:hash}` dashboard. Example: `https://api.blockchair.com/ethereum/dashboards/transaction/0xd9a24f57c713207c39c58e8ef3cb44e115fcc8bd0f85eb4ea82c78bc065a723f?effects=true&erc_20=true`. `effects` array yields the list of all changes to ETH and ERC-20 token balances.
+    * Added an experimental endpoint to retrieve allowance for ERC-20 contracts: `https://api.blockchair.com/ethereum/erc-20/{:token_address}/utils/allowance?owner={:owner_address}&spender={:spender_address}`. Example: `https://api.blockchair.com/ethereum/erc-20/0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2/utils/allowance?owner=0x448bb00f370da5af5d33d3e7fca686379fc782ea&spender=0xe0e6b25b22173849668c85e06bc2ce1f69baff8c`
+    * The `https://api.blockchair.com/{:eth_chain}/dashboards/address/{:address}` dashboard now has 3 options to retrieve ERC-20 balances:
+        * `?erc_20=approximate` (or `?erc_20=true`, default) - yields all token balances from our database. These values may miss some non-standard transfers in tokens that don't follow the ERC-20 standard in full. Please double-check if this option returns correct values for the tokens you'd want to get information about. Using this option costs `1`.
+        * `?erc_20=precise` - yields all token balances from our node. The process is the following: we gather information from our database about potential ERC-20 tokens the address may hold, and then for each token we call `getBalance` function using our node to get precise balances. Please note that if for some reason some contract doesn't follow the ERC-20 standard, our database may still miss records about the address holding this token, and there will be no request to the node about this token. So while balances yielded with this option are precise, some non-standard tokens may still be missed. Using this option costs `2`.
+        * `?erc_20={:token_address}₀,...,{:token_address}ᵩ` (recommended) - yields balances for the enlisted ERC-20 tokens from our node. That's the recommended way if you have an exact list of tokens you'd like to check. Even if some token doesn't follow the ERC-20 standard, but still has `getBalance` function implemented, the correct balance will be returned. Using this option costs `0.75` + `0.01` for each contract checked (the cheapest option!)
+    * Improved efficiency of the `https://api.blockchair.com/ethereum/erc-20/{:token_address}/stats` endpoint
+    * Fixed a bug with cUSDT Ethereum contract
+    * Fixed some missing ERC-20 transfers
 * v.2.0.67 - November 6th, 2020
     * Added Bitcoin ABC (Bitcoin Cash ABC) support. Please read our statement on the upcoming Bitcoin Cash split: https://twitter.com/Blockchair/status/1324424632179576832. Also please note that it is expected that Bitcoin ABC's hashrate will be very low so 51% attacks are possible. We'll be running Bitcoin ABC in beta mode and we don't guarantee neither its stability, nor that we'll run it if the chain won't be used by businesses.
 * v.2.0.66 - September 23rd, 2020
