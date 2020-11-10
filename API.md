@@ -26,6 +26,8 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.67 - November 6th, 2020
+    * Added Bitcoin ABC (Bitcoin Cash ABC) support. Please read our statement on the upcoming Bitcoin Cash split: https://twitter.com/Blockchair/status/1324424632179576832. Also please note that it is expected that Bitcoin ABC's hashrate will be very low so 51% attacks are possible. We'll be running Bitcoin ABC in beta mode and we don't guarantee neither its stability, nor that we'll run it if the chain won't be used by businesses.
 * v.2.0.66 - September 23rd, 2020
     * We've upgraded our Ethereum engine - blocks, transactions, and ERC-20 transfers are now processed more than 10 times faster.
     * Added Ethereum Goerli testnet: https://blockchair.com/ethereum/testnet (API endpoints are the same as for Ethereum, just use `ethereum/testnet` instead of `ethereum`; ERC-20's are also supported for the testnet).
