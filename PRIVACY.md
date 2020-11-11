@@ -36,7 +36,6 @@ They might sell this information, publish it, share it with government agencies,
 *   **We do not use third-party cookies which can be used to identify you.** We may only set our own cookies to improve your user experience and help us to fight botnets and spammers. See below for details;
 *   **Your browser won’t send HTTP referer headers when leaving Blockchair.com. This means you can move to other sites without your browsing activity being traced by those sites;**
 *   **We do not use CDN-providers, including those used to distribute JavaScript libraries and styles. We do not use any third-party site elements, web analytics tools (such as Google Analytics) and hit counters. Therefore, other parties do not receive information about you.**
-
 * * *
 
 ## What data do we store and how do we use this data?
@@ -49,11 +48,11 @@ Your device may store first-party cookies, such as those that keep the night mod
 
 Collected data is used to improve user experience and compile website traffic statistics. Session data is deleted on a regular basis.
 
-We can also store and use the data you provide us through email or with other channels of communication such as Telegram or contact forms located on our website. We can use such data to provide you with our services, defend our legal rights, to improve accuracy, effectiveness, security, usability of our products or we can use it in any other way you will agree to. 
+We can also store and use the data you provide us through email or with other channels of communication such as Telegram or contact forms located on our website. We can use the stored data to provide you with our services, to defend our legal rights, to improve accuracy, effectiveness, security, usability of our products or we can use it in any other way you will agree to. 
 
 Overall, we won't keep your data longer than necessary.
 
-Please, be informed, that this Privacy Policy has force only unless it contradicts to Terms of Service of any other products of Blockchair Limited. In case of contradiction between provisions of any Blockchair Terms of Service and this Privacy Policy, the provisions of Blockchair Terms of Service should prevail.
+Please, be informed, that this Privacy Policy applies on all Blockchair products and has force only in a part where it doesn't contradict to Terms of Service of any product of Blockchair Limited. This Privacy Policy provides a general legal framework for the data collection in Blockchair products, hence the respective Terms of Service for each Blockchair product can regulate this issue differently within its respective scope of applicability. In case of contradiction between provisions of any Blockchair Terms of Service and this Privacy Policy, the provisions of Blockchair Terms of Service in question should prevail.
 
 * * *
 
