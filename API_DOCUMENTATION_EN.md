@@ -1,4 +1,4 @@
-# [Blockchair.com](https://blockchair.com/) API v.2.0.68 Documentation
+# [Blockchair.com](https://blockchair.com/) API v.2.0.69 Documentation
 
 ```
     ____  __           __        __          _     
@@ -2874,7 +2874,7 @@ For mempool transactions shows priority (`position`) by `gas_price` over other t
 
 - `?limit={:call_limit}` — limits the number of returned latest calls associated with the address. Default is `100`. Maximum is `10000`.
 - `?offset={:call_offset}` — allows to paginate calls. Default is `0`, and the maximum is `1000000`.  
-- `?erc_20={...}` — returns information about ERC-20 token balances of the address:
+- `?erc_20={...}` — returns information about ERC-20 token balances of the address (tokens are sorted by market capitalization descending):
   - `?erc_20=approximate` (or `?erc_20=true`, default) — yields all token balances from our database. These values may miss some non-standard transfers in tokens that don't follow the ERC-20 standard in full. Please double-check if this option returns correct values for the tokens you'd want to get information about. Using this option costs `1`.
   - `?erc_20=precise` — yields all token balances from our node. The process is the following: we gather information from our database about potential ERC-20 tokens the address may hold, and then for each token we call `getBalance` function using our node to get precise balances. Please note that if for some reason some contract doesn't follow the ERC-20 standard, our database may still miss records about the address holding this token, and there will be no request to the node about this token. So while balances yielded with this option are precise, some non-standard tokens may still be missed. Using this option costs `2`.
   - `?erc_20={:token_address}₀,...,{:token_address}ᵩ` (recommended) — yields balances for the enlisted ERC-20 tokens from our node. That's the recommended way if you have an exact list of tokens you'd like to check. Even if some token doesn't follow the ERC-20 standard, but still has `getBalance` function implemented, the correct balance will be returned. Using this option costs `0.75` + `0.01` for each contract checked (the cheapest option!)
@@ -7982,8 +7982,8 @@ See [request costs for infinitables](#link_05)
 | time                 | string `YYYY-MM-DD HH:ii:ss` | Time of the block containing the transaction (UTC)           | `⌘`  | `+`  |      |      |
 | failed †             | bool                         | Failed transaction or not?                                   | `=`  |      | `+`  |      |
 | type †               | string (enum)                | Transaction type with one of the following values: `call`, `create`, `call_tree`, `create_tree`, `synthetic_coinbase`. Description in the note below. | `=`  | `+`  | `+`  |      |
-| sender ‡             | string `0x[0-9a-f]{40}`      | Address of the transaction sender                            | `=`  |      |      |      |
-| recipient            | string `0x[0-9a-f]{40}`      | Address of the transaction recipient                         | `=`  |      |      |      |
+| sender ‡             | string `0x[0-9a-f]{40}`      | Address of the transaction sender                            | `=`  |      | `+`  |      |
+| recipient            | string `0x[0-9a-f]{40}`      | Address of the transaction recipient                         | `=`  |      | `+`  |      |
 | call_count †         | int                          | Number of calls in the transaction                           | `*`  | `+`  |      | `+`  |
 | value                | numeric string               | Monetary value of transaction in wei                         | `*≈` | `+`  |      | `+`  |
 | value_usd            | float                        | Value of transaction in USD                                  | `*`  | `+`  |      | `+`  |
