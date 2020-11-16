@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.68)
+* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.69)
 
 ### Please apply for an API key first
 
@@ -26,6 +26,9 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.69 - November 16th, 2020
+    * ERC-20 tokens in the `https://api.blockchair.com/{:eth_chain}/dashboards/address/{:address}?erc_20={approximate|precise|{:list}}` endpoint are now sorted by their market capitalization descending (so the most popular ones are on top now)
+    * It's now possible to aggregate the Ethereum transactions infinitable (`https://api.blockchair.com/ethereum/transactions`) by `sender` and `recipient` (the same applies for the Ethereum testnet). Example: show top 100 stakers of the eth2 contract (by number of deposits): `https://api.blockchair.com/ethereum/transactions?q=recipient(0x00000000219ab540356cbb839cbe05303d7705fa),failed(false)&limit=100&a=sender,count()&s=count()(desc)`
 * v.2.0.68 - November 10th, 2020
     * Added an experimental `?effects=true` option to the `https://api.blockchair.com/ethereum/dashboards/transaction/{:hash}` dashboard. Example: `https://api.blockchair.com/ethereum/dashboards/transaction/0xd9a24f57c713207c39c58e8ef3cb44e115fcc8bd0f85eb4ea82c78bc065a723f?effects=true&erc_20=true`. `effects` array yields the list of all changes to ETH and ERC-20 token balances.
     * Added an experimental endpoint to retrieve allowance for ERC-20 contracts: `https://api.blockchair.com/ethereum/erc-20/{:token_address}/utils/allowance?owner={:owner_address}&spender={:spender_address}`. Example: `https://api.blockchair.com/ethereum/erc-20/0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2/utils/allowance?owner=0x448bb00f370da5af5d33d3e7fca686379fc782ea&spender=0xe0e6b25b22173849668c85e06bc2ce1f69baff8c`
