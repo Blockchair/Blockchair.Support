@@ -1,4 +1,4 @@
-# [Blockchair.com](https://blockchair.com/) API v.2.0.69 Documentation
+# [Blockchair.com](https://blockchair.com/) API v.2.0.70 Documentation
 
 ```
     ____  __           __        __          _     
@@ -118,6 +118,8 @@
 + [Privacy-o-meter](#link_M6)
     + [Introduction](#link_700)
     + [Transaction privacy score](#link_702)
++ [News aggregator](#link_M701)
+    + [News list infinitable](#link_701)
 + [Support](#link_M7)
 
 
@@ -346,6 +348,7 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/range` | [👉](#link_510) | `1` | Stable |
 | `https://api.blockchair.com/tools/releases` | [👉](#link_511) | `1` | Stable |
 | `https://api.blockchair.com/tools/halvening` | [👉](#link_512) | `1` | Stable |
+| `https://api.blockchair.com/news` (News API) | [👉](#link_701) | `1` | Stable |
 | **Network nodes** | — | — | — |
 | `https://api.blockchair.com/nodes` | [👉](#link_508) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/nodes` | [👉](#link_508) | `1` | Stable |
@@ -8136,8 +8139,8 @@ Returns information about internal transaction calls. `data` contains an array o
 | failed             | bool                         | Failed call or not                                           | `=`  |      | `+`  |      |
 | fail_reason        | string `.*` or null          | If failed, then the failure description, if not, then `null` | `~`  |      | `+`  |      |
 | type               | string (enum)                | The call type, one of the following values: `call`, `delegatecall`, `staticcall`, `callcode`, `selfdestruct`, `create`, `synthetic_coinbase`, `create2` | `=`  | `+`  | `+`  |      |
-| sender †           | string `0x[0-9a-f]{40}`      | Sender's address (with 0x)                                   | `=`  |      |      |      |
-| recipient          | string `0x[0-9a-f]{40}`      | Recipient's address (with 0x)                                | `=`  |      |      |      |
+| sender †           | string `0x[0-9a-f]{40}`      | Sender's address (with 0x)                                   | `=`  |      | `+`  |      |
+| recipient          | string `0x[0-9a-f]{40}`      | Recipient's address (with 0x)                                | `=`  |      | `+`  |      |
 | child_call_count   | int                          | Number of child calls                                        | `*`  | `+`  |      | `+`  |
 | value              | numeric string               | Call value in wei, hereinafter `numeric string` - is a numeric string passed as a string, because wei-values do not fit into uint64 | `*≈` | `+`  |      | `+`  |
 | value_usd          | float                        | Call value in USD                                            | `*`  | `+`  |      | `+`  |
@@ -9767,6 +9770,93 @@ For privacy-concerned wallets and services who'd agree to feature a link to our 
 **Explore visualizations on our front-end:**
 
 - https://blockchair.com/bitcoin/transaction/116bd19a3ec5f210ce72043115a4d5d3ef08f7556829c4feac8d89de3195ea4e
+
+
+
+
+
+# <a name="link_M701"></a> News aggregator
+
+Not only Blockchair API provides you with blockchain data, but also with some crypto news to integrate into your app. We're aggregating data from more than 60 news outlets in 14 languages, populating over 35,000 headlines into our database a month,. 
+
+## <a name="link_701"></a> News list
+
+**Endpoint:**
+
+- `https://api.blockchair.com/news?{:query}`
+
+**Where:**
+
+- `{:query}` is the query against the table ([how to build a query](#link_05))
+
+This endpoint acts like an [Infinitable](#link_05) meaning you can perform SQL-like queries: filter sort, and aggregate news articles.
+
+`data` contains an array of database rows. Each row is in the following format:
+
+| Column         | Type                            | Description                                                  | Q?   | S?   | A?   | C?   |
+| -------------- | ------------------------------- | ------------------------------------------------------------ | ---- | ---- | ---- | ---- |
+| title          | `string`                        | Headline                                                     | `~`  |      |      |      |
+| source         | `string` (domain name)          | Source (domain name)                                         | `=`  |      |      |      |
+| language       | `string [a-z]{2}`               | Supported languages:  `ar`, `de`, `en`, `es`, `fa`, `fr`, `it`, `jp`, `ko`, `nl`, `pt`, `ru`, `tr`, `zh` | `=`  |      |      |      |
+| link           | `string` (URL)                  | URL to the article on the source website                     |      |      |      |      |
+| link_amp       | `string` (URL)                  | URL to the AMP (Accelerated Mobile Pages) article on the source website or `false` if AMP is not available. `null` if it hasn't been processed yet (usually it takes under a few seconds) |      |      |      |      |
+| link_iframable | `boolean`                       | `true` if the page could be put into an iframe (`false` otherwise). Note that there's no guarantee this value is valid as the source can change its policy after the page was crawled! `null` if it hasn't been processed yet (usually it takes under a few seconds) |      |      |      |      |
+| time           | `YYYY-MM-DD HH:ii:ss`           | Timestamp                                                    | `⌘`  | `+`  |      |      |
+| tags           | `string` (comma-separated list) | Comma-separated list of tags by the publisher                |      |      |      |      |
+| description    | `string`                        | Short description                                            | `~`  |      |      |      |
+| hash           | `[0-9a-f]{10}`                  | Internal Blockchair hash (unique id)                         | `=`  |      |      |      |
+| file           | `string`                        | Internal Blockchair article name                             |      |      |      |      |
+| permalink      | `string` (URL)                  | URL to the article on Blockchair.com                         |      |      |      |      |
+
+Default sorting is by `tim`e descending.
+
+**Some examples:** 
+
+* The latest crypto news in English: `https://api.blockchair.com/news?q=language(en)`
+* Find news about Blockchair: `https://api.blockchair.com/news?q=title(~blockchair),or,description(~blockchair)`
+* Find news about Blockchair in English: `https://api.blockchair.com/news?q=language(en),title(~blockchair),or,description(~blockchair)`
+
+**Example output:**
+
+`https://api.blockchair.com/news?q=language(en)`:
+
+```json
+{
+  "data": [
+    {
+      "title": "Ten Days Remain Where Buying Bitcoin Was Unprofitable",
+      "source": "bitcoinist.com",
+      "language": "en",
+      "link": "https://bitcoinist.com/ten-days-remain-where-buying-bitcoin-was-unprofitable/",
+      "link_amp": false,
+      "link_iframable": true,
+      "time": "2020-11-17 15:00:31",
+      "tags": "Bitcoin, bitcoin, btc, btcusd, btcusdc, BTCUSDT, crypto, XBT, xbtusd",
+      "description": "Believe it or not, Bitcoin price is now trading at over $17,000, even though earlier this year it crashed to under $4,000. From low to high, the leading cryptocurrency by market cap rallied over 350%. With prices now trading around highs from late 2017 and early 2018 when Bitcoin had set its peak, it has left only ten days remaining where buying BTC was unprofitable. Bitcoin Faces $17,200 Where Bear Market Began, Final Resistance Before [&#8230;]",
+      "hash": "cbe09bd89c",
+      "file": "ten-days-remain-where-buying-bitcoin-was-unprofitable",
+      "permalink": "https://blockchair.com/en/news/ten-days-remain-where-buying-bitcoin-was-unprofitable--cbe09bd89c"
+    },
+    ...
+  ],
+  "context": {
+    "code": 200,
+    "limit": 10,
+    "offset": 0,
+    "rows": 10,
+    "request_cost": 1,
+    ...
+  }
+}
+```
+
+**Request cost formula:**
+
+`1` + infinitable costs may apply.
+
+**Explore how this functionality works on Blockchair: https://blockchair.com/news** (try to switch languages as well!)
+
+**Want your media outlet to be included? Please contact us at [info@blockchair.com](mailto:info@blockchair.com)**
 
 
 
