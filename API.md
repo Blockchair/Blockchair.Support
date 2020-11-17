@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.69)
+* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.70)
 
 ### Please apply for an API key first
 
