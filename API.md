@@ -26,6 +26,12 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.71 - December 14th, 2020
+    * Improved Dogecoin transaction broadcasting
+    * Added `?output=type` option to the `https://api.blockchair.com/{:eth_chain}/dashboards/address/{:address}` dashboard. When this option is enabled, only address type (`account` or `contract`) is returned. This may be a very fast handy way instead of requesting full address data. Example: `https://api.blockchair.com/ethereum/dashboards/address/0x00000000219ab540356cbb839cbe05303d7705fa?output=type`.
+    * Fixed a bug where the `https://api.blockchair.com/{:btc_chain}/raw/transaction/{:hash}` endpoint returned code `200` even if there was a back end error
+    * Fixed GitHub issue #320 ("No data returned for address balance mass check for some bitcoin-cash addresses", https://github.com/Blockchair/Blockchair.Support/issues/320)
+    * Added new nodes to the Release monitor: `Bitcoin Cash Node` for Bitcoin Cash, `Cardano Node` for Cardano
 * v.2.0.70 - November 17th, 2020
     * We're introducing News aggregator API! Starting today not only Blockchair API provides you with blockchain data, but also with some crypto news to integrate into your app. We're aggregating data from more than 60 news outlets in 14 languages, populating over 35,000 headlines into our database a month. Documentation: https://blockchair.com/api/docs#link_M7. Want your media outlet to be included to the aggregator? Please contact us at [info@blockchair.com](mailto:info@blockchair.com)!
 * v.2.0.69 - November 16th, 2020
