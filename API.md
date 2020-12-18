@@ -25,7 +25,11 @@ While we still allow making requests without a key, services which make too many
 The key is applied to the end of the request string like this: `api.blockchair.com/bitcoin/blocks?key=MYSECRETKEY`. Please remember that your key is a secret -- don't disclose it to client-side applications as unauthorized users may start to use your key.
 
 ### Changelog
-
+* v.2.0.72 - December 18th, 2020
+    * Added an ability to retrieve internal calls for unconfirmed Ethereum transactions. Usage: `https://api.blockchair.com/{:eth_chain}/dashboards/transaction/{:hash}?trace_mempool=true`. It's also possible to retrieve the list of ERC-20 transfers for mempool transactions: `https://api.blockchair.com/{:eth_chain}/dashboards/transaction/{:hash}?trace_mempool=true&erc_20=true`. This is an experimental feature. Please note that internal transfers may get invalidated when transaction gets confirmed.
+    * The `https://api.blockchair.com/{:eth_chain}/dashboards/transaction/{:hash}` dashboard is now more efficient at handling recently (1-30 seconds ago) confirmed transactions
+    * Updated list of Bitcoin mining pools
+    * Fixed some issues with Bitcoin ABC
 * v.2.0.71 - December 14th, 2020
     * Improved Dogecoin transaction broadcasting
     * Added `?output=type` option to the `https://api.blockchair.com/{:eth_chain}/dashboards/address/{:address}` dashboard. When this option is enabled, only address type (`account` or `contract`) is returned. This may be a very fast handy way instead of requesting full address data. Example: `https://api.blockchair.com/ethereum/dashboards/address/0x00000000219ab540356cbb839cbe05303d7705fa?output=type`.
