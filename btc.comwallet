@@ -1,0 +1,35 @@
+{
+"data": {
+"height": 3,
+"version": 1,
+"mrkl_root": "999e1c837c76a1b7fbb7e57baf87b309960f5ffefbf2a9b95dd890602272f644",
+"timestamp": 1231470173,
+"bits": 486604799,
+"nonce": 1844305925,
+"hash": "0000000082b5015589a3fdf2d4baff403e6f0be035a5d9742c1cae6295464449",
+"prev_block_hash": "000000006a625f06636b8bb6ac7b960a8d03705d1ace08b1a19da3fdcc99ddbd",
+"next_block_hash": "000000004ebadb55ee9096c9a2f8880e09da59c0d68b1c228da88e48844a1485",
+"size": 215,
+"pool_difficulty": 1,
+"difficulty": 1,
+"difficulty_double": 1,
+"tx_count": 1,
+"reward_block": 5000000000,
+"reward_fees": 0,
+"confirmations": 669703,
+"is_orphan": false,
+"curr_max_timestamp": 1231470173,
+"is_sw_block": false,
+"stripped_size": 215,
+"sigops": 4,
+"weight": 860,
+"extras": {
+"pool_name": "unknown",
+"pool_link": ""
+}
+},
+"err_code": 0,
+"err_no": 0,
+"message": "success",
+"status": "success"
+}
