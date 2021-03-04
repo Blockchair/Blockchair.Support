@@ -26,8 +26,13 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
-* v.2.0.73 - February 26th, 2020
-    * Added new `?assets_in_usd=true` option to the `https://api.blockchair.com/ethereum/dashboards/address/{:address}` endpoint. When applied, it adds `asset_balance_usd` to the output yielding the total USD value of all account assets (currently it's most popular ERC-20 tokens only), as well as `balance_usd` to all `layer_2.erc_20` items.
+* v.2.0.74 - March 4th, 2021
+    * `address.nonce` now yields `0` instead of `null` when using the `?nonce=true` option with the `https://api.blockchair.com/ethereum/dashboards/address/{:address}` dashboard for addresses that have made no transactions
+    * The `https://api.blockchair.com/{:eth_chain}/dashboards/address/{:address}` endpoint now correctly returns token details when the `?erc_20={:list}` option is fed with non-lowered token addresses
+    * Cardano API enhancements
+    * Mixin API enhancements
+* v.2.0.73 - February 26th, 2021
+    * Added a new `?assets_in_usd=true` option to the `https://api.blockchair.com/ethereum/dashboards/address/{:address}` endpoint. When applied, it adds `asset_balance_usd` to the output yielding the total USD value of all account assets (currently it's most popular ERC-20 tokens only), as well as `balance_usd` to all `layer_2.erc_20` items.
     * Fixed wrong nonce values for some Ethereum transactions
     * The `https://api.blockchair.com/premium/stats?key={:api_key}` now yields request points instead of raw requests in `requests_today`
     * The `https://api.blockchair.com/{:eth_chain}/push/transaction` endpoint now yields a more detailed error description (`context.error`) in case the broadcast fails (e.g. `nonce too low`, `insufficient funds for gas * price + value` or `already known`)
