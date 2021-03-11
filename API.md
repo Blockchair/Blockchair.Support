@@ -26,6 +26,9 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.75 - March 11th, 2021
+    * Added `suggested_transaction_fee_gwei_options` to the `https://api.blockchair.com/{:eth_chain}/stats` endpoint yielding an array of suggested gas prices (`sloth` if you can take the risk and wait; `slow`, `normal`, and `fast` if you want to get the transaction confirmed within 2-10 minutes; `cheetah` if you'd like to try to get into the next block).
+    * The `https://api.blockchair.com/{:eth_chain}/dashboards/transaction/{:hash}₀/priority` endpoint now supports Ethereum Testnet
 * v.2.0.74 - March 4th, 2021
     * `address.nonce` now yields `0` instead of `null` when using the `?nonce=true` option with the `https://api.blockchair.com/ethereum/dashboards/address/{:address}` dashboard for addresses that have made no transactions
     * The `https://api.blockchair.com/{:eth_chain}/dashboards/address/{:address}` endpoint now correctly returns token details when the `?erc_20={:list}` option is fed with non-lowered token addresses
