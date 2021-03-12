@@ -1,4 +1,4 @@
-# [Blockchair.com](https://blockchair.com/) API v.2.0.70 Documentation
+# [Blockchair.com](https://blockchair.com/) API v.2.0.76 Documentation
 
 ```
     ____  __           __        __          _     
@@ -348,7 +348,7 @@ This is the full list of available API endpoints.
 | `https://api.blockchair.com/range` | [👉](#link_510) | `1` | Stable |
 | `https://api.blockchair.com/tools/releases` | [👉](#link_511) | `1` | Stable |
 | `https://api.blockchair.com/tools/halvening` | [👉](#link_512) | `1` | Stable |
-| `https://api.blockchair.com/news` (News API) | [👉](#link_701) | `1` | Stable |
+| `https://api.blockchair.com/news` (News API) | [👉](#link_800) | `1` | Stable |
 | **Network nodes** | — | — | — |
 | `https://api.blockchair.com/nodes` | [👉](#link_508) | `1` | Stable |
 | `https://api.blockchair.com/{:btc_chain}/nodes` | [👉](#link_508) | `1` | Stable |
@@ -845,6 +845,7 @@ Always `1`.
   - `transactions` — total number of ERC-20 transfers
   - `tokens_24h` — number of tokens created over the last 24 hours
   - `transactions_24h` — total number of ERC-20 transfers over the last 24 hours
+- `suggested_transaction_fee_gwei_options` — recommended transaction fees in gwei. It has 5 options: `sloth` for occasions when take the risk and wait; `slow`, `normal`, and `fast` if you want to get the transaction confirmed within 2-10 minutes; `cheetah` for an almost guaranteed next-block confirmation
 
 **Example output:**
 
@@ -853,55 +854,72 @@ Always `1`.
 ```json
 {
   "data": {
-    "blocks": 8765932,
-    "transactions": 563679664,
-    "blocks_24h": 6345,
-    "circulation_approximate": "108198544155730000000000000",
-    "transactions_24h": 732332,
-    "difficulty": 2384281079680802,
-    "volume_24h_approximate": "1942030242954258000000000",
-    "mempool_transactions": 34803,
-    "mempool_median_gas_price": 100000000,
-    "mempool_tps": 1.8333333333333333,
-    "mempool_total_value_approximate": "890993462756481300000",
-    "best_block_height": 8765929,
-    "best_block_hash": "18164bed364f1ceef954e98f2d0ee8af4b45ba2144baa74e203e882dbf4a32f6",
-    "best_block_time": "2019-10-18 16:27:20",
-    "uncles": 943033,
-    "uncles_24h": 353,
-    "blockchain_size": 106821332817,
-    "calls": 1416512303,
-    "average_transaction_fee_24h": "631689895242411",
-    "median_transaction_fee_24h": "315000000000000",
-    "inflation_24h": 13293.0625,
-    "average_simple_transaction_fee_24h": "319074939493396",
-    "median_simple_transaction_fee_24h": "210000000000000",
+    "blocks": 12023239,
+    "transactions": 1043567165,
+    "blocks_24h": 6433,
+    "circulation_approximate": "115018182780730000000000000",
+    "transactions_24h": 1302619,
+    "difficulty": 5447494005324207,
+    "volume_24h_approximate": "6300512633065118000000000",
+    "mempool_transactions": 94866,
+    "mempool_median_gas_price": 40000000000,
+    "mempool_tps": 7.983333333333333,
+    "mempool_total_value_approximate": "77011108570302550000000",
+    "best_block_height": 12023240,
+    "best_block_hash": "4338ee00f57c8d0bfcb5e9bbbdc47ab40d9685e2b41801541acda53da71132f3",
+    "best_block_time": "2021-03-12 10:43:40",
+    "uncles": 1121915,
+    "uncles_24h": 307,
+    "blockchain_size": 213678005011,
+    "calls": 3032610029,
+    "average_transaction_fee_24h": "9339692912924509",
+    "median_transaction_fee_24h": "4887620538746249",
+    "inflation_24h": 13411.4375,
+    "average_simple_transaction_fee_24h": "2947056048574188",
+    "median_simple_transaction_fee_24h": "3129000000000000",
     "largest_transaction_24h": {
-      "hash": "0x8cdda43621c13cd6f6f5001c39792aec8602c1bb1fe406558224201b0a79f465",
-      "value_usd": 17709550.4761
+      "hash": "0xbc4fc78885355694f0a5ffe27af7e2157f323855a4e40beaf37905e3f3617640",
+      "value_usd": 872236755.0026
     },
-    "hashrate_24h": "198690089973400",
-    "inflation_usd_24h": 2302358.425,
-    "average_transaction_fee_usd_24h": 0.10940868985598558,
-    "median_transaction_fee_usd_24h": 0.054557999999999995,
-    "average_simple_transaction_fee_usd_24h": 0.05526377952025618,
-    "median_simple_transaction_fee_usd_24h": 0.036372,
-    "market_price_usd": 173.2,
-    "market_price_btc": 0.021793263465708,
-    "market_price_usd_change_24h_percentage": -3.30365,
-    "market_cap_usd": 18739592599,
-    "market_dominance_percentage": 8.63,
+    "hashrate_24h": "453957833777017",
+    "inflation_usd_24h": 23792024.239375,
+    "average_transaction_fee_usd_24h": 16.56870862445721,
+    "median_transaction_fee_usd_24h": 8.670687711941234,
+    "average_simple_transaction_fee_usd_24h": 5.228106900731096,
+    "median_simple_transaction_fee_usd_24h": 5.55087729,
+    "market_price_usd": 1774.01,
+    "market_price_btc": 0.031517784173684,
+    "market_price_usd_change_24h_percentage": 0.95673,
+    "market_cap_usd": 203352392960,
+    "market_dominance_percentage": 11.66,
     "layer_2": {
       "erc_20": {
-        "tokens": 120889,
-        "transactions": 273663782,
-        "tokens_24h": 164,
-        "transactions_24h": 495265
+        "tokens": 246816,
+        "transactions": 604957673,
+        "tokens_24h": 100,
+        "transactions_24h": 859287
       }
+    },
+    "countdowns": [
+      {
+        "event": "eth2 launch",
+        "eth_staked": 3487170.000069,
+        "eth_needed": 524288
+      }
+    ],
+    "suggested_transaction_fee_gwei_options": {
+      "sloth": 102,
+      "slow": 115,
+      "normal": 122,
+      "fast": 134,
+      "cheetah": 173
     }
   },
   "context": {
     "code": 200,
+    "state": 12023239,
+    "state_layer_2": 12023239,
+    "request_cost": 1,
     ...
   }
 }
@@ -2703,6 +2721,8 @@ If there's no `{:hash}ᵢ` has been found in the database, there won't be such k
 
 - `?erc_20=true` shows information about ERC-20 token transfers in this transaction
 - `?effects=true` shows state changes for the transaction
+- `?trace_mempool=true` — this option tries to retrieve a list of internall calls for mempool transactions. In conjunction with `&erc_20=true` it also shows the list of ERC-20 transfers. This is an experimental feature. Please note that internal transfers may get invalidated when transaction gets confirmed.
+- `?assets_in_usd=true` — adds `value_usd_now` to all `layer_2.erc_20` items yielding the current (not at the moment of the transaction!) USD value of tokens (`null` if the price is unknown)
 
 **Output:**
 
@@ -2729,6 +2749,7 @@ In case transaction is confirmed on the blockchain, `data.{:hash}ᵢ.transaction
 - `https://api.blockchair.com/ethereum/dashboards/transaction/0xc132a422513e39038269e091847319a14029feb42c66bd1424c57dfc0e4f8d08`
 - `https://api.blockchair.com/ethereum/dashboards/transactions/0xc132a422513e39038269e091847319a14029feb42c66bd1424c57dfc0e4f8d08,0x502bc6fe1f39738f0fd3223a2f125433b8ec7e80acd11ef514f6909536cc9e66`
 - `https://api.blockchair.com/ethereum/dashboards/transaction/0xc132a422513e39038269e091847319a14029feb42c66bd1424c57dfc0e4f8d08?erc_20=true`
+- `https://api.blockchair.com/ethereum/dashboards/transaction/0x77025c5c7ff5eeb4bb164a4be84dd49192e12086cc321199f73888830c3ecd9e?erc_20=true&assets_in_usd=true`
 
 **Example output:**
 
@@ -2817,7 +2838,8 @@ In case transaction is confirmed on the blockchain, `data.{:hash}ᵢ.transaction
             "token_decimals": 18,
             "sender": "0x0ebe7487f60d3a4eb084a23152890a1a65b2ad65",
             "recipient": "0xa488cf9adcac170f28a046ba34a9885eb9f67033",
-            "value": "100000000000000000000"
+            "value": "100000000000000000000",
+        		"value_approximate": 100
           },
           {
             "token_address": "0xa68920f6d3c996ac3c232e4e93914e9d76150735",
@@ -2826,7 +2848,8 @@ In case transaction is confirmed on the blockchain, `data.{:hash}ᵢ.transaction
             "token_decimals": 18,
             "sender": "0x0ebe7487f60d3a4eb084a23152890a1a65b2ad65",
             "recipient": "0x8cc1e8ffc3bf19c67c244e2bd8126fd29ec50e58",
-            "value": "100000000000000000000"
+            "value": "100000000000000000000",
+    				"value_approximate": 100
           },
           ...
         ]
@@ -2881,7 +2904,9 @@ For mempool transactions shows priority (`position`) by `gas_price` over other t
   - `?erc_20=approximate` (or `?erc_20=true`, default) — yields all token balances from our database. These values may miss some non-standard transfers in tokens that don't follow the ERC-20 standard in full. Please double-check if this option returns correct values for the tokens you'd want to get information about. Using this option costs `1`.
   - `?erc_20=precise` — yields all token balances from our node. The process is the following: we gather information from our database about potential ERC-20 tokens the address may hold, and then for each token we call `getBalance` function using our node to get precise balances. Please note that if for some reason some contract doesn't follow the ERC-20 standard, our database may still miss records about the address holding this token, and there will be no request to the node about this token. So while balances yielded with this option are precise, some non-standard tokens may still be missed. Using this option costs `2`.
   - `?erc_20={:token_address}₀,...,{:token_address}ᵩ` (recommended) — yields balances for the enlisted ERC-20 tokens from our node. That's the recommended way if you have an exact list of tokens you'd like to check. Even if some token doesn't follow the ERC-20 standard, but still has `getBalance` function implemented, the correct balance will be returned. Using this option costs `0.75` + `0.01` for each contract checked (the cheapest option!)
-- `?nonce=true` — returns current account nonce 
+- `?nonce=true` — returns current account nonce (mempool transactions are taken in account)
+- `?output=type` — this option scrubs all the output data except for the address type (`account` or `contract`). This may be a very fast handy way to retrieve address type instead of requesting full address data
+- `?assets_in_usd=true` — adds `asset_balance_usd` to the output yielding the total USD value of all (excluding ETH) account assets (currently it's most popular ERC-20 tokens only), as well as `balance_usd` to all `layer_2.erc_20` items. If the exchange rate for a particular token is unknown, returns `null` for this token.
 
 **Output:**
 
@@ -9344,10 +9369,11 @@ This endpoint returns the list of latest software (core clients) releases for bl
   ],
   "context": {
     "code": 200,
-    "latest_update": "2020-01-28 13:12:16",
+    "latest_update": "2021-03-12 10:36:16",
     "supported_chains": {
       "bitcoin": "Bitcoin Core",
-      "bitcoin-cash": "Bitcoin ABC",
+      "bitcoin-abc": "Bitcoin ABC",
+      "bitcoin-cash": "Bitcoin Cash Node",
       "ethereum": "Geth",
       "litecoin": "Litecoin Core",
       "bitcoin-sv": "Bitcoin SV",
@@ -9357,7 +9383,7 @@ This endpoint returns the list of latest software (core clients) releases for bl
       "groestlcoin": "Groestlcoin Core",
       "stellar": "Stellar Core",
       "monero": "Monero",
-      "cardano": "Cardano SL",
+      "cardano": "Cardano Node",
       "zcash": "Zcash",
       "mixin": "Mixin",
       "eos": "EOSIO"
@@ -9773,13 +9799,43 @@ For privacy-concerned wallets and services who'd agree to feature a link to our 
 
 
 
+### <a name="link_703"></a> Address clusterizer
+
+**Endpoint:**
+
+- `https://api.blockchair.com/{:chain}/clusterize/{:address}`
+
+**Output:**
+
+- ...
+
+**Example output:**
+
+`https://api.blockchair.com/...`:
+
+```json
+...
+```
+
+**Request cost formula:**
+
+ `1`
+
+... 
+
+**Explore visualizations on our front-end:**
+
+- https://blockchair.com/...
 
 
-# <a name="link_M701"></a> News aggregator
 
-Not only Blockchair API provides you with blockchain data, but also with some crypto news to integrate into your app. We're aggregating data from more than 60 news outlets in 14 languages, populating over 35,000 headlines into our database a month,. 
 
-## <a name="link_701"></a> News list
+
+# <a name="link_M7"></a> News aggregator
+
+Not only Blockchair API provides you with blockchain data, but also with some crypto news to integrate into your app. We're aggregating data from more than 60 news outlets in 14 languages, populating over 35,000 headlines into our database a month. 
+
+## <a name="link_800"></a> News list
 
 **Endpoint:**
 
@@ -9854,7 +9910,7 @@ Default sorting is by `tim`e descending.
 
 `1` + infinitable costs may apply.
 
-**Explore how this functionality works on Blockchair: https://blockchair.com/news** (try to switch languages as well!)
+**Explore how this functionality works on Blockchair: [https://blockchair.com/news](https://blockchair.com/news)** (try to switch languages as well!)
 
 **Want your media outlet to be included? Please contact us at [info@blockchair.com](mailto:info@blockchair.com)**
 
