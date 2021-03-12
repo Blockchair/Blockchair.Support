@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.70)
+* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.76)
 
 ### Please apply for an API key first
 
@@ -26,6 +26,9 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.76 - March 12th, 2021
+    * Added a new `?assets_in_usd=true` option to the `https://api.blockchair.com/ethereum/dashboards/transaction/{:hash}` endpoint (works with the `transactions` endpoint as well). When applied, it adds `value_usd_now` to all `layer_2.erc_20` items yielding the current (not at the moment of the transaction!) USD value of tokens (`null` if the price is unknown). Example: `https://api.blockchair.com/ethereum/dashboards/transaction/0x77025c5c7ff5eeb4bb164a4be84dd49192e12086cc321199f73888830c3ecd9e?erc_20=true&assets_in_usd=true`
+    * Added `{:hash}.layer_2.erc_20.{:index}.value_approximate` to the `https://api.blockchair.com/{:eth_chain}/dashboards/transaction/{:hash}` endpoint when using `?erc_20=true` option
 * v.2.0.75 - March 11th, 2021
     * Added `suggested_transaction_fee_gwei_options` to the `https://api.blockchair.com/{:eth_chain}/stats` endpoint yielding an array of suggested gas prices (`sloth` if you can take the risk and wait; `slow`, `normal`, and `fast` if you want to get the transaction confirmed within 2-10 minutes; `cheetah` if you'd like to try to get into the next block).
     * The `https://api.blockchair.com/{:eth_chain}/dashboards/transaction/{:hash}₀/priority` endpoint now supports Ethereum Testnet
