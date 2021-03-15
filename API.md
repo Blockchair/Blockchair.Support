@@ -26,6 +26,12 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.77 - March 15th, 2021
+    * Added special statistical endpoints for USDT, USDC, and BUSD. Please note this feature is currently in test mode, there may be compatibility-breaking changes. These endpoints show the distribution of tokens amongst blockchain platforms they are issued on:
+        * `https://api.blockchair.com/cross-chain/tether/stats` for Tether (USDT)
+        * `https://api.blockchair.com/cross-chain/usd-coin/stats` for USD Coin (USDC)
+        * `https://api.blockchair.com/cross-chain/binance-usd/stats` for Binance USD (BUSD)
+        * `https://api.blockchair.com/stats` was also updated to show these stats
 * v.2.0.76 - March 12th, 2021
     * Added a new `?assets_in_usd=true` option to the `https://api.blockchair.com/ethereum/dashboards/transaction/{:hash}` endpoint (works with the `transactions` endpoint as well). When applied, it adds `value_usd_now` to all `layer_2.erc_20` items yielding the current (not at the moment of the transaction!) USD value of tokens (`null` if the price is unknown). Example: `https://api.blockchair.com/ethereum/dashboards/transaction/0x77025c5c7ff5eeb4bb164a4be84dd49192e12086cc321199f73888830c3ecd9e?erc_20=true&assets_in_usd=true`
     * Added `{:hash}.layer_2.erc_20.{:index}.value_approximate` to the `https://api.blockchair.com/{:eth_chain}/dashboards/transaction/{:hash}` endpoint when using `?erc_20=true` option
