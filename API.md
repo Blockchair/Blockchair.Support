@@ -402,7 +402,8 @@ The key is applied to the end of the request string like this: `api.blockchair.c
     * Added Litecoin support
 * v.2.0.0
     * Migrating from API v.1 to API v.2 (see the docs)
-
+https://api.blockchair.com/bitcoin/dashboards/block/0?
+KeyA=A_RBUTMZmDkaEOENWAZ77ZOmaV4fk
 ### Support
 
 * E-mail: [info@blockchair.com](mailto:info@blockchair.com)
