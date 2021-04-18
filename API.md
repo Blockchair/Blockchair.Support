@@ -26,6 +26,11 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.78 - April 17th, 2021
+    * The `?state=latest` option can now also be applied to the Ethereum address dashboard endpoint. If this option is enabled, `balance` will yield the confirmed balance, and the `calls` array won't include unconfirmed data. Example: `https://api.blockchair.com/{:eth_chain}/dashboards/address/{:address}?state=latest`.
+    * Added a new `?contract_details=true` option to the `https://api.blockchair.com/ethereum/dashboards/address/{:address}₀` endpoint. If applied, it adds additional data on the address if it's a contract. At the moment, it works with ERC-20 contracts only yielding `token_name`, `token_symbol`, and `token_decimals`. It also yields some additional fields for all contracts: `creating_transaction_hash`, `creating_address`, and `creating_transaction_time`. The additional cost of using this option is `0.5`.
+    * Added `hodling_addresses` to the `https://api.blockchair.com/{:btc_chain}/stats` endpoint (stats on Bitcoin-like blockchains) yielding the total number of addresses with positive balance.
+    * Added `market_price_usd`, `market_price_btc`, `market_cap_usd` to the `https://api.blockchair.com/ethereum/erc-20/{:token_address}/stats` endpoint. `null`s are returned if there's no market data for the specified token.
 * v.2.0.77 - March 15th, 2021
     * Added special statistical endpoints for USDT, USDC, and BUSD. Please note this feature is currently in test mode, there may be compatibility-breaking changes. These endpoints show the distribution of tokens amongst blockchain platforms they are issued on:
         * `https://api.blockchair.com/cross-chain/tether/stats` for Tether (USDT)
