@@ -26,6 +26,13 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.79 - April 23rd, 2021
+    * Added a new `?events=true` option to the `https://api.blockchair.com/ethereum/dashboards/transaction/{:hash}` endpoint (works with the `transactions` endpoint as well). This option costs `1` additional request point to use. When enabled, it adds an array of event logs to the output. Every log contains `topics`, `data`, `contract`, `log_index`, and `decoded_event`. Depending on how much our API knows about the event signature, there are 3 detalization levels for `decoded_event` (example transaction with all 3: `https://api.blockchair.com/ethereum/dashboards/transaction/0x7d52cf58fe78403e8816dae6e900baff92b35760b4ed81cecd2590eafcde3dad?events=true`):
+        * Full data: `decoded_event` contains both the full event name with its argument names (`name_full`, example: `Approval(address owner, address spender, uint256 value)`), and the argument values in the `arguments` array;
+        * Partial data: only `name_with_types` is known (example: `Withdrawal(address, uint256)`), `arguments` yields `null`;
+        * No data: `decoded_event` yields `null`.
+    * Added `eta_seconds` to the `https://api.blockchair.com/{:btc_chain}/dashboards/transaction/{:hash}/priority` and `https://api.blockchair.com/{:eth_chain}/dashboards/transaction/{:hash}/priority` endpoints returning an approximate time for the transaction to confirm (in seconds). Please note it's an experimental function and may be unreliable.
+    * Upgraded Dogecoin infrastructure for better transaction broadcasting
 * v.2.0.78 - April 17th, 2021
     * The `?state=latest` option can now also be applied to the Ethereum address dashboard endpoint. If this option is enabled, `balance` will yield the confirmed balance, and the `calls` array won't include unconfirmed data. Example: `https://api.blockchair.com/{:eth_chain}/dashboards/address/{:address}?state=latest`.
     * Added a new `?contract_details=true` option to the `https://api.blockchair.com/ethereum/dashboards/address/{:address}₀` endpoint. If applied, it adds additional data on the address if it's a contract. At the moment, it works with ERC-20 contracts only yielding `token_name`, `token_symbol`, and `token_decimals`. It also yields some additional fields for all contracts: `creating_transaction_hash`, `creating_address`, and `creating_transaction_time`. The additional cost of using this option is `0.5`.
