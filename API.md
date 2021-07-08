@@ -3,7 +3,7 @@
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
 ### API v.2 documentation
-* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.76)
+* English: [https://blockchair.com/api/docs](https://blockchair.com/api/docs) (up to v.2.0.80)
 
 ### Please apply for an API key first
 
@@ -26,6 +26,17 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.80 - July 8th, 2021
+    * Database dumps now feature Ethereum addresses, ERC-20 tokens, ERC-20 transfers, Zcash blocks, Zcash transactions, Zcash outputs, Zcash inputs, and Zcash addresses (transparent): https://gz.blockchair.com
+    * There's a new `addresses` infinitable for Ethereum: `https://api.blockchair.com/ethereum/addresses`. The columns are: `address`, `balance`, `nonce`, `is_contract`. The default sort is by balance descending. Unlike with Bitocin-like `addresses` infinitables which are updated once every 5 minutes, this infinitable is only updated once a day. The documentation is available here: https://blockchair.com/api/docs#link_310. Some cool examples:
+        * `https://api.blockchair.com/ethereum/addresses?a=is_contract,count()` - count accounts and contracts
+        * `https://api.blockchair.com/ethereum/addresses?q=balance(1000000..)&a=count()` - count the number of addresses hodling more than 1 million ethers
+        * Full dump is available here: https://gz.blockchair.com/ethereum/addresses/ (updated daily)
+    * Stats endpoint for Bitcoin-like chains (`https://api.blockchair.com/{:btc_chain}/stats`) now includes `mempool_outputs`.
+    * **BREAKING CHANGE**: Bitcoin ABC (which is still in beta status on our platform) is now renamed to eCash and starting from July 19th, 2021 00:00:00 UTC:
+        * All API paths will be renamed from `bitcoin-abc` to `ecash` (right now both work)
+        * All array keys that previously were named `bitcoin-abc` will be renamed to `ecash`
+        * The prefix for the address format will be changed from `bitcoincash:` to `ecash:`
 * v.2.0.79 - April 23rd, 2021
     * Added a new `?events=true` option to the `https://api.blockchair.com/ethereum/dashboards/transaction/{:hash}` endpoint (works with the `transactions` endpoint as well). This option costs `1` additional request point to use. When enabled, it adds an array of event logs to the output. Every log contains `topics`, `data`, `contract`, `log_index`, and `decoded_event`. Depending on how much our API knows about the event signature, there are 3 detalization levels for `decoded_event` (example transaction with all 3: `https://api.blockchair.com/ethereum/dashboards/transaction/0x7d52cf58fe78403e8816dae6e900baff92b35760b4ed81cecd2590eafcde3dad?events=true`):
         * Full data: `decoded_event` contains both the full event name with its argument names (`name_full`, example: `Approval(address owner, address spender, uint256 value)`), and the argument values in the `arguments` array;
