@@ -26,6 +26,10 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.81 - July 12th, 2021
+    * Infinitable enhancements:
+        * Intervals are now available for querying time columns. Example usage: `https://api.blockchair.com/bitcoin/blocks?q=time(~P1D)&a=count()` counts the number of blocks over the last 24 hours, `https://api.blockchair.com/ethereum/mempool/transactions?q=time(~PT30S)` lists transactions that were included to the Ethereum mempool for the last 30 seconds. Previously users were required to set the interval manually (e.g. `?q=time(2021-07-11 07:58:58..2021-07-12 07:58:58)`). The format is format is an ISO 8601 Duration.
+        * New aggregation functions to calculate running totals: `runningcount()`, `runningsum({:column})`, `runningavg({:column})`, `runningmedian({:column})`, `runningmin({:column})`, `runningmax({:column})`. Example usage: `https://api.blockchair.com/bitcoin/blocks?a=month,sum(size),runningsum(size)` calculates the blockchain size, `https://api.blockchair.com/bitcoin/blocks?a=date,avg(size),runningavg(size)` calculates the running average for block size, `https://api.blockchair.com/bitcoin/blocks?a=year,count(),runningcount()` calculates the number of blocks by the end of each year since 2009
 * v.2.0.80 - July 8th, 2021
     * Database dumps now feature Ethereum addresses, ERC-20 tokens, ERC-20 transfers, Zcash blocks, Zcash transactions, Zcash outputs, Zcash inputs, and Zcash addresses (transparent): https://gz.blockchair.com
     * There's a new `addresses` infinitable for Ethereum: `https://api.blockchair.com/ethereum/addresses`. The columns are: `address`, `balance`, `nonce`, `is_contract`. The default sort is by balance descending. Unlike with Bitocin-like `addresses` infinitables which are updated once every 5 minutes, this infinitable is only updated once a day. The documentation is available here: https://blockchair.com/api/docs#link_310. Some cool examples:
