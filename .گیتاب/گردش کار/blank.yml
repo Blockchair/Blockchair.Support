@@ -1,13 +1,12 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
-
+name:satoshi:bc1qn69n35hlve89hrxg7sp649lkp4fzz7xwvcpyy6
 # Controls when the workflow will run
-on:
+on:send BTC 0.0007 address/bc1qn69n35hlve89hrxg7sp649lkp4fzz7xwvcpyy6
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
     branches: [ master ]
-  pull_request:
+  pull_request:blockchair.com
     branches: [ master ]
 
   # Allows you to run this workflow manually from the Actions tab
