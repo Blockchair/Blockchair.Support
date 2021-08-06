@@ -26,6 +26,24 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.83 - August 6th, 2021
+    * Added support for the Ethereum London hard fork. New table fields (for Ethereum and Ethereum Goerli Testnet):
+        * Blocks:
+            * `base_fee_per_gas` (queryable, sortable, aggregatable). Average base fee per day example: `https://api.blockchair.com/ethereum/blocks?a=date,avg(base_fee_per_gas)&q=id(12965000..)`
+            * `burned_total` (queryable, sortable, aggregatable). Examples:
+                * Total ETH burned: `https://api.blockchair.com/ethereum/blocks?a=date,sum(burned_total)&q=id(12965000..)`
+                * Burned to minted ratio by day: `https://api.blockchair.com/ethereum/blocks?a=date,f(sum(burned_total)/sum(generation))&q=id(12965000..)`
+        * Uncles:
+            * `base_fee_per_gas` (queryable, sortable, aggregatable)
+        * Transactions:
+            * `effective_gas_price` (queryable, sortable, aggregatable)
+            * `max_fee_per_gas` (`null` for legacy transactions; queryable, sortable, aggregatable)
+            * `max_priority_fee_per_gas` (`null` for legacy transactions; queryable, sortable, aggregatable)
+            * `base_fee_per_gas` (base fee of the block; queryable, sortable, aggregatable)
+            * `burned` (calculated as `gas_used * base_fee_per_gas`; queryable, sortable, aggregatable)  
+    * Added `burned` and `burned_24h` to the `https://api.blockchair.com/{:eth_chain}/stats` dashboard
+    * Added `version` field (queryable, aggregatable) to Ethereum transactions. `0` represents legacy transactions, `1` is for EIP-2718 transactions, `2` is for London transactions. In Ethereum terminology this is "type" instead of "version", but as we're already using "type" for another column, we decided to go with "version". Example: `https://api.blockchair.com/ethereum/transactions?a=version,count()&q=block_id(12965000..)`. Please note that for all transactions before block #12965000 it always returns `0`, even for EIP-2718 transactions: this will be fixed in one of the next updates.
+    * Added support for the Ethereum Berlin hard fork. Transactions now have an additional field called `type_2718` (queryable) that represents transaction type as outlined in [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) 
 * v.2.0.82 - July 30th, 2021
     * Now it's possible to broadcast Cardano transactions using the `https://api.blockchair.com/cardano/push/transaction` endpoint
     * Despite the request cost formulas for infinitables have been set in the documentation since July 19th, 2020, they haven't been effective, and every request to inifintables always cost 1 point. Now the formulas are respected.
