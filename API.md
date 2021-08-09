@@ -26,6 +26,13 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.84 - August 9th, 2021
+    * Enhancements to the Ethereum transaction dashboard (`https://api.blockchair.com/{:eth_chain}/dashboards/transaction/{:hash}`) for unconfirmed transactions. Please note that these values are not final and may change as transactions get confirmed: tracing unconfirmed transactions doesn't take possible changes to the state into account.
+        * If the `?events=true` option is used, API returns values for `gas_used`, `fee`, `fee_usd` instead of `null`s
+        * If the `?trace_mempool=true` option is used, API returns values for `internal_value` and `internal_value_usd` instead of `null`s
+        * API still always returns `null` for `failed`
+    * There's a new option for the Ethereum address dashboard (`https://api.blockchair.com/{:eth_chain}/dashboards/address/{:address}`): `?transactions_instead_of_calls=true`. If applied, it returns the list of latest transaction hashes in the `transactions` array instead of returning the `calls` array. An important difference is that ERC-20 transfers that weren't previously included in the `calls` array will be among `transactions`. This option also affects `transaction_count` behaviour: if enabled, it returns the transaction count for an address which takes ERC-20 transfers into account. Using this option costs `2`. The option has no effect on contracts (i.e. for contracts the `calls` array will be returned even if the option is enabled).
+    * The Ethereum stats dashboard (`https://api.blockchair.com/{:eth_chain}/stats`) now also outputs `addresses` yielding the total number of addresses (including both accounts and contracts) ever seen on chain.
 * v.2.0.83 - August 6th, 2021
     * Added support for the Ethereum London hard fork. New table fields (for Ethereum and Ethereum Goerli Testnet):
         * Blocks:
