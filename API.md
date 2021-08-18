@@ -26,6 +26,12 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.85 - August 18th, 2021
+    * New hashrate dashboard for all Bitcoin-like and Ethereum-like chains: `https://api.blockchair.com/{:chain}/dashboards/hashrate` that outputs the estimated hashrate by day. Example: `https://api.blockchair.com/bitcoin/dashboards/hashrate`.
+    * New difficulty dashboard for Bitcoin: `https://api.blockchair.com/bitcoin/dashboards/difficulty`. It outputs:
+        * All completed difficulty "periods" (2016 blocks each). `status` is `completed`, `hashrate` is the estimated average hashrate within the period, `avg_block_time` is the average time between blocks in seconds
+        * The current difficulty period. `status` is `ongoing`
+        * The next difficulty period. `status` is `planned`, `start_time` is the estimated time when the period will start based on the current hashrate and the number of blocks left in the current period, `difficulty` is the estimated difficulty for the next period, `hashrate` is the same as for the current period, `avg_block_time` is always `600` (10 minutes) as it's the target time between blocks
 * v.2.0.84 - August 9th, 2021
     * Enhancements to the Ethereum transaction dashboard (`https://api.blockchair.com/{:eth_chain}/dashboards/transaction/{:hash}`) for unconfirmed transactions. Please note that these values are not final and may change as transactions get confirmed: tracing unconfirmed transactions doesn't take possible changes to the state into account.
         * If the `?events=true` option is used, API returns values for `gas_used`, `fee`, `fee_usd` instead of `null`s
