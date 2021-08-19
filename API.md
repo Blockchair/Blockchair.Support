@@ -26,6 +26,8 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.86 - August 19th, 2021
+    * Error code `435` is now returned if you're using an API key and going over the maximum requests in parallel limit. By default, the limit is `daily_request_limit / 10000` request points. Also, by default, it is not enforced: it only comes into effect if our security system notices that your requests significantly overload our servers on a constant basis. This limit **supersedes** the 5 requests per second limit for premium API plans (which was also not enforced automatically). Example: if you're on a 5000 requests per day plan and do some daily calculations like fetching xpub balances right after the midnight, please try doing this in 2-3 app instances in parallel instead of spawning 1000 instances trying to complete the process in 10 seconds.
 * v.2.0.85 - August 18th, 2021
     * New hashrate dashboard for all Bitcoin-like and Ethereum-like chains: `https://api.blockchair.com/{:chain}/dashboards/hashrate` that outputs the estimated hashrate by day. Example: `https://api.blockchair.com/bitcoin/dashboards/hashrate`.
     * New difficulty dashboard for Bitcoin: `https://api.blockchair.com/bitcoin/dashboards/difficulty`. It outputs:
