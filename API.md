@@ -26,6 +26,16 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.87 - August 20th, 2021
+    * For all API requests, the `context` array now yields `market_price_usd` value. It contains the current USD price of the blockchain's main token in request. E.g. all `https://api.blockchair.com/zcash/...` requests show ZEC price in `context.market_price_usd`. For Ethereum, it's always the ETH price, even if some token data is requested. This change also deprecates `context.price_usd` for EOS and Tezos in favour of `context.market_price_usd`.
+     * New `number({:n})` function for aggregations that returns a number. It may be useful when you are too lazy to divide some values on your side, for example, when you're calculating the average interval between blocks in seconds: `https://api.blockchair.com/bitcoin/blocks?a=date,f(number(86400)/count())`. Our API can now also serve as your calculator for any needs: `https://api.blockchair.com/bitcoin/blocks?a=f(number(2)*number(2))&limit=1` returns `4`.
+     * Tweaked `suggested_transaction_fee_per_byte_sat` for Dogecoin (in `https://api.blockchair.com/dogecoin/stats`) to honour the minimum fee of 1 DOGE per transaction
+     * The following Ethereum endpoints are now also available for Ethereum Goerli Testnet:
+        * `https://api.blockchair.com/ethereum/testnet/raw/block/{:id|hash}`
+        * `https://api.blockchair.com/ethereum/testnet/raw/transaction/{:hash}`
+        * `https://api.blockchair.com/ethereum/testnet/push/transaction`
+        * `https://api.blockchair.com/ethereum/testnet/addresses`
+        * `https://api.blockchair.com/ethereum/testnet/state/changes/block/{:id}`
 * v.2.0.86 - August 19th, 2021
     * Error code `435` is now returned if you're using an API key and going over the maximum requests in parallel limit. By default, the limit is `daily_request_limit / 10000` request points. Also, by default, it is not enforced: it only comes into effect if our security system notices that your requests significantly overload our servers on a constant basis. This limit **supersedes** the 5 requests per second limit for premium API plans (which was also not enforced automatically). Example: if you're on a 5000 requests per day plan and do some daily calculations like fetching xpub balances right after the midnight, please try doing this in 2-3 app instances in parallel instead of spawning 1000 instances trying to complete the process in 10 seconds.
 * v.2.0.85 - August 18th, 2021
