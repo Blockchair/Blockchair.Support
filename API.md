@@ -26,6 +26,10 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.88 - August 23rd, 2021
+    * Added basic SLP support for Bitcoin Cash. New endpoints and options:
+        * `https://api.blockchair.com/bitcoin-cash/stats` now yields statistical data on SLP in the `layer_2.slp` array: `tokens` is the total number of SLP tokens, `transactions` - the total number of SLP transfers, `tokens_24h` - new SLP tokens over the last 24 hours, `transactions_24h` - token transfers over the last 24 hours
+        * Find SLP transfers inside of a transaction: `https://api.blockchair.com/bitcoin-cash/dashboards/transaction/{:hash}?slp=true`. Example: `https://api.blockchair.com/bitcoin-cash/dashboards/transaction/ca851afc516f6d1488924f4a064abdd8b82b45bc8a5890bee8aba58a1314f498?slp=true` (valid `SEND` transaction), `https://api.blockchair.com/bitcoin-cash/dashboards/transaction/71b31ecaf916fe2da690a61c45978542a654185caba643c3eda2a87f38f88d31?slp=true` (invalid `MINT` transaction`)
 * v.2.0.87 - August 20th, 2021
     * For all API requests, the `context` array now yields `market_price_usd` value. It contains the current USD price of the blockchain's main token in request. E.g. all `https://api.blockchair.com/zcash/...` requests show ZEC price in `context.market_price_usd`. For Ethereum, it's always the ETH price, even if some token data is requested. This change also deprecates `context.price_usd` for EOS and Tezos in favour of `context.market_price_usd`.
      * New `number({:n})` function for aggregations that returns a number. It may be useful when you are too lazy to divide some values on your side, for example, when you're calculating the average interval between blocks in seconds: `https://api.blockchair.com/bitcoin/blocks?a=date,f(number(86400)/count())`. Our API can now also serve as your calculator for any needs: `https://api.blockchair.com/bitcoin/blocks?a=f(number(2)*number(2))&limit=1` returns `4`.
