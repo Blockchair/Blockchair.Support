@@ -26,6 +26,19 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.89 - October 18th, 2021
+    * Added ERC-721 support for Ethereum. New endpoints and options:
+        * `https://api.blockchair.com/ethereum/erc-721/tokens` infinitable (the output is the same as for ERC-20 except for there's no `decimals`).
+        * `https://api.blockchair.com/ethereum/erc-721/transactions` infinitable (also no `token_decimals`, and `token_id` is used instead of `value` Examples:
+            * Find most used contracts over the last month: `https://api.blockchair.com/ethereum/erc-721/transactions?q=time(~P1M)&a=token_address,token_name,count()&s=count()(desc)&limit=10` 
+            * Owner change history by token id: `https://api.blockchair.com/ethereum/erc-721/transactions?q=token_address(0xbd3531da5cf5857e7cfaa92426877b022e612cf8),token_id(5177)`
+            * Find tokens that changed hands many times: `https://api.blockchair.com/ethereum/erc-721/transactions?a=token_address,token_id,count()&s=count()(desc)&limit=10`
+        * `https://api.blockchair.com/ethereum/stats` now yields statistical data on ERC-721s in the `layer_2.erc_721` array: `tokens` is the total number of NFTs, `transactions` - the total number of transfers, `tokens_24h` - new NFTs over the last 24 hours, `transactions_24h` - token transfers over the last 24 hours
+        * Find ERC-721 transfers inside of a transaction: `https://api.blockchair.com/ethereum/dashboards/transaction/{:hash}?erc_721=true`. Example: `https://api.blockchair.com/ethereum/dashboards/transaction/0x6e7dbd3e3835f5c08ac8a0e26216df17e9aa9d1b6956fc9f0c56c19a085ad888?erc_721=true`
+        * List ERC-721 tokens for an address: `https://api.blockchair.com/ethereum/dashboards/address/{:address}?erc_721=true`. Example: `https://api.blockchair.com/ethereum/dashboards/address/0x943a48498c9d622273e214c1757e436f76a113ce?erc_721=true&limit=0`. This option lists token ids
+        * ERC-721 contract dashboard: `https://api.blockchair.com/ethereum/erc-721/{:address}/stats`. Example: `https://api.blockchair.com/ethereum/erc-721/0x1dfe7ca09e99d10835bf73044a23b73fc20623df/stats`
+        * ERC-721 contract inventory (token list): `https://api.blockchair.com/ethereum/erc-721/{:address}/inventory`. Available params: `?limit={:limit}` and `?offset={:offset}`. Example: `https://api.blockchair.com/ethereum/erc-721/0x2E956Ed3D7337F4Ed4316A6e8F2EdF74BF84bb54/inventory?limit=100&offset=100`. The list returns `transaction_count`, `first_time` (creation time), `last_time` (last ownership change time), `first_owner`, and `last_owner` (current owner).
+    * Please note that some of popular NFTs may either not follow the ERC-721 standard at all or follow the ERC-20 standard instead. In the first case, our API won't return any data for such NFTs. In the second case, such contracts will be treated as ERC-20s. ERC-721 functionality is launched in beta mode, it's possible there will be compatibility-breaking changes. This functionality is available for the Goerli Testnet as well.
 * v.2.0.88 - August 23rd, 2021
     * Added basic SLP support for Bitcoin Cash. New endpoints and options:
         * `https://api.blockchair.com/bitcoin-cash/stats` now yields statistical data on SLP in the `layer_2.slp` array: `tokens` is the total number of SLP tokens, `transactions` - the total number of SLP transfers, `tokens_24h` - new SLP tokens over the last 24 hours, `transactions_24h` - token transfers over the last 24 hours
