@@ -26,6 +26,9 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.90 - October 24th, 2021
+    * ERC-20 and ERC-721 transfers are now ordered within transactions as they were executed
+    * Added `?offset={:offset}` option to the Cardano address endpoint (`https://api.blockchair.com/{:ada_chain}/raw/address/{:address}₀`) that allows to paginate the list of latest transactions
 * v.2.0.89 - October 18th, 2021
     * Added ERC-721 support for Ethereum. New endpoints and options:
         * `https://api.blockchair.com/ethereum/erc-721/tokens` infinitable (the output is the same as for ERC-20 except for there's no `decimals`).
