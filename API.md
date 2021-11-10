@@ -26,6 +26,17 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.91 - November 10th, 2021
+    * Added Polkadot support in beta mode. New endpoints:
+        * `https://api.blockchair.com/polkadot/stats` (+ `https://api.blockchair.com/stats` now also features Polkadot)
+        * `https://api.blockchair.com/polkadot/raw/block/{:id}`
+        * `https://api.blockchair.com/polkadot/raw/block/{:hash}`
+        * `https://api.blockchair.com/polkadot/raw/extrinsic/{:id}`
+        * `https://api.blockchair.com/polkadot/raw/extrinsic/{:hash}`
+        * `https://api.blockchair.com/polkadot/raw/address/{:address}` (with `?offset={:offset} option to iterate through the latest extrinsics and transfers)
+        * `https://api.blockchair.com/polkadot/raw/blocks` (an infinitable with `?offset={:offset} option)
+        * `https://api.blockchair.com/polkadot/raw/extrinsics` (an infinitable with `?offset={:offset} option)
+        * `https://api.blockchair.com/polkadot/raw/events` (an infinitable with `?offset={:offset} option)
 * v.2.0.90 - October 24th, 2021
     * ERC-20 and ERC-721 transfers are now ordered within transactions as they were executed
     * Added `?offset={:offset}` option to the Cardano address endpoint (`https://api.blockchair.com/{:ada_chain}/raw/address/{:address}₀`) that allows to paginate the list of latest transactions
