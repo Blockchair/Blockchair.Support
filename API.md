@@ -26,6 +26,10 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.92 - November 11th, 2021
+    * Added Taproot support for Bitcoin, Groestlcoin, and Bitcoin Testnet:
+        * Taproot scripts now convert to P2TR addresses (some older outputs that came before according activation dates may be reindexed a bit later)
+        * `outputs.type` column can now yield and accept `witness_v1_taproot` type. Example: `https://api.blockchair.com/bitcoin/testnet/outputs?q=type(witness_v1_taproot)`
 * v.2.0.91 - November 10th, 2021
     * Added Polkadot support in beta mode. New endpoints:
         * `https://api.blockchair.com/polkadot/stats` (+ `https://api.blockchair.com/stats` now also features Polkadot)
