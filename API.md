@@ -26,6 +26,17 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.94 - December 1st, 2021
+    * Added Kusama support in beta mode. The endpoints are compatible with Polkadot (we'll refer to Polkadot and Kusama as "Polkadot-like blockchains"):
+        * `https://api.blockchair.com/kusama/stats` (+ `https://api.blockchair.com/stats` now also features Kusama)
+        * `https://api.blockchair.com/kusama/raw/block/{:id}`
+        * `https://api.blockchair.com/kusama/raw/block/{:hash}`
+        * `https://api.blockchair.com/kusama/raw/extrinsic/{:id}`
+        * `https://api.blockchair.com/kusama/raw/extrinsic/{:hash}`
+        * `https://api.blockchair.com/kusama/raw/address/{:address}` (with `?offset={:offset} option to iterate through the latest extrinsics and transfers)
+        * `https://api.blockchair.com/kusama/raw/blocks` (an infinitable with `?offset={:offset} option)
+        * `https://api.blockchair.com/kusama/raw/extrinsics` (an infinitable with `?offset={:offset} option)
+        * `https://api.blockchair.com/kusama/raw/events` (an infinitable with `?offset={:offset} option)
 * v.2.0.93 - November 17th, 2021
     * Added support for almost 200 fiat currencies and precious metals with exchange rates going back to 2009.
         * All API endpoints now support the `?rates={:code}` option. If enabled, it adds extra data for the chosen currency code on top of where USD data is already available. Example: `https://api.blockchair.com/bitcoin/stats?rates=kzt` adds `average_transaction_fee_kzt_24h`. For historical data (example: `https://api.blockchair.com/bitcoin/dashboards/block/500000?rates=kzt`) it honors historical exchange rates.
