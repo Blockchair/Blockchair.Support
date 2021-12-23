@@ -26,6 +26,14 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.95 - December 23rd, 2021
+    * Added Solana support in beta mode. We're not running a full history Solana node at the moment, so only the most recent blocks and transactions are available. The available block range can be obtained using `https://api.blockchair.com/range`. New endpoints:
+        * `https://api.blockchair.com/solana/stats`
+        * `https://api.blockchair.com/solana/raw/slot/{:id}`
+        * `https://api.blockchair.com/solana/raw/transaction/{:signature}`
+        * `https://api.blockchair.com/solana/raw/address/{:address}`. Possible options: `?tokens=true` (costs `1` additional request point to use).
+        * `https://api.blockchair.com/solana/raw/validators`. Available options: `?offset={:offset}`.
+        * `https://api.blockchair.com/solana/raw/slots`. Available options: `?offset={:offset}`.
 * v.2.0.94 - December 1st, 2021
     * Added Kusama support in beta mode. The endpoints are compatible with Polkadot (we'll refer to Polkadot and Kusama as "Polkadot-like blockchains"):
         * `https://api.blockchair.com/kusama/stats` (+ `https://api.blockchair.com/stats` now also features Kusama)
