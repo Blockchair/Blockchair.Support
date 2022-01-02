@@ -49,6 +49,12 @@ Your device may store first-party cookies, such as those that keep the night mod
 
 Collected data is used to improve user experience and compile website traffic statistics. Session data is deleted on a regular basis.
 
+We can also store and use the data you provide us through email or with other channels of communication such as Telegram or contact forms located on our website. We can use such data to provide you with our services, defend our legal rights, to improve accuracy, effectiveness, security, usability of our products or we can use it in any other way you will agree to. 
+
+Overall, we won't keep your data longer than necessary.
+
+Please, be informed, that this Privacy Policy has force only unless it contradicts to Terms of Service of any other products of Blockchair Limited. In case of contradiction between provisions of any Blockchair Terms of Service and this Privacy Policy, the provisions of Blockchair Terms of Service should prevail.
+
 * * *
 
 ## Privacy Policy updates
