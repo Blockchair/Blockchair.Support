@@ -3400,7 +3400,7 @@ This endpoint allows to check multiple addresses from diffrerent blockchain via 
 
 **Endpoint:**
 
-- ``https://api.blockchair.com/multi/dashboards/addresses/{:address}₀,...,{:address}ᵩ`
+- `https://api.blockchair.com/multi/dashboards/addresses/{:address}₀,...,{:address}ᵩ`
 
 **Where:**
 
