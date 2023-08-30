@@ -26,10 +26,120 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 
 ### Changelog
 
+* v.2.0.95 - December 23rd, 2021
+    * Added Solana support in beta mode. We're not running a full history Solana node at the moment, so only the most recent blocks and transactions are available. The available block range can be obtained using `https://api.blockchair.com/range`. New endpoints:
+        * `https://api.blockchair.com/solana/stats`
+        * `https://api.blockchair.com/solana/raw/slot/{:id}`
+        * `https://api.blockchair.com/solana/raw/transaction/{:signature}`
+        * `https://api.blockchair.com/solana/raw/address/{:address}`. Possible options: `?tokens=true` (costs `1` additional request point to use).
+        * `https://api.blockchair.com/solana/raw/validators`. Available options: `?offset={:offset}`.
+        * `https://api.blockchair.com/solana/raw/slots`. Available options: `?offset={:offset}`.
+* v.2.0.94 - December 1st, 2021
+    * Added Kusama support in beta mode. The endpoints are compatible with Polkadot (we'll refer to Polkadot and Kusama as "Polkadot-like blockchains"):
+        * `https://api.blockchair.com/kusama/stats` (+ `https://api.blockchair.com/stats` now also features Kusama)
+        * `https://api.blockchair.com/kusama/raw/block/{:id}`
+        * `https://api.blockchair.com/kusama/raw/block/{:hash}`
+        * `https://api.blockchair.com/kusama/raw/extrinsic/{:id}`
+        * `https://api.blockchair.com/kusama/raw/extrinsic/{:hash}`
+        * `https://api.blockchair.com/kusama/raw/address/{:address}` (with `?offset={:offset} option to iterate through the latest extrinsics and transfers)
+        * `https://api.blockchair.com/kusama/raw/blocks` (an infinitable with `?offset={:offset} option)
+        * `https://api.blockchair.com/kusama/raw/extrinsics` (an infinitable with `?offset={:offset} option)
+        * `https://api.blockchair.com/kusama/raw/events` (an infinitable with `?offset={:offset} option)
+* v.2.0.93 - November 17th, 2021
+    * Added support for almost 200 fiat currencies and precious metals with exchange rates going back to 2009.
+        * All API endpoints now support the `?rates={:code}` option. If enabled, it adds extra data for the chosen currency code on top of where USD data is already available. Example: `https://api.blockchair.com/bitcoin/stats?rates=kzt` adds `average_transaction_fee_kzt_24h`. For historical data (example: `https://api.blockchair.com/bitcoin/dashboards/block/500000?rates=kzt`) it honors historical exchange rates.
+        * The supported fiat currencies are: `AED` (United Arab Emirates Dirham), `AFN` (Afghan Afghani), `ALL` (Albanian Lek), `AMD` (Armenian Dram), `ANG` (Netherlands Antillean Guilder), `AOA` (Angolan Kwanza), `ARS` (Argentine Peso), `AUD` (Australian Dollar), `AWG` (Aruban Florin), `AZN` (Azerbaijani Manat), `BAM` (Bosnia-Herzegovina Convertible Mark), `BBD` (Barbadian Dollar), `BDT` (Bangladeshi Taka), `BGN` (Bulgarian Lev), `BHD` (Bahraini Dinar), `BIF` (Burundian Franc), `BMD` (Bermudan Dollar), `BND` (Brunei Dollar), `BOB` (Bolivian Boliviano), `BRL` (Brazilian Real), `BSD` (Bahamian Dollar), `BTN` (Bhutanese Ngultrum), `BWP` (Botswanan Pula), `BYN` (Belarusian Ruble), `BZD` (Belize Dollar), `CAD` (Canadian Dollar), `CDF` (Congolese Franc), `CHF` (Swiss Franc), `CLF` (Chilean Unit of Account (UF)), `CLP` (Chilean Peso), `CNH` (Chinese Yuan (Offshore)), `CNY` (Chinese Yuan), `COP` (Colombian Peso), `CRC` (Costa Rican Colón), `CUC` (Cuban Convertible Peso), `CUP` (Cuban Peso), `CVE` (Cape Verdean Escudo), `CZK` (Czech Republic Koruna), `DJF` (Djiboutian Franc), `DKK` (Danish Krone), `DOP` (Dominican Peso), `DZD` (Algerian Dinar), `EGP` (Egyptian Pound), `ERN` (Eritrean Nakfa), `ETB` (Ethiopian Birr), `EUR` (Euro), `FJD` (Fijian Dollar), `FKP` (Falkland Islands Pound), `GBP` (British Pound Sterling), `GEL` (Georgian Lari), `GGP` (Guernsey Pound), `GHS` (Ghanaian Cedi), `GIP` (Gibraltar Pound), `GMD` (Gambian Dalasi), `GNF` (Guinean Franc), `GTQ` (Guatemalan Quetzal), `GYD` (Guyanaese Dollar), `HKD` (Hong Kong Dollar), `HNL` (Honduran Lempira), `HRK` (Croatian Kuna), `HTG` (Haitian Gourde), `HUF` (Hungarian Forint), `IDR` (Indonesian Rupiah), `ILS` (Israeli New Sheqel), `IMP` (Manx pound), `INR` (Indian Rupee), `IQD` (Iraqi Dinar), `IRR` (Iranian Rial), `ISK` (Icelandic Króna), `JEP` (Jersey Pound), `JMD` (Jamaican Dollar), `JOD` (Jordanian Dinar), `JPY` (Japanese Yen), `KES` (Kenyan Shilling), `KGS` (Kyrgystani Som), `KHR` (Cambodian Riel), `KMF` (Comorian Franc), `KPW` (North Korean Won), `KRW` (South Korean Won), `KWD` (Kuwaiti Dinar), `KYD` (Cayman Islands Dollar), `KZT` (Kazakhstani Tenge), `LAK` (Laotian Kip), `LBP` (Lebanese Pound), `LKR` (Sri Lankan Rupee), `LRD` (Liberian Dollar), `LSL` (Lesotho Loti), `LYD` (Libyan Dinar), `MAD` (Moroccan Dirham), `MDL` (Moldovan Leu), `MGA` (Malagasy Ariary), `MKD` (Macedonian Denar), `MMK` (Myanma Kyat), `MNT` (Mongolian Tugrik), `MOP` (Macanese Pataca), `MRO` (Mauritanian Ouguiya (pre-2018)), `MRU` (Mauritanian Ouguiya), `MUR` (Mauritian Rupee), `MVR` (Maldivian Rufiyaa), `MWK` (Malawian Kwacha), `MXN` (Mexican Peso), `MYR` (Malaysian Ringgit), `MZN` (Mozambican Metical), `NAD` (Namibian Dollar), `NGN` (Nigerian Naira), `NIO` (Nicaraguan Córdoba), `NOK` (Norwegian Krone), `NPR` (Nepalese Rupee), `NZD` (New Zealand Dollar), `OMR` (Omani Rial), `PAB` (Panamanian Balboa), `PEN` (Peruvian Nuevo Sol), `PGK` (Papua New Guinean Kina), `PHP` (Philippine Peso), `PKR` (Pakistani Rupee), `PLN` (Polish Zloty), `PYG` (Paraguayan Guarani), `QAR` (Qatari Rial), `RON` (Romanian Leu), `RSD` (Serbian Dinar), `RUB` (Russian Ruble), `RWF` (Rwandan Franc), `SAR` (Saudi Riyal), `SBD` (Solomon Islands Dollar), `SCR` (Seychellois Rupee), `SDG` (Sudanese Pound), `SEK` (Swedish Krona), `SGD` (Singapore Dollar), `SHP` (Saint Helena Pound), `SLL` (Sierra Leonean Leone), `SOS` (Somali Shilling), `SRD` (Surinamese Dollar), `SSP` (South Sudanese Pound), `STD` (São Tomé and Príncipe Dobra (pre-2018)), `STN` (São Tomé and Príncipe Dobra), `SVC` (Salvadoran Colón), `SYP` (Syrian Pound), `SZL` (Swazi Lilangeni), `THB` (Thai Baht), `TJS` (Tajikistani Somoni), `TMT` (Turkmenistani Manat), `TND` (Tunisian Dinar), `TOP` (Tongan Pa'anga), `TRY` (Turkish Lira), `TTD` (Trinidad and Tobago Dollar), `TWD` (New Taiwan Dollar), `TZS` (Tanzanian Shilling), `UAH` (Ukrainian Hryvnia), `UGX` (Ugandan Shilling), `UYU` (Uruguayan Peso), `UZS` (Uzbekistan Som), `VEF` (Venezuelan Bolívar Fuerte (Old)), `VES` (Venezuelan Bolívar Soberano), `VND` (Vietnamese Dong), `VUV` (Vanuatu Vatu), `WST` (Samoan Tala), `XCD` (East Caribbean Dollar), `XPF` (CFP Franc), `YER` (Yemeni Rial), `ZAR` (South African Rand), `ZMW` (Zambian Kwacha), `ZWL` (Zimbabwean Dollar)
+        * The precious metals are: `XAG` (Silver Ounce), `XAU` (Gold Ounce), `XPD` (Palladium Ounce) `XPT` (Platinum Ounce)
+        * The cryptocurrencies are: `BTC` (Bitcoin), `ETH` (Ethereum)
+        * Note that `?rates=USD` is not supported and will result in an error. When the `?rates={:code}` option is used, it only adds new data, and doesn't remove any `*usd*` fields from the output.
+* v.2.0.92 - November 11th, 2021
+    * Added Taproot support for Bitcoin, Groestlcoin, and Bitcoin Testnet:
+        * Taproot scripts now convert to P2TR addresses (some older outputs that came before according activation dates may be reindexed a bit later)
+        * `outputs.type` column can now yield and accept `witness_v1_taproot` type. Example: `https://api.blockchair.com/bitcoin/testnet/outputs?q=type(witness_v1_taproot)`
+* v.2.0.91 - November 10th, 2021
+    * Added Polkadot support in beta mode. New endpoints:
+        * `https://api.blockchair.com/polkadot/stats` (+ `https://api.blockchair.com/stats` now also features Polkadot)
+        * `https://api.blockchair.com/polkadot/raw/block/{:id}`
+        * `https://api.blockchair.com/polkadot/raw/block/{:hash}`
+        * `https://api.blockchair.com/polkadot/raw/extrinsic/{:id}`
+        * `https://api.blockchair.com/polkadot/raw/extrinsic/{:hash}`
+        * `https://api.blockchair.com/polkadot/raw/address/{:address}` (with `?offset={:offset} option to iterate through the latest extrinsics and transfers)
+        * `https://api.blockchair.com/polkadot/raw/blocks` (an infinitable with `?offset={:offset} option)
+        * `https://api.blockchair.com/polkadot/raw/extrinsics` (an infinitable with `?offset={:offset} option)
+        * `https://api.blockchair.com/polkadot/raw/events` (an infinitable with `?offset={:offset} option)
+* v.2.0.90 - October 24th, 2021
+    * ERC-20 and ERC-721 transfers are now ordered within transactions as they were executed
+    * Added `?offset={:offset}` option to the Cardano address endpoint (`https://api.blockchair.com/{:ada_chain}/raw/address/{:address}₀`) that allows to paginate the list of latest transactions
+* v.2.0.89 - October 18th, 2021
+    * Added ERC-721 support for Ethereum. New endpoints and options:
+        * `https://api.blockchair.com/ethereum/erc-721/tokens` infinitable (the output is the same as for ERC-20 except for there's no `decimals`).
+        * `https://api.blockchair.com/ethereum/erc-721/transactions` infinitable (also no `token_decimals`, and `token_id` is used instead of `value` Examples:
+            * Find most used contracts over the last month: `https://api.blockchair.com/ethereum/erc-721/transactions?q=time(~P1M)&a=token_address,token_name,count()&s=count()(desc)&limit=10` 
+            * Owner change history by token id: `https://api.blockchair.com/ethereum/erc-721/transactions?q=token_address(0xbd3531da5cf5857e7cfaa92426877b022e612cf8),token_id(5177)`
+            * Find tokens that changed hands many times: `https://api.blockchair.com/ethereum/erc-721/transactions?a=token_address,token_id,count()&s=count()(desc)&limit=10`
+        * `https://api.blockchair.com/ethereum/stats` now yields statistical data on ERC-721s in the `layer_2.erc_721` array: `tokens` is the total number of NFTs, `transactions` - the total number of transfers, `tokens_24h` - new NFTs over the last 24 hours, `transactions_24h` - token transfers over the last 24 hours
+        * Find ERC-721 transfers inside of a transaction: `https://api.blockchair.com/ethereum/dashboards/transaction/{:hash}?erc_721=true`. Example: `https://api.blockchair.com/ethereum/dashboards/transaction/0x6e7dbd3e3835f5c08ac8a0e26216df17e9aa9d1b6956fc9f0c56c19a085ad888?erc_721=true`
+        * List ERC-721 tokens for an address: `https://api.blockchair.com/ethereum/dashboards/address/{:address}?erc_721=true`. Example: `https://api.blockchair.com/ethereum/dashboards/address/0x943a48498c9d622273e214c1757e436f76a113ce?erc_721=true&limit=0`. This option lists token ids
+        * ERC-721 contract dashboard: `https://api.blockchair.com/ethereum/erc-721/{:address}/stats`. Example: `https://api.blockchair.com/ethereum/erc-721/0x1dfe7ca09e99d10835bf73044a23b73fc20623df/stats`
+        * ERC-721 contract inventory (token list): `https://api.blockchair.com/ethereum/erc-721/{:address}/inventory`. Available params: `?limit={:limit}` and `?offset={:offset}`. Example: `https://api.blockchair.com/ethereum/erc-721/0x2E956Ed3D7337F4Ed4316A6e8F2EdF74BF84bb54/inventory?limit=100&offset=100`. The list returns `transaction_count`, `first_time` (creation time), `last_time` (last ownership change time), `first_owner`, and `last_owner` (current owner).
+    * Please note that some of popular NFTs may either not follow the ERC-721 standard at all or follow the ERC-20 standard instead. In the first case, our API won't return any data for such NFTs. In the second case, such contracts will be treated as ERC-20s. ERC-721 functionality is launched in beta mode, it's possible there will be compatibility-breaking changes. This functionality is available for the Goerli Testnet as well.
+* v.2.0.88 - August 23rd, 2021
+    * Added basic SLP support for Bitcoin Cash. New endpoints and options:
+        * `https://api.blockchair.com/bitcoin-cash/stats` now yields statistical data on SLP in the `layer_2.slp` array: `tokens` is the total number of SLP tokens, `transactions` - the total number of SLP transfers, `tokens_24h` - new SLP tokens over the last 24 hours, `transactions_24h` - token transfers over the last 24 hours
+        * Find SLP transfers inside of a transaction: `https://api.blockchair.com/bitcoin-cash/dashboards/transaction/{:hash}?slp=true`. Example: `https://api.blockchair.com/bitcoin-cash/dashboards/transaction/ca851afc516f6d1488924f4a064abdd8b82b45bc8a5890bee8aba58a1314f498?slp=true` (valid `SEND` transaction), `https://api.blockchair.com/bitcoin-cash/dashboards/transaction/71b31ecaf916fe2da690a61c45978542a654185caba643c3eda2a87f38f88d31?slp=true` (invalid `MINT` transaction`)
+* v.2.0.87 - August 20th, 2021
+    * For all API requests, the `context` array now yields `market_price_usd` value. It contains the current USD price of the blockchain's main token in request. E.g. all `https://api.blockchair.com/zcash/...` requests show ZEC price in `context.market_price_usd`. For Ethereum, it's always the ETH price, even if some token data is requested. This change also deprecates `context.price_usd` for EOS and Tezos in favour of `context.market_price_usd`.
+     * New `number({:n})` function for aggregations that returns a number. It may be useful when you are too lazy to divide some values on your side, for example, when you're calculating the average interval between blocks in seconds: `https://api.blockchair.com/bitcoin/blocks?a=date,f(number(86400)/count())`. Our API can now also serve as your calculator for any needs: `https://api.blockchair.com/bitcoin/blocks?a=f(number(2)*number(2))&limit=1` returns `4`.
+     * Tweaked `suggested_transaction_fee_per_byte_sat` for Dogecoin (in `https://api.blockchair.com/dogecoin/stats`) to honour the minimum fee of 1 DOGE per transaction
+     * The following Ethereum endpoints are now also available for Ethereum Goerli Testnet:
+        * `https://api.blockchair.com/ethereum/testnet/raw/block/{:id|hash}`
+        * `https://api.blockchair.com/ethereum/testnet/raw/transaction/{:hash}`
+        * `https://api.blockchair.com/ethereum/testnet/push/transaction`
+        * `https://api.blockchair.com/ethereum/testnet/addresses`
+        * `https://api.blockchair.com/ethereum/testnet/state/changes/block/{:id}`
+* v.2.0.86 - August 19th, 2021
+    * Error code `435` is now returned if you're using an API key and going over the maximum requests in parallel limit. By default, the limit is `daily_request_limit / 10000` request points. Also, by default, it is not enforced: it only comes into effect if our security system notices that your requests significantly overload our servers on a constant basis. This limit **supersedes** the 5 requests per second limit for premium API plans (which was also not enforced automatically). Example: if you're on a 5000 requests per day plan and do some daily calculations like fetching xpub balances right after the midnight, please try doing this in 2-3 app instances in parallel instead of spawning 1000 instances trying to complete the process in 10 seconds.
+* v.2.0.85 - August 18th, 2021
+    * New hashrate dashboard for all Bitcoin-like and Ethereum-like chains: `https://api.blockchair.com/{:chain}/dashboards/hashrate` that outputs the estimated hashrate by day. Example: `https://api.blockchair.com/bitcoin/dashboards/hashrate`.
+    * New difficulty dashboard for Bitcoin: `https://api.blockchair.com/bitcoin/dashboards/difficulty`. It outputs:
+        * All completed difficulty "periods" (2016 blocks each). `status` is `completed`, `hashrate` is the estimated average hashrate within the period, `avg_block_time` is the average time between blocks in seconds
+        * The current difficulty period. `status` is `ongoing`
+        * The next difficulty period. `status` is `planned`, `start_time` is the estimated time when the period will start based on the current hashrate and the number of blocks left in the current period, `difficulty` is the estimated difficulty for the next period, `hashrate` is the same as for the current period, `avg_block_time` is always `600` (10 minutes) as it's the target time between blocks
+* v.2.0.84 - August 9th, 2021
+    * Enhancements to the Ethereum transaction dashboard (`https://api.blockchair.com/{:eth_chain}/dashboards/transaction/{:hash}`) for unconfirmed transactions. Please note that these values are not final and may change as transactions get confirmed: tracing unconfirmed transactions doesn't take possible changes to the state into account.
+        * If the `?events=true` option is used, API returns values for `gas_used`, `fee`, `fee_usd` instead of `null`s
+        * If the `?trace_mempool=true` option is used, API returns values for `internal_value` and `internal_value_usd` instead of `null`s
+        * API still always returns `null` for `failed`
+    * There's a new option for the Ethereum address dashboard (`https://api.blockchair.com/{:eth_chain}/dashboards/address/{:address}`): `?transactions_instead_of_calls=true`. If applied, it returns the list of latest transaction hashes in the `transactions` array instead of returning the `calls` array. An important difference is that ERC-20 transfers that weren't previously included in the `calls` array will be among `transactions`. This option also affects `transaction_count` behaviour: if enabled, it returns the transaction count for an address which takes ERC-20 transfers into account. Using this option costs `2`. The option has no effect on contracts (i.e. for contracts the `calls` array will be returned even if the option is enabled).
+    * The Ethereum stats dashboard (`https://api.blockchair.com/{:eth_chain}/stats`) now also outputs `addresses` yielding the total number of addresses (including both accounts and contracts) ever seen on chain.
+* v.2.0.83 - August 6th, 2021
+    * Added support for the Ethereum London hard fork. New table fields (for Ethereum and Ethereum Goerli Testnet):
+        * Blocks:
+            * `base_fee_per_gas` (queryable, sortable, aggregatable). Average base fee per day example: `https://api.blockchair.com/ethereum/blocks?a=date,avg(base_fee_per_gas)&q=id(12965000..)`
+            * `burned_total` (queryable, sortable, aggregatable). Examples:
+                * Total ETH burned: `https://api.blockchair.com/ethereum/blocks?a=date,sum(burned_total)&q=id(12965000..)`
+                * Burned to minted ratio by day: `https://api.blockchair.com/ethereum/blocks?a=date,f(sum(burned_total)/sum(generation))&q=id(12965000..)`
+        * Uncles:
+            * `base_fee_per_gas` (queryable, sortable, aggregatable)
+        * Transactions:
+            * `effective_gas_price` (queryable, sortable, aggregatable)
+            * `max_fee_per_gas` (`null` for legacy transactions; queryable, sortable, aggregatable)
+            * `max_priority_fee_per_gas` (`null` for legacy transactions; queryable, sortable, aggregatable)
+            * `base_fee_per_gas` (base fee of the block; queryable, sortable, aggregatable)
+            * `burned` (calculated as `gas_used * base_fee_per_gas`; queryable, sortable, aggregatable)  
+    * Added `burned` and `burned_24h` to the `https://api.blockchair.com/{:eth_chain}/stats` dashboard
+    * Added `version` field (queryable, aggregatable) to Ethereum transactions. `0` represents legacy transactions, `1` is for EIP-2718 transactions, `2` is for London transactions. In Ethereum terminology this is "type" instead of "version", but as we're already using "type" for another column, we decided to go with "version". Example: `https://api.blockchair.com/ethereum/transactions?a=version,count()&q=block_id(12965000..)`. Please note that for all transactions before block #12965000 it always returns `0`, even for EIP-2718 transactions: this will be fixed in one of the next updates.
+    * Added support for the Ethereum Berlin hard fork. Transactions now have an additional field called `type_2718` (queryable) that represents transaction type as outlined in [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) 
+* v.2.0.82 - July 30th, 2021
+    * Now it's possible to broadcast Cardano transactions using the `https://api.blockchair.com/cardano/push/transaction` endpoint
+    * Despite the request cost formulas for infinitables have been set in the documentation since July 19th, 2020, they haven't been effective, and every request to inifintables always cost 1 point. Now the formulas are respected.
+    * Fixed a bug with the `https://api.blockchair.com/{:btc_chain}/addresses` infinitable where some balances weren't returned correctly
+    * Fixed a bug with the `https://api.blockchair.com/{:btc_chain}/addresses/balances?addresses={:list}` endpoint where some balances weren't calculated correctly
+    * Fixed some bugs with eCash
 * v.2.0.81 - July 12th, 2021
     * Infinitable enhancements:
-        * Intervals are now available for querying time columns. Example usage: `https://api.blockchair.com/bitcoin/blocks?q=time(~P1D)&a=count()` counts the number of blocks over the last 24 hours, `https://api.blockchair.com/ethereum/mempool/transactions?q=time(~PT30S)` lists transactions that were included to the Ethereum mempool for the last 30 seconds. Previously users were required to set the interval manually (e.g. `?q=time(2021-07-11 07:58:58..2021-07-12 07:58:58)`). The format is format is an ISO 8601 Duration.
-        * New aggregation functions to calculate running totals: `runningcount()`, `runningsum({:column})`, `runningavg({:column})`, `runningmedian({:column})`, `runningmin({:column})`, `runningmax({:column})`. Example usage: `https://api.blockchair.com/bitcoin/blocks?a=month,sum(size),runningsum(size)` calculates the blockchain size, `https://api.blockchair.com/bitcoin/blocks?a=date,avg(size),runningavg(size)` calculates the running average for block size, `https://api.blockchair.com/bitcoin/blocks?a=year,count(),runningcount()` calculates the number of blocks by the end of each year since 2009
+        * Intervals are now available for querying time columns. Example usage: `https://api.blockchair.com/bitcoin/blocks?q=time(~P1D)&a=count()` counts the number of blocks over the last 24 hours, `https://api.blockchair.com/ethereum/mempool/transactions?q=time(~PT30S)` lists transactions that were included to the Ethereum mempool for the last 30 seconds. Previously users were required to set the interval manually (e.g. `?q=time(2021-07-11 07:58:58..2021-07-12 07:58:58)`). The format is an ISO 8601 Duration.
+        * New aggregation functions to calculate running totals: `runningcount()`, `runningsum({:column})`, `runningavg({:column})`, `runningmedian({:column})`, `runningmin({:column})`, `runningmax({:column})`. Example usage: `https://api.blockchair.com/bitcoin/blocks?a=month,sum(size),runningsum(size)` calculates the blockchain size, `https://api.blockchair.com/bitcoin/blocks?a=date,avg(size),runningavg(size)` calculates the running average for block size, `https://api.blockchair.com/bitcoin/blocks?a=year,count(),runningcount()` calculates the number of blocks by the end of each year since 2009.
 * v.2.0.80 - July 8th, 2021
     * Database dumps now feature Ethereum addresses, ERC-20 tokens, ERC-20 transfers, Zcash blocks, Zcash transactions, Zcash outputs, Zcash inputs, and Zcash addresses (transparent): https://gz.blockchair.com
     * There's a new `addresses` infinitable for Ethereum: `https://api.blockchair.com/ethereum/addresses`. The columns are: `address`, `balance`, `nonce`, `is_contract`. The default sort is by balance descending. Unlike with Bitocin-like `addresses` infinitables which are updated once every 5 minutes, this infinitable is only updated once a day. The documentation is available here: https://blockchair.com/api/docs#link_310. Some cool examples:
