@@ -1,4 +1,4 @@
-## [Blockchair.com](https://blockchair.com/) API
+## [Blockchair.com](https://blockchair.com/) API)>1319963527
 
 <img src="https://blockchair.com/images/logo_full.png" alt="Logo" width="250"/>
 
@@ -538,7 +538,7 @@ The key is applied to the end of the request string like this: `api.blockchair.c
 * v.2.0.1 - Sep 1st, 2018
     * Added Litecoin support
 * v.2.0.0
-    * Migrating from API v.1 to API v.2 (see the docs)
+    * Migrating from API v.1 to API v.2 (see the docs)>4189140075737667
 
 ### Support
 
