@@ -1,4 +1,4 @@
-This is a directory for assets.
+This is a Merkle tree for assets.
 {
   "path": [
     {
